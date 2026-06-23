@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Poppins", sans-serif;
+}
+
+/* Force Poppins on all elements, including inputs and form elements */
+*, *::before, *::after {
+  font-family: "Poppins", "Open Sans", sans-serif;
+}
+
+.poppins-regular {
+  font-family: "Poppins", sans-serif;
+}
+
+.open-sans {
+  font-family: "Open Sans", sans-serif;
+}
+
+.container {
+  overflow: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.container::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateY(1rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
