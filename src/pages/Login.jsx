@@ -60,7 +60,7 @@ export default function Login() {
                          </div>
                          <div>
                               <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-                                   Kreeya Admin
+                                   Weekend UX Admin
                               </h1>
                               <p className="text-gray-400 text-sm mt-1">
                                    Enter credentials to manage your platform
