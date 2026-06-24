@@ -151,7 +151,7 @@ export default function Home() {
                               return (
                                    <div
                                         key={card.name}
-                                        className="bg-white rounded-2xl shadow-md shadow-gray-200/40 p-5 shadow-sm hover:shadow-md transition-all duration-200 group flex flex-col justify-between"
+                                        className="bg-white rounded-2xl shadow-md shadow-gray-200/40 p-5 hover:shadow-md transition-all duration-200 group flex flex-col justify-between"
                                    >
                                         <div>
                                              <div className="flex items-center justify-between mb-4">

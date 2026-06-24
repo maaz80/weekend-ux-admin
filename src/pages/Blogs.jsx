@@ -320,9 +320,9 @@ export default function Blogs() {
                               {blogs.map(blog => (
                                    <div
                                         key={blog._id}
-                                        className="bg-white rounded-2xl shadow-md shadow-gray-200/40 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 group flex flex-col justify-between"
+                                        className="bg-white rounded-2xl shadow-md shadow-gray-200/40 overflow-hidden hover:shadow-md transition-all duration-200 group flex flex-col justify-between"
                                    >
-                                        <div className="relative overflow-hidden aspect-[16/10]">
+                                        <div className="relative overflow-hidden aspect-16/10">
                                              <img
                                                   src={blog.image}
                                                   className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
