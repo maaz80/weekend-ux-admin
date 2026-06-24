@@ -187,7 +187,7 @@ export default function Testimonials() {
                                                        className="w-11 h-11 rounded-full object-cover border border-gray-200 shrink-0"
                                                   />
                                                   <div className="min-w-0">
-                                                       <h4 className="font-bold text-gray-900 text-sm truncate">{t.name}</h4>
+                                                       <h3 className="font-bold text-gray-900 text-sm truncate">{t.name}</h3>
                                                        <p className="text-gray-400 text-xs truncate">{t.role}</p>
                                                   </div>
                                              </div>

@@ -207,21 +207,21 @@ export default function Courses() {
      const uploadVideoDirect = async (file, index) => {
           try {
                updateLessonField(index, { uploading: true, uploadProgress: 0, uploadError: null, videoName: file.name });
-               
+
                // Create a clean SEO friendly public ID for Cloudinary
                const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
                const seoName = baseName
                     .toLowerCase()
                     .replace(/[^a-z0-9]+/g, "-")
                     .replace(/^-+|-+$/g, "") || "video";
-               
+
                // Fetch upload signature from backend
                const signatureRes = await fetch(`${API_URL}/cloudinary-signature?folder=courses/videos&public_id=${seoName}`);
                if (!signatureRes.ok) {
                     throw new Error("Failed to generate upload signature from server.");
                }
                const { signature, timestamp, apiKey, cloudName, folder } = await signatureRes.json();
-               
+
                // Prepare FormData for Cloudinary
                const formData = new FormData();
                formData.append("file", file);
@@ -232,10 +232,10 @@ export default function Courses() {
                formData.append("public_id", seoName);
 
                const xhr = new XMLHttpRequest();
-               
+
                const uploadPromise = new Promise((resolve, reject) => {
                     xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`);
-                    
+
                     xhr.upload.onprogress = (event) => {
                          if (event.lengthComputable) {
                               const percent = Math.round((event.loaded / event.total) * 100);
@@ -255,12 +255,12 @@ export default function Courses() {
                     xhr.onerror = () => {
                          reject(new Error("Network error during direct upload."));
                     };
-                    
+
                     xhr.send(formData);
                });
 
                const secureUrl = await uploadPromise;
-               
+
                // Update state with Cloudinary secure URL and clear file pointer
                updateLessonField(index, (prevLesson) => ({
                     ...prevLesson,
@@ -273,7 +273,7 @@ export default function Courses() {
                     uploading: false,
                     uploadProgress: 100
                }));
-               
+
                showToast("Video uploaded successfully to Cloudinary!", "success");
           } catch (err) {
                console.error("Direct upload error:", err);
@@ -424,21 +424,19 @@ export default function Courses() {
                <div className="flex border-b border-gray-200 mb-8 max-w-7xl mx-auto px-6 lg:px-10">
                     <button
                          onClick={() => setActiveTab("list")}
-                         className={`pb-4 px-4 text-sm font-semibold transition-all cursor-pointer ${
-                              activeTab === "list"
+                         className={`pb-4 px-4 text-sm font-semibold transition-all cursor-pointer ${activeTab === "list"
                                    ? "border-b-2 border-orange-500 text-orange-600"
                                    : "text-gray-400 hover:text-gray-600"
-                         }`}
+                              }`}
                     >
                          Courses List
                     </button>
                     <button
                          onClick={() => setActiveTab("config")}
-                         className={`pb-4 px-4 text-sm font-semibold transition-all cursor-pointer ${
-                              activeTab === "config"
+                         className={`pb-4 px-4 text-sm font-semibold transition-all cursor-pointer ${activeTab === "config"
                                    ? "border-b-2 border-orange-500 text-orange-600"
                                    : "text-gray-400 hover:text-gray-600"
-                         }`}
+                              }`}
                     >
                          Page & CTA Config
                     </button>
@@ -462,7 +460,7 @@ export default function Courses() {
                                         <div key={course._id || index} className="bg-white rounded-2xl overflow-hidden border border-gray-200/80 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between group">
                                              <div className="relative overflow-hidden aspect-16/10">
                                                   <img
-                                                       src={course.image || "/images/hero-bg.jpg"}
+                                                       src={course.image || "/images/hero-bg.webp"}
                                                        className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-350"
                                                        alt={course.title}
                                                   />
@@ -931,8 +929,8 @@ export default function Courses() {
                                                                                 <span>{lesson.uploadProgress || 0}%</span>
                                                                            </div>
                                                                            <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
-                                                                                <div 
-                                                                                     className="bg-orange-500 h-full transition-all duration-200" 
+                                                                                <div
+                                                                                     className="bg-orange-500 h-full transition-all duration-200"
                                                                                      style={{ width: `${lesson.uploadProgress || 0}%` }}
                                                                                 />
                                                                            </div>
@@ -951,122 +949,122 @@ export default function Courses() {
                                                   </div>
                                              ))}
                                              {lessons.length === 0 && (
-                                        <div className="text-center py-6 text-gray-305 border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
-                                             <p className="text-xs text-gray-400">No lessons added to curriculum. Add one above.</p>
+                                                  <div className="text-center py-6 text-gray-305 border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+                                                       <p className="text-xs text-gray-400">No lessons added to curriculum. Add one above.</p>
+                                                  </div>
+                                             )}
                                         </div>
-                                   )}
+                                   </div>
+                                   {/* FAQ Section */}
+                                   <div className="space-y-4 border-t border-gray-100 pt-4">
+                                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">Frequently Asked Questions (FAQs)</p>
+
+                                        {/* FAQ Headings Inputs */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>FAQ Section Title</label>
+                                                  <input
+                                                       value={faqTitle}
+                                                       onChange={(e) => setFaqTitle(e.target.value)}
+                                                       placeholder="e.g. FAQ"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>FAQ Start Heading</label>
+                                                  <input
+                                                       value={faqStartheading}
+                                                       onChange={(e) => setFaqStartheading(e.target.value)}
+                                                       placeholder="e.g. All You"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>FAQ Mid Heading</label>
+                                                  <input
+                                                       value={faqMidheading}
+                                                       onChange={(e) => setFaqMidheading(e.target.value)}
+                                                       placeholder="e.g. Need"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>FAQ End Heading</label>
+                                                  <input
+                                                       value={faqEndheading}
+                                                       onChange={(e) => setFaqEndheading(e.target.value)}
+                                                       placeholder="e.g. To Know"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5 sm:col-span-2">
+                                                  <label className={labelClass}>FAQ Section Description</label>
+                                                  <textarea
+                                                       value={faqDescription}
+                                                       onChange={(e) => setFaqDescription(e.target.value)}
+                                                       placeholder="FAQ section description..."
+                                                       rows={2}
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                        </div>
+
+                                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-1 mt-4">FAQ Q&A Items</p>
+                                        <div className="space-y-4">
+                                             {faqItems.map((item, index) => (
+                                                  <div key={index} className="p-4 bg-gray-50 rounded-xl border border-gray-200 relative space-y-3">
+                                                       <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                 setFaqItems(prev => prev.filter((_, i) => i !== index));
+                                                            }}
+                                                            className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-500 transition-colors cursor-pointer"
+                                                       >
+                                                            <HiOutlineTrash className="text-sm" />
+                                                       </button>
+                                                       <div className="space-y-1.5 pr-8">
+                                                            <label className={labelClass}>Question {index + 1}</label>
+                                                            <input
+                                                                 value={item.ques}
+                                                                 onChange={(e) => {
+                                                                      const val = e.target.value;
+                                                                      setFaqItems(prev => prev.map((f, i) => i === index ? { ...f, ques: val } : f));
+                                                                 }}
+                                                                 placeholder="e.g. What is the duration?"
+                                                                 className={inputClass}
+                                                                 required
+                                                            />
+                                                       </div>
+                                                       <div className="space-y-1.5 pr-8">
+                                                            <label className={labelClass}>Answer {index + 1}</label>
+                                                            <textarea
+                                                                 value={item.ans}
+                                                                 onChange={(e) => {
+                                                                      const val = e.target.value;
+                                                                      setFaqItems(prev => prev.map((f, i) => i === index ? { ...f, ans: val } : f));
+                                                                 }}
+                                                                 placeholder="Answer content..."
+                                                                 rows={2}
+                                                                 className={inputClass}
+                                                                 required
+                                                            />
+                                                       </div>
+                                                  </div>
+                                             ))}
+
+                                             <button
+                                                  type="button"
+                                                  onClick={() => {
+                                                       setFaqItems(prev => [...prev, { ques: "", ans: "" }]);
+                                                  }}
+                                                  className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:text-orange-500 hover:border-orange-500 transition-all font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer bg-white"
+                                             >
+                                                  <HiOutlinePlus className="text-sm" />
+                                                  Add FAQ Item
+                                             </button>
+                                        </div>
+                                   </div>
                               </div>
-                         </div>
-                                                                       {/* FAQ Section */}
-                                    <div className="space-y-4 border-t border-gray-100 pt-4">
-                                         <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">Frequently Asked Questions (FAQs)</p>
-                                         
-                                         {/* FAQ Headings Inputs */}
-                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                              <div className="space-y-1.5">
-                                                   <label className={labelClass}>FAQ Section Title</label>
-                                                   <input
-                                                        value={faqTitle}
-                                                        onChange={(e) => setFaqTitle(e.target.value)}
-                                                        placeholder="e.g. FAQ"
-                                                        className={inputClass}
-                                                   />
-                                              </div>
-                                              <div className="space-y-1.5">
-                                                   <label className={labelClass}>FAQ Start Heading</label>
-                                                   <input
-                                                        value={faqStartheading}
-                                                        onChange={(e) => setFaqStartheading(e.target.value)}
-                                                        placeholder="e.g. All You"
-                                                        className={inputClass}
-                                                   />
-                                              </div>
-                                              <div className="space-y-1.5">
-                                                   <label className={labelClass}>FAQ Mid Heading</label>
-                                                   <input
-                                                        value={faqMidheading}
-                                                        onChange={(e) => setFaqMidheading(e.target.value)}
-                                                        placeholder="e.g. Need"
-                                                        className={inputClass}
-                                                   />
-                                              </div>
-                                              <div className="space-y-1.5">
-                                                   <label className={labelClass}>FAQ End Heading</label>
-                                                   <input
-                                                        value={faqEndheading}
-                                                        onChange={(e) => setFaqEndheading(e.target.value)}
-                                                        placeholder="e.g. To Know"
-                                                        className={inputClass}
-                                                   />
-                                              </div>
-                                              <div className="space-y-1.5 sm:col-span-2">
-                                                   <label className={labelClass}>FAQ Section Description</label>
-                                                   <textarea
-                                                        value={faqDescription}
-                                                        onChange={(e) => setFaqDescription(e.target.value)}
-                                                        placeholder="FAQ section description..."
-                                                        rows={2}
-                                                        className={inputClass}
-                                                   />
-                                              </div>
-                                         </div>
-
-                                         <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-1 mt-4">FAQ Q&A Items</p>
-                                         <div className="space-y-4">
-                                              {faqItems.map((item, index) => (
-                                                   <div key={index} className="p-4 bg-gray-50 rounded-xl border border-gray-200 relative space-y-3">
-                                                        <button
-                                                             type="button"
-                                                             onClick={() => {
-                                                                  setFaqItems(prev => prev.filter((_, i) => i !== index));
-                                                             }}
-                                                             className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-500 transition-colors cursor-pointer"
-                                                        >
-                                                             <HiOutlineTrash className="text-sm" />
-                                                        </button>
-                                                        <div className="space-y-1.5 pr-8">
-                                                             <label className={labelClass}>Question {index + 1}</label>
-                                                             <input
-                                                                  value={item.ques}
-                                                                  onChange={(e) => {
-                                                                       const val = e.target.value;
-                                                                       setFaqItems(prev => prev.map((f, i) => i === index ? { ...f, ques: val } : f));
-                                                                  }}
-                                                                  placeholder="e.g. What is the duration?"
-                                                                  className={inputClass}
-                                                                  required
-                                                             />
-                                                        </div>
-                                                        <div className="space-y-1.5 pr-8">
-                                                             <label className={labelClass}>Answer {index + 1}</label>
-                                                             <textarea
-                                                                  value={item.ans}
-                                                                  onChange={(e) => {
-                                                                       const val = e.target.value;
-                                                                       setFaqItems(prev => prev.map((f, i) => i === index ? { ...f, ans: val } : f));
-                                                                  }}
-                                                                  placeholder="Answer content..."
-                                                                  rows={2}
-                                                                  className={inputClass}
-                                                                  required
-                                                             />
-                                                        </div>
-                                                   </div>
-                                              ))}
-
-                                              <button
-                                                   type="button"
-                                                   onClick={() => {
-                                                        setFaqItems(prev => [...prev, { ques: "", ans: "" }]);
-                                                   }}
-                                                   className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:text-orange-500 hover:border-orange-500 transition-all font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer bg-white"
-                                              >
-                                                   <HiOutlinePlus className="text-sm" />
-                                                   Add FAQ Item
-                                              </button>
-                                          </div>
-                                     </div>
-                                </div>
 
                               {/* Modal Footer */}
                               <div className="flex items-center justify-end gap-3 px-7 py-5 border-t border-gray-100 bg-white sticky bottom-0 rounded-b-2xl">
@@ -1079,11 +1077,10 @@ export default function Courses() {
                                    <button
                                         onClick={saveCourse}
                                         disabled={uploading || !title || isAnyVideoUploading}
-                                        className={`px-6 py-2.5 text-sm font-semibold text-white rounded-xl shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer flex items-center gap-2 ${
-                                             uploading || !title || isAnyVideoUploading
+                                        className={`px-6 py-2.5 text-sm font-semibold text-white rounded-xl shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer flex items-center gap-2 ${uploading || !title || isAnyVideoUploading
                                                   ? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
                                                   : "bg-orange-500 hover:bg-orange-600 shadow-orange-200"
-                                        }`}
+                                             }`}
                                    >
                                         {uploading ? (
                                              <>

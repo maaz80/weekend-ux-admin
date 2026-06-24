@@ -651,7 +651,7 @@ export default function AboutData() {
                                                             <div className="flex items-center gap-3">
                                                                  <img src={teamFiles[idx] ? URL.createObjectURL(teamFiles[idx]) : item.image} alt={item.name} className="w-12 h-12 rounded-full object-cover border border-gray-200" />
                                                                  <div className="min-w-0">
-                                                                      <h4 className="text-sm font-bold text-gray-900 truncate">{item.name}</h4>
+                                                                      <h2 className="text-sm font-bold text-gray-900 truncate">{item.name}</h2>
                                                                       <p className="text-xs text-gray-400 truncate">{item.role}</p>
                                                                  </div>
                                                             </div>
