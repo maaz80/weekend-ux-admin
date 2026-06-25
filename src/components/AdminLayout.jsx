@@ -14,7 +14,8 @@ import {
      HiOutlineLogout,
      HiMenu,
      HiX,
-     HiOutlineMenu
+     HiOutlineMenu,
+     HiOutlineLockClosed
 } from "react-icons/hi";
 
 const navigationItems = [
@@ -29,6 +30,7 @@ const navigationItems = [
      { name: "SEO Settings", path: "/site-meta", icon: HiOutlineGlobeAlt },
      { name: "Footer Links", path: "/footer", icon: HiOutlineLink },
      { name: "Navbar Settings", path: "/navbar-settings", icon: HiOutlineMenu },
+     { name: "Login Settings", path: "/login-settings", icon: HiOutlineLockClosed },
      { name: "Legal Settings", path: "/policy-settings", icon: HiOutlineLink },
      { name: "Contact Settings", path: "/contact-settings", icon: HiOutlineLink },
 ];

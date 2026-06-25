@@ -14,6 +14,7 @@ import AboutData from "./pages/AboutData"
 import PolicyData from "./pages/PolicyData"
 import ContactData from "./pages/ContactData"
 import NavbarManager from "./pages/NavbarManager"
+import LoginSettings from "./pages/LoginSettings"
 
 import AdminLayout from "./components/AdminLayout"
 
@@ -43,6 +44,7 @@ const App = () => {
         <Route path='/policy-settings' element={protectedPage(<PolicyData />)} />
         <Route path='/contact-settings' element={protectedPage(<ContactData />)} />
         <Route path='/navbar-settings' element={protectedPage(<NavbarManager />)} />
+        <Route path='/login-settings' element={protectedPage(<LoginSettings />)} />
         
       </Routes>
     </div>

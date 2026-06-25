@@ -15,7 +15,7 @@ export default function NavbarManager() {
      const [logoAlt, setLogoAlt] = useState("");
      const [logoFile, setLogoFile] = useState(null);
      const [moreTitle, setMoreTitle] = useState("More");
-     const [moreItems, setMoreItems] = useState([]);
+     const [moreDropdownItems, setMoreDropdownItems] = useState([]);
      const [searchPlaceholder, setSearchPlaceholder] = useState("Search courses...");
      const [dropdownName, setDropdownName] = useState("Courses");
      const [loginButtonName, setLoginButtonName] = useState("Sign In");
@@ -36,7 +36,7 @@ export default function NavbarManager() {
                          setLogoAlt(data.logo?.alt || "Kreeya Logo");
                          const moreData = data.moreItems || {};
                          setMoreTitle(moreData.title || "More");
-                         setMoreItems(moreData.items || []);
+                         setMoreDropdownItems(moreData.dropdown_items || []);
                          setSearchPlaceholder(data.searchPlaceholder || "Search courses...");
                          setDropdownName(data.dropdownName || "Courses");
                          setLoginButtonName(data.loginButtonName || "Sign In");
@@ -53,18 +53,36 @@ export default function NavbarManager() {
           fetchNavbarData();
      }, []);
 
-     const handleAddMoreItem = () => {
-          setMoreItems([...moreItems, { title: "", link: "" }]);
+     const handleAddCategory = () => {
+          setMoreDropdownItems([...moreDropdownItems, { title: "", items: [] }]);
      };
 
-     const handleRemoveMoreItem = (index) => {
-          setMoreItems(moreItems.filter((_, i) => i !== index));
+     const handleRemoveCategory = (catIndex) => {
+          setMoreDropdownItems(moreDropdownItems.filter((_, i) => i !== catIndex));
      };
 
-     const handleUpdateMoreItem = (index, field, value) => {
-          const updated = [...moreItems];
-          updated[index][field] = value;
-          setMoreItems(updated);
+     const handleUpdateCategoryTitle = (catIndex, value) => {
+          const updated = [...moreDropdownItems];
+          updated[catIndex].title = value;
+          setMoreDropdownItems(updated);
+     };
+
+     const handleAddSubItem = (catIndex) => {
+          const updated = [...moreDropdownItems];
+          updated[catIndex].items = [...(updated[catIndex].items || []), { name: "", link: "" }];
+          setMoreDropdownItems(updated);
+     };
+
+     const handleRemoveSubItem = (catIndex, itemIndex) => {
+          const updated = [...moreDropdownItems];
+          updated[catIndex].items = updated[catIndex].items.filter((_, i) => i !== itemIndex);
+          setMoreDropdownItems(updated);
+     };
+
+     const handleUpdateSubItem = (catIndex, itemIndex, field, value) => {
+          const updated = [...moreDropdownItems];
+          updated[catIndex].items[itemIndex][field] = value;
+          setMoreDropdownItems(updated);
      };
 
      const handleSave = async (e) => {
@@ -73,7 +91,7 @@ export default function NavbarManager() {
                setSaving(true);
                
                const formData = new FormData();
-               formData.append("moreItems", JSON.stringify({ title: moreTitle, items: moreItems }));
+               formData.append("moreItems", JSON.stringify({ title: moreTitle, dropdown_items: moreDropdownItems }));
                formData.append("searchPlaceholder", searchPlaceholder);
                formData.append("dropdownName", dropdownName);
                formData.append("loginButtonName", loginButtonName);
@@ -247,24 +265,25 @@ export default function NavbarManager() {
                               </div>
 
                               {/* More Menu Dropdown Items Card */}
-                              <div className="bg-white rounded-2xl p-6 shadow-md shadow-gray-200/50 space-y-4">
-                                   <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                              <div className="bg-white rounded-2xl p-6 shadow-md shadow-gray-200/50 space-y-6">
+                                   <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-3 gap-3">
                                         <div>
-                                             <h2 className="text-base font-bold text-gray-900">More Dropdown Links</h2>
-                                             <p className="text-xs text-gray-400 mt-0.5">Customize links and dropdown trigger name in the header navbar.</p>
+                                             <h2 className="text-base font-bold text-gray-900">More Dropdown Mega-Menu</h2>
+                                             <p className="text-xs text-gray-400 mt-0.5">Configure up to 4 columns for the dropdown grid. Each column has a title and sub-links.</p>
                                         </div>
                                         <button
                                              type="button"
-                                             onClick={handleAddMoreItem}
-                                             className="inline-flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 text-xs font-semibold px-3 py-1.5 rounded-lg border border-orange-200 transition-all duration-200 cursor-pointer shrink-0"
+                                             onClick={handleAddCategory}
+                                             disabled={moreDropdownItems.length >= 4}
+                                             className="inline-flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100 disabled:bg-gray-100 disabled:text-gray-400 text-orange-600 text-xs font-semibold px-3 py-1.5 rounded-lg border border-orange-200 disabled:border-gray-200 transition-all duration-200 cursor-pointer shrink-0 disabled:cursor-not-allowed"
                                         >
-                                             + Add Link
+                                             + Add Column/Category
                                         </button>
                                    </div>
                                    
                                    {/* Dropdown Label Input */}
                                    <div className="space-y-1.5 max-w-xs">
-                                        <label className={labelClass}>Dropdown Name / Title</label>
+                                        <label className={labelClass}>Dropdown Menu Label</label>
                                         <input
                                              type="text"
                                              value={moreTitle}
@@ -275,51 +294,91 @@ export default function NavbarManager() {
                                         />
                                    </div>
 
-                                   <div className="border-t border-gray-100 pt-3">
-                                        <label className={labelClass}>Dropdown Items</label>
-                                   </div>
-                                   
-                                   {moreItems.length === 0 ? (
-                                        <p className="text-sm text-gray-400 text-center py-4">No custom links added yet. Click "+ Add Link" to create one.</p>
-                                   ) : (
-                                        <div className="space-y-3">
-                                             {moreItems.map((item, index) => (
-                                                  <div key={index} className="flex flex-col sm:flex-row gap-3 items-end sm:items-center bg-gray-50/50 p-4 rounded-xl border border-gray-250/50">
-                                                       <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                            <div className="space-y-1">
-                                                                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Link Title</label>
+                                   <div className="space-y-6">
+                                        {moreDropdownItems.length === 0 ? (
+                                             <p className="text-sm text-gray-400 text-center py-6 border border-dashed border-gray-200 rounded-xl">No columns added yet. Click "+ Add Column/Category" to start creating columns.</p>
+                                        ) : (
+                                             moreDropdownItems.map((cat, catIdx) => (
+                                                  <div key={catIdx} className="bg-gray-50/50 p-5 rounded-2xl border border-gray-200 space-y-4">
+                                                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-gray-200/60 pb-3">
+                                                            <div className="flex-1 w-full max-w-md">
+                                                                 <label className="text-[10px] font-bold text-orange-650 uppercase tracking-wider block mb-1">Column {catIdx + 1} Title</label>
                                                                  <input
                                                                       type="text"
-                                                                      value={item.title}
-                                                                      onChange={(e) => handleUpdateMoreItem(index, "title", e.target.value)}
+                                                                      value={cat.title}
+                                                                      onChange={(e) => handleUpdateCategoryTitle(catIdx, e.target.value)}
                                                                       className={inputClass}
-                                                                      placeholder="e.g. AI Tools"
+                                                                      placeholder="e.g. AI Tools, Learning Paths..."
                                                                       required
                                                                  />
                                                             </div>
-                                                            <div className="space-y-1">
-                                                                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Link URL</label>
-                                                                 <input
-                                                                      type="text"
-                                                                      value={item.link}
-                                                                      onChange={(e) => handleUpdateMoreItem(index, "link", e.target.value)}
-                                                                      className={inputClass}
-                                                                      placeholder="e.g. /ai-tools or https://..."
-                                                                      required
-                                                                 />
+                                                            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 mt-2 sm:mt-4">
+                                                                 <button
+                                                                      type="button"
+                                                                      onClick={() => handleAddSubItem(catIdx)}
+                                                                      className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1 bg-white hover:bg-orange-50/30 text-orange-600 text-xs font-semibold px-3 py-2 rounded-lg border border-orange-200 transition cursor-pointer"
+                                                                 >
+                                                                      + Add Link
+                                                                 </button>
+                                                                 <button
+                                                                      type="button"
+                                                                      onClick={() => handleRemoveCategory(catIdx)}
+                                                                      className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold px-3 py-2 rounded-lg border border-red-100 transition cursor-pointer"
+                                                                 >
+                                                                      Delete Column
+                                                                 </button>
                                                             </div>
                                                        </div>
-                                                       <button
-                                                            type="button"
-                                                            onClick={() => handleRemoveMoreItem(index)}
-                                                            className="px-3.5 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl border border-red-100 transition duration-200 text-xs font-semibold shrink-0 cursor-pointer sm:mt-5"
-                                                       >
-                                                            Remove
-                                                       </button>
+
+                                                       <div className="space-y-2.5">
+                                                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Sub-Links</label>
+                                                            {(!cat.items || cat.items.length === 0) ? (
+                                                                 <p className="text-xs text-gray-400 italic py-2">No links added to this column yet. Click "+ Add Link" to create one.</p>
+                                                            ) : (
+                                                                 <div className="grid grid-cols-1 gap-3">
+                                                                      {cat.items.map((item, itemIdx) => (
+                                                                           <div key={itemIdx} className="flex items-center gap-3 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                                                                                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                                                     <div>
+                                                                                          <input
+                                                                                               type="text"
+                                                                                               value={item.name}
+                                                                                               onChange={(e) => handleUpdateSubItem(catIdx, itemIdx, "name", e.target.value)}
+                                                                                               className={inputClass}
+                                                                                               placeholder="Link Name (e.g. ChatGPT)"
+                                                                                               required
+                                                                                          />
+                                                                                     </div>
+                                                                                     <div>
+                                                                                          <input
+                                                                                               type="text"
+                                                                                               value={item.link}
+                                                                                               onChange={(e) => handleUpdateSubItem(catIdx, itemIdx, "link", e.target.value)}
+                                                                                               className={inputClass}
+                                                                                               placeholder="Link URL (e.g. /chatgpt)"
+                                                                                               required
+                                                                                          />
+                                                                                     </div>
+                                                                                </div>
+                                                                                <button
+                                                                                     type="button"
+                                                                                     onClick={() => handleRemoveSubItem(catIdx, itemIdx)}
+                                                                                     className="p-2 bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-lg transition border border-gray-200 hover:border-red-100 cursor-pointer"
+                                                                                     title="Remove Link"
+                                                                                >
+                                                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                                     </svg>
+                                                                                </button>
+                                                                           </div>
+                                                                      ))}
+                                                                 </div>
+                                                            )}
+                                                       </div>
                                                   </div>
-                                             ))}
-                                        </div>
-                                   )}
+                                             ))
+                                        )}
+                                   </div>
                               </div>
                          </div>
                     )}

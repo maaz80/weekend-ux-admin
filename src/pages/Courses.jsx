@@ -47,9 +47,7 @@ export default function Courses() {
      const [image, setImage] = useState(null);
 
      // Chapter States
-     const [chaptername, setChaptername] = useState("");
-     const [chapterTotalLessons, setChapterTotalLessons] = useState("");
-     const [lessons, setLessons] = useState([]);
+     const [chapters, setChapters] = useState([]);
      const [faqTitle, setFaqTitle] = useState("");
      const [faqStartheading, setFaqStartheading] = useState("");
      const [faqMidheading, setFaqMidheading] = useState("");
@@ -122,9 +120,7 @@ export default function Courses() {
           setSeoTitle("");
           setSeoDescription("");
           setImage(null);
-          setChaptername("");
-          setChapterTotalLessons("");
-          setLessons([]);
+          setChapters([]);
           setFaqTitle("");
           setFaqStartheading("");
           setFaqMidheading("");
@@ -161,9 +157,21 @@ export default function Courses() {
           setSeoDescription(course.seodescription || "");
 
           if (course.chapter) {
-               setChaptername(course.chapter.chaptername || "");
-               setChapterTotalLessons(course.chapter.totallessons || "");
-               setLessons(course.chapter.lessons || []);
+               if (Array.isArray(course.chapter)) {
+                    setChapters(course.chapter.map(ch => ({
+                         chaptername: ch.chaptername || "",
+                         totallessons: ch.totallessons || "",
+                         lessons: ch.lessons || []
+                    })));
+               } else {
+                    setChapters([{
+                         chaptername: course.chapter.chaptername || "",
+                         totallessons: course.chapter.totallessons || "",
+                         lessons: course.chapter.lessons || []
+                    }]);
+               }
+          } else {
+               setChapters([]);
           }
 
           const courseFaq = course.faq || {};
@@ -186,27 +194,60 @@ export default function Courses() {
           setShowModal(true);
      };
 
-     const addLesson = () => {
-          setLessons([...lessons, { lessonname: "", duration: "", video: { videourl: "", duration: "" }, file: null, videoName: "" }]);
+     const addChapter = () => {
+          setChapters([...chapters, { chaptername: "", totallessons: "", lessons: [] }]);
      };
 
-     const updateLessonField = (index, key, value) => {
-          setLessons(prev => {
-               const updated = [...prev];
-               if (typeof key === "function") {
-                    updated[index] = key(updated[index]);
-               } else if (typeof key === "object" && key !== null) {
-                    updated[index] = { ...updated[index], ...key };
-               } else {
-                    updated[index] = { ...updated[index], [key]: value };
+     const removeChapter = (chapterIdx) => {
+          setChapters(chapters.filter((_, idx) => idx !== chapterIdx));
+     };
+
+     const updateChapterField = (chapterIdx, key, value) => {
+          setChapters(prev => prev.map((ch, idx) => idx === chapterIdx ? { ...ch, [key]: value } : ch));
+       };
+
+     const addLesson = (chapterIdx) => {
+          setChapters(prev => prev.map((ch, idx) => {
+               if (idx === chapterIdx) {
+                    return {
+                         ...ch,
+                         lessons: [...(ch.lessons || []), { lessonname: "", duration: "", video: { videourl: "", duration: "" }, file: null, videoName: "" }]
+                    };
                }
-               return updated;
-          });
+               return ch;
+          }));
      };
 
-     const uploadVideoDirect = async (file, index) => {
+     const removeLesson = (chapterIdx, lessonIdx) => {
+          setChapters(prev => prev.map((ch, idx) => {
+               if (idx === chapterIdx) {
+                    return {
+                         ...ch,
+                         lessons: (ch.lessons || []).filter((_, lIdx) => lIdx !== lessonIdx)
+                    };
+               }
+               return ch;
+          }));
+     };
+
+     const updateLessonField = (chapterIdx, lessonIdx, key, value) => {
+          setChapters(prev => prev.map((ch, idx) => {
+               if (idx === chapterIdx) {
+                    const updatedLessons = [...(ch.lessons || [])];
+                    if (typeof key === "object" && key !== null) {
+                         updatedLessons[lessonIdx] = { ...updatedLessons[lessonIdx], ...key };
+                    } else {
+                         updatedLessons[lessonIdx] = { ...updatedLessons[lessonIdx], [key]: value };
+                    }
+                    return { ...ch, lessons: updatedLessons };
+               }
+               return ch;
+          }));
+     };
+
+     const uploadVideoDirect = async (file, chapterIdx, lessonIdx) => {
           try {
-               updateLessonField(index, { uploading: true, uploadProgress: 0, uploadError: null, videoName: file.name });
+               updateLessonField(chapterIdx, lessonIdx, { uploading: true, uploadProgress: 0, uploadError: null, videoName: file.name });
 
                // Create a clean SEO friendly public ID for Cloudinary
                const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
@@ -239,7 +280,7 @@ export default function Courses() {
                     xhr.upload.onprogress = (event) => {
                          if (event.lengthComputable) {
                               const percent = Math.round((event.loaded / event.total) * 100);
-                              updateLessonField(index, { uploadProgress: percent });
+                              updateLessonField(chapterIdx, lessonIdx, { uploadProgress: percent });
                          }
                     };
 
@@ -262,28 +303,23 @@ export default function Courses() {
                const secureUrl = await uploadPromise;
 
                // Update state with Cloudinary secure URL and clear file pointer
-               updateLessonField(index, (prevLesson) => ({
-                    ...prevLesson,
+               updateLessonField(chapterIdx, lessonIdx, {
                     video: {
-                         ...(prevLesson.video || {}),
-                         videourl: secureUrl
+                         videourl: secureUrl,
+                         duration: ""
                     },
                     file: null,
                     videoName: file.name,
                     uploading: false,
                     uploadProgress: 100
-               }));
+               });
 
                showToast("Video uploaded successfully to Cloudinary!", "success");
           } catch (err) {
                console.error("Direct upload error:", err);
-               updateLessonField(index, { uploading: false, uploadError: err.message });
+               updateLessonField(chapterIdx, lessonIdx, { uploading: false, uploadError: err.message });
                showToast(`Video upload failed: ${err.message}`, "error");
           }
-     };
-
-     const removeLesson = (index) => {
-          setLessons(lessons.filter((_, idx) => idx !== index));
      };
 
      const saveCourse = async () => {
@@ -313,17 +349,17 @@ export default function Courses() {
                          description: faqDescription,
                          items: faqItems
                     },
-                    chapter: {
-                         chaptername,
-                         totallessons: chapterTotalLessons,
-                         lessons: lessons.map(l => ({
-                              lessonname: l.lessonname,
-                              video: {
-                                   videourl: l.video?.videourl || "",
-                                   duration: l.video?.duration || l.duration
-                              }
-                         }))
-                    }
+                     chapter: chapters.map(ch => ({
+                          chaptername: ch.chaptername,
+                          totallessons: ch.totallessons,
+                          lessons: (ch.lessons || []).map(l => ({
+                               lessonname: l.lessonname,
+                               video: {
+                                    videourl: l.video?.videourl || "",
+                                    duration: l.video?.duration || l.duration || ""
+                               }
+                          }))
+                     }))
                };
 
                let nextCourses = [...courses];
@@ -397,7 +433,7 @@ export default function Courses() {
      const inputClass = "w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:bg-white transition-all duration-200";
      const labelClass = "block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5";
 
-     const isAnyVideoUploading = lessons.some(l => l.uploading);
+     const isAnyVideoUploading = chapters.some(ch => ch.lessons?.some(l => l.uploading));
 
      return (
           <div className="min-h-screen bg-gray-50/50 pb-12 font-sans">
@@ -834,127 +870,161 @@ export default function Courses() {
                                         </div>
                                    </div>
 
-                                   {/* Curriculum (Single Chapter) */}
-                                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2 pt-2">Curriculum Details (Chapter Config)</p>
+                                   {/* Curriculum (Multiple Chapters) */}
+                                    <div className="border-t border-gray-100 pt-4 space-y-4">
+                                         <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                                              <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Curriculum Details (Chapters Config)</p>
+                                              <button
+                                                   type="button"
+                                                   onClick={addChapter}
+                                                   className="inline-flex items-center gap-1 bg-orange-50 hover:bg-orange-100 text-orange-600 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                                              >
+                                                   + Add Chapter
+                                              </button>
+                                         </div>
 
-                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 rounded-2xl shadow-sm shadow-gray-150/40 p-4">
-                                        <div className="space-y-1.5">
-                                             <label className={labelClass}>Chapter Name</label>
-                                             <input
-                                                  value={chaptername}
-                                                  onChange={(e) => setChaptername(e.target.value)}
-                                                  placeholder="e.g. Introduction to Figma"
-                                                  className={inputClass}
-                                             />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                             <label className={labelClass}>Chapter Total Lessons Count</label>
-                                             <input
-                                                  value={chapterTotalLessons}
-                                                  onChange={(e) => setChapterTotalLessons(e.target.value)}
-                                                  placeholder="e.g. 5"
-                                                  className={inputClass}
-                                             />
-                                        </div>
-                                   </div>
+                                         {chapters.map((chapter, chIdx) => (
+                                              <div key={chIdx} className="bg-gray-50 rounded-2xl p-5 border border-gray-200/60 space-y-5 relative">
+                                                   {/* Remove Chapter Button */}
+                                                   <button
+                                                        type="button"
+                                                        onClick={() => removeChapter(chIdx)}
+                                                        className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-500 transition-colors cursor-pointer"
+                                                   >
+                                                        <HiOutlineTrash className="text-sm" />
+                                                   </button>
 
-                                   {/* Chapter Lessons List */}
-                                   <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Lessons Inside Chapter</p>
-                                             <button
-                                                  onClick={addLesson}
-                                                  className="inline-flex items-center gap-1 bg-emerald-555/10 hover:bg-emerald-500/20 text-emerald-600 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-                                             >
-                                                  + Add Lesson
-                                             </button>
-                                        </div>
+                                                   <div className="text-sm font-bold text-gray-700">Chapter #{chIdx + 1}</div>
 
-                                        <div className="space-y-4">
-                                             {lessons.map((lesson, idx) => (
-                                                  <div key={idx} className="border border-gray-200 rounded-xl p-4 bg-white space-y-4">
-                                                       <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-                                                            <span className="text-xs font-semibold text-gray-400 uppercase">Lesson #{idx + 1}</span>
-                                                            <button
-                                                                 onClick={() => removeLesson(idx)}
-                                                                 className="text-xs text-red-500 hover:text-red-600 font-bold cursor-pointer"
-                                                            >
-                                                                 Remove
-                                                            </button>
-                                                       </div>
+                                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                        <div className="space-y-1.5">
+                                                             <label className={labelClass}>Chapter Name</label>
+                                                             <input
+                                                                  value={chapter.chaptername || ""}
+                                                                  onChange={(e) => updateChapterField(chIdx, "chaptername", e.target.value)}
+                                                                  placeholder="e.g. Introduction to Figma"
+                                                                  className={inputClass}
+                                                             />
+                                                        </div>
+                                                        <div className="space-y-1.5">
+                                                             <label className={labelClass}>Chapter Total Lessons Count</label>
+                                                             <input
+                                                                  value={chapter.totallessons || ""}
+                                                                  onChange={(e) => updateChapterField(chIdx, "totallessons", e.target.value)}
+                                                                  placeholder="e.g. 5"
+                                                                  className={inputClass}
+                                                             />
+                                                        </div>
+                                                   </div>
 
-                                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                            <div className="space-y-1.5">
-                                                                 <label className={labelClass}>Lesson Title</label>
-                                                                 <input
-                                                                      value={lesson.lessonname || ""}
-                                                                      onChange={(e) => updateLessonField(idx, "lessonname", e.target.value)}
-                                                                      placeholder="e.g. Figma Interface Tour"
-                                                                      className={inputClass}
-                                                                 />
-                                                            </div>
-                                                            <div className="space-y-1.5">
-                                                                 <label className={labelClass}>Lesson Duration</label>
-                                                                 <input
-                                                                      value={lesson.video?.duration || lesson.duration || ""}
-                                                                      onChange={(e) => updateLessonField(idx, "duration", e.target.value)}
-                                                                      placeholder="e.g. 10:15"
-                                                                      className={inputClass}
-                                                                 />
-                                                            </div>
-                                                       </div>
+                                                   {/* Lessons list for this chapter */}
+                                                   <div className="space-y-3">
+                                                        <div className="flex items-center justify-between">
+                                                             <p className="text-xs font-bold text-gray-500">Lessons Inside Chapter #{chIdx + 1}</p>
+                                                             <button
+                                                                  type="button"
+                                                                  onClick={() => addLesson(chIdx)}
+                                                                  className="inline-flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                                                             >
+                                                                  + Add Lesson
+                                                             </button>
+                                                        </div>
 
-                                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                                                            <div className="space-y-1.5">
-                                                                 <label className={labelClass}>Lesson Video File (.mp4, .webm)</label>
-                                                                 <input
-                                                                      type="file"
-                                                                      accept="video/*"
-                                                                      disabled={lesson.uploading}
-                                                                      onChange={(e) => {
-                                                                           const file = e.target.files?.[0];
-                                                                           if (file) {
-                                                                                uploadVideoDirect(file, idx);
-                                                                           }
-                                                                      }}
-                                                                      className="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                 />
-                                                            </div>
+                                                        <div className="space-y-4">
+                                                             {chapter.lessons && chapter.lessons.map((lesson, lIdx) => (
+                                                                  <div key={lIdx} className="border border-gray-200 rounded-xl p-4 bg-white space-y-4">
+                                                                       <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                                                                            <span className="text-xs font-semibold text-gray-400 uppercase">Lesson #{lIdx + 1}</span>
+                                                                            <button
+                                                                                 type="button"
+                                                                                 onClick={() => removeLesson(chIdx, lIdx)}
+                                                                                 className="text-xs text-red-500 hover:text-red-600 font-bold cursor-pointer"
+                                                                            >
+                                                                                 Remove
+                                                                            </button>
+                                                                       </div>
 
-                                                            <div className="flex flex-col justify-end text-xs text-gray-500 pb-1">
-                                                                 {lesson.uploading ? (
-                                                                      <div className="w-full space-y-1.5">
-                                                                           <div className="flex justify-between text-xs font-semibold text-orange-600">
-                                                                                <span>Uploading to Cloudinary...</span>
-                                                                                <span>{lesson.uploadProgress || 0}%</span>
-                                                                           </div>
-                                                                           <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
-                                                                                <div
-                                                                                     className="bg-orange-500 h-full transition-all duration-200"
-                                                                                     style={{ width: `${lesson.uploadProgress || 0}%` }}
-                                                                                />
-                                                                           </div>
-                                                                      </div>
-                                                                 ) : lesson.uploadError ? (
-                                                                      <span className="text-red-500 font-medium">Error: {lesson.uploadError}</span>
-                                                                 ) : lesson.video?.videourl ? (
-                                                                      <span className="text-green-600 truncate font-medium" title={lesson.video.videourl}>
-                                                                           Uploaded URL: {lesson.video.videourl}
-                                                                      </span>
-                                                                 ) : (
-                                                                      <span className="text-gray-400">No video selected or uploaded yet.</span>
-                                                                 )}
-                                                            </div>
-                                                       </div>
-                                                  </div>
-                                             ))}
-                                             {lessons.length === 0 && (
-                                                  <div className="text-center py-6 text-gray-305 border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
-                                                       <p className="text-xs text-gray-400">No lessons added to curriculum. Add one above.</p>
-                                                  </div>
-                                             )}
-                                        </div>
-                                   </div>
+                                                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                                            <div className="space-y-1.5">
+                                                                                 <label className={labelClass}>Lesson Title</label>
+                                                                                 <input
+                                                                                      value={lesson.lessonname || ""}
+                                                                                      onChange={(e) => updateLessonField(chIdx, lIdx, "lessonname", e.target.value)}
+                                                                                      placeholder="e.g. Figma Interface Tour"
+                                                                                      className={inputClass}
+                                                                                 />
+                                                                            </div>
+                                                                            <div className="space-y-1.5">
+                                                                                 <label className={labelClass}>Lesson Duration</label>
+                                                                                 <input
+                                                                                      value={lesson.video?.duration || lesson.duration || ""}
+                                                                                      onChange={(e) => updateLessonField(chIdx, lIdx, "duration", e.target.value)}
+                                                                                      placeholder="e.g. 10:15"
+                                                                                      className={inputClass}
+                                                                                 />
+                                                                            </div>
+                                                                       </div>
+
+                                                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                                                                            <div className="space-y-1.5">
+                                                                                 <label className={labelClass}>Lesson Video File (.mp4, .webm)</label>
+                                                                                 <input
+                                                                                      type="file"
+                                                                                      accept="video/*"
+                                                                                      disabled={lesson.uploading}
+                                                                                      onChange={(e) => {
+                                                                                           const file = e.target.files?.[0];
+                                                                                           if (file) {
+                                                                                                uploadVideoDirect(file, chIdx, lIdx);
+                                                                                           }
+                                                                                      }}
+                                                                                      className="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                                 />
+                                                                            </div>
+
+                                                                            <div className="flex flex-col justify-end text-xs text-gray-500 pb-1">
+                                                                                 {lesson.uploading ? (
+                                                                                      <div className="w-full space-y-1.5">
+                                                                                           <div className="flex justify-between text-xs font-semibold text-orange-600">
+                                                                                                <span>Uploading to Cloudinary...</span>
+                                                                                                <span>{lesson.uploadProgress || 0}%</span>
+                                                                                           </div>
+                                                                                           <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
+                                                                                                <div
+                                                                                                     className="bg-orange-500 h-full transition-all duration-200"
+                                                                                                     style={{ width: `${lesson.uploadProgress || 0}%` }}
+                                                                                                />
+                                                                                           </div>
+                                                                                      </div>
+                                                                                 ) : lesson.uploadError ? (
+                                                                                      <span className="text-red-500 font-medium">Error: {lesson.uploadError}</span>
+                                                                                 ) : lesson.video?.videourl ? (
+                                                                                      <span className="text-green-600 truncate font-medium" title={lesson.video.videourl}>
+                                                                                           Uploaded URL: {lesson.video.videourl}
+                                                                                      </span>
+                                                                                 ) : (
+                                                                                      <span className="text-gray-400">No video selected or uploaded yet.</span>
+                                                                                 )}
+                                                                            </div>
+                                                                       </div>
+                                                                  </div>
+                                                             ))}
+                                                             {(!chapter.lessons || chapter.lessons.length === 0) && (
+                                                                  <div className="text-center py-6 text-gray-305 border border-dashed border-gray-200 rounded-xl bg-white">
+                                                                       <p className="text-xs text-gray-400">No lessons added to this chapter. Add one above.</p>
+                                                                  </div>
+                                                             )}
+                                                        </div>
+                                                   </div>
+                                              </div>
+                                         ))}
+
+                                         {chapters.length === 0 && (
+                                              <div className="text-center py-8 text-gray-300 border border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
+                                                   <p className="text-xs text-gray-400">No chapters added to curriculum. Add one above.</p>
+                                              </div>
+                                         )}
+                                    </div>
                                    {/* FAQ Section */}
                                    <div className="space-y-4 border-t border-gray-100 pt-4">
                                         <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">Frequently Asked Questions (FAQs)</p>
