@@ -64,20 +64,22 @@ export const installAdminFetch = () => {
           const method = getRequestMethod(input, init);
 
           if (method === "GET" || method === "HEAD") {
-               // Add cache-busting query parameter
+               // Add cache-busting query parameter and admin identifier
                if (typeof input === "string") {
                     try {
                          const url = new URL(input, window.location.origin);
                          url.searchParams.set("_t", Date.now().toString());
+                         url.searchParams.set("admin", "true");
                          finalInput = url.toString();
                     } catch (e) {
                          const separator = input.includes("?") ? "&" : "?";
-                         finalInput = `${input}${separator}_t=${Date.now()}`;
+                         finalInput = `${input}${separator}_t=${Date.now()}&admin=true`;
                     }
                } else if (input instanceof Request) {
                     try {
                          const url = new URL(input.url, window.location.origin);
                          url.searchParams.set("_t", Date.now().toString());
+                         url.searchParams.set("admin", "true");
                          finalInput = new Request(url.toString(), input);
                     } catch (e) {
                          console.error("Failed to append cache buster to Request", e);
