@@ -314,7 +314,7 @@ export default function Testimonials() {
                                              type="submit"
                                              disabled={saving}
                                              className={`px-6 py-2.5 text-sm font-semibold text-white rounded-xl shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer flex items-center gap-2 ${
-                                                  saving ? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none" : "bg-orange-50 hover:bg-orange-600 shadow-orange-200"
+                                                  saving ? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none" : "bg-orange-500 hover:bg-orange-400 shadow-orange-200"
                                              }`}
                                         >
                                              {saving ? "Saving..." : "Save Testimonial"}
