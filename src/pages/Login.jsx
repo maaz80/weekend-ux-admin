@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { clearAdminToken, isAdminLoggedIn, setAdminToken } from "../utils/auth.js";
 import { HiOutlineLockClosed, HiOutlineUser, HiOutlineLockOpen } from "react-icons/hi";
@@ -11,6 +11,29 @@ export default function Login() {
      const [password, setPassword] = useState("");
      const [loading, setLoading] = useState(false);
      const [error, setError] = useState("");
+     const [logoUrl, setLogoUrl] = useState("");
+
+     useEffect(() => {
+          const fetchLogo = async () => {
+               try {
+                    const res = await fetch(`${API}/navbar`);
+                    if (res.ok) {
+                         const data = await res.json();
+                         if (data?.logo?.image) {
+                              setLogoUrl(data.logo.image);
+                              const link = document.querySelector("link[rel~='icon']") || document.createElement('link');
+                              link.type = 'image/x-icon';
+                              link.rel = 'shortcut icon';
+                              link.href = data.logo.image;
+                              document.getElementsByTagName('head')[0].appendChild(link);
+                         }
+                    }
+               } catch (e) {
+                    console.error("Failed to fetch brand logo", e);
+               }
+          };
+          fetchLogo();
+     }, []);
 
      if (isAdminLoggedIn()) {
           return <Navigate to="/" replace />;
@@ -55,9 +78,13 @@ export default function Login() {
                <div className="w-full max-w-md z-10 space-y-8">
                     {/* Brand / Logo */}
                     <div className="flex flex-col items-center justify-center text-center space-y-3">
-                         <div className="w-12 h-12 rounded-2xl bg-orange-500 flex items-center justify-center text-white font-extrabold text-2xl shadow-lg shadow-orange-500/20">
-                              K
-                         </div>
+                         {logoUrl ? (
+                              <img src={logoUrl} alt="Weekend UX Logo" className="h-12 w-auto max-w-[200px] object-contain drop-shadow-sm" />
+                         ) : (
+                              <div className="w-12 h-12 rounded-2xl bg-orange-500 flex items-center justify-center text-white font-extrabold text-2xl shadow-lg shadow-orange-500/20">
+                                   K
+                              </div>
+                         )}
                          <div>
                               <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
                                    Weekend UX Admin

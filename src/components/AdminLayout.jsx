@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { clearAdminToken } from "../utils/auth";
 import {
@@ -35,10 +35,35 @@ const navigationItems = [
      { name: "Contact Settings", path: "/contact-settings", icon: HiOutlineLink },
 ];
 
+const API = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
+
 export default function AdminLayout({ children }) {
      const [sidebarOpen, setSidebarOpen] = useState(false);
+     const [logoUrl, setLogoUrl] = useState("");
      const location = useLocation();
      const navigate = useNavigate();
+
+     useEffect(() => {
+          const fetchLogo = async () => {
+               try {
+                    const res = await fetch(`${API}/navbar`);
+                    if (res.ok) {
+                         const data = await res.json();
+                         if (data?.logo?.image) {
+                              setLogoUrl(data.logo.image);
+                              const link = document.querySelector("link[rel~='icon']") || document.createElement('link');
+                              link.type = 'image/x-icon';
+                              link.rel = 'shortcut icon';
+                              link.href = data.logo.image;
+                              document.getElementsByTagName('head')[0].appendChild(link);
+                         }
+                    }
+               } catch (e) {
+                    console.error("Failed to fetch brand logo", e);
+               }
+          };
+          fetchLogo();
+     }, []);
 
      const handleLogout = () => {
           if (window.confirm("Are you sure you want to log out?")) {
@@ -67,9 +92,13 @@ export default function AdminLayout({ children }) {
                          {/* Brand Logo Header */}
                          <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100 shrink-0">
                               <Link to="/" className="flex items-center gap-2.5">
-                                   <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-orange-100">
-                                        K
-                                   </div>
+                                   {logoUrl ? (
+                                        <img src={logoUrl} alt="Weekend UX Logo" className="h-8 w-auto max-w-[64px] object-contain rounded-md shadow-sm" />
+                                   ) : (
+                                        <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-orange-100">
+                                             K
+                                        </div>
+                                   )}
                                    <span className="text-gray-900 font-bold text-lg tracking-tight">
                                         WeekendUX<span className="text-orange-500 font-semibold">Admin</span>
                                    </span>
