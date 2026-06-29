@@ -88,6 +88,11 @@ export const installAdminFetch = () => {
           }
 
           const requestInit = needsAdminKey(finalInput, init) ? withAdminHeader(finalInput, init) : init;
+
+          if (method === "GET" || method === "HEAD") {
+               requestInit.cache = "no-store";
+          }
+
           const response = await originalFetch(finalInput, requestInit);
 
           if (response.status === 401 || response.status === 503) {
