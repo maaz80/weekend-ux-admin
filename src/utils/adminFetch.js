@@ -56,27 +56,15 @@ const withAdminHeader = (input, init = {}) => {
      };
 };
 
-const withNoCacheHeader = (init = {}) => {
-     const headers = new Headers(init.headers);
-     headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
-     headers.set("Pragma", "no-cache");
-     headers.set("Expires", "0");
-     return {
-          ...init,
-          headers
-     };
-};
-
 export const installAdminFetch = () => {
      const originalFetch = window.fetch.bind(window);
 
      window.fetch = async (input, init = {}) => {
           let finalInput = input;
-          let finalInit = init;
           const method = getRequestMethod(input, init);
 
           if (method === "GET" || method === "HEAD") {
-               // 1. Add cache-busting query parameter
+               // Add cache-busting query parameter
                if (typeof input === "string") {
                     try {
                          const url = new URL(input, window.location.origin);
@@ -95,11 +83,9 @@ export const installAdminFetch = () => {
                          console.error("Failed to append cache buster to Request", e);
                     }
                }
-               // 2. Add no-cache headers
-               finalInit = withNoCacheHeader(init);
           }
 
-          const requestInit = needsAdminKey(finalInput, finalInit) ? withAdminHeader(finalInput, finalInit) : finalInit;
+          const requestInit = needsAdminKey(finalInput, init) ? withAdminHeader(finalInput, init) : init;
           const response = await originalFetch(finalInput, requestInit);
 
           if (response.status === 401 || response.status === 503) {
