@@ -56,12 +56,51 @@ const withAdminHeader = (input, init = {}) => {
      };
 };
 
+const withNoCacheHeader = (init = {}) => {
+     const headers = new Headers(init.headers);
+     headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+     headers.set("Pragma", "no-cache");
+     headers.set("Expires", "0");
+     return {
+          ...init,
+          headers
+     };
+};
+
 export const installAdminFetch = () => {
      const originalFetch = window.fetch.bind(window);
 
      window.fetch = async (input, init = {}) => {
-          const requestInit = needsAdminKey(input, init) ? withAdminHeader(input, init) : init;
-          const response = await originalFetch(input, requestInit);
+          let finalInput = input;
+          let finalInit = init;
+          const method = getRequestMethod(input, init);
+
+          if (method === "GET" || method === "HEAD") {
+               // 1. Add cache-busting query parameter
+               if (typeof input === "string") {
+                    try {
+                         const url = new URL(input, window.location.origin);
+                         url.searchParams.set("_t", Date.now().toString());
+                         finalInput = url.toString();
+                    } catch (e) {
+                         const separator = input.includes("?") ? "&" : "?";
+                         finalInput = `${input}${separator}_t=${Date.now()}`;
+                    }
+               } else if (input instanceof Request) {
+                    try {
+                         const url = new URL(input.url, window.location.origin);
+                         url.searchParams.set("_t", Date.now().toString());
+                         finalInput = new Request(url.toString(), input);
+                    } catch (e) {
+                         console.error("Failed to append cache buster to Request", e);
+                    }
+               }
+               // 2. Add no-cache headers
+               finalInit = withNoCacheHeader(init);
+          }
+
+          const requestInit = needsAdminKey(finalInput, finalInit) ? withAdminHeader(finalInput, finalInit) : finalInit;
+          const response = await originalFetch(finalInput, requestInit);
 
           if (response.status === 401 || response.status === 503) {
                clearAdminToken();
