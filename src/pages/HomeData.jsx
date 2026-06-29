@@ -421,8 +421,12 @@ export default function HomeData() {
                                              <textarea value={heroDesc} onChange={(e) => setHeroDesc(e.target.value)} rows={3} className={`${inputClass} resize-none`} placeholder="Slide description..." />
                                         </div>
                                         <div className="space-y-1.5">
-                                             <label className={labelClass}>Slide Background Image</label>
+                                             <div className="flex items-center justify-between">
+                                                  <label className={labelClass}>Slide Background Image</label>
+                                                  <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Recommended: 1600 x 900 px (16:9)</span>
+                                             </div>
                                              <ImageUploader setImage={setHeroImageFile} initialImage={heroImage} />
+                                             <p className="text-[11px] text-gray-400 mt-1">Suggested size: 1600 x 900 px (keep the main subject/focus in the center so it renders correctly on both mobile and PC).</p>
                                         </div>
                                         <button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer text-sm">
                                              <HiOutlinePlus />

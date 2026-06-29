@@ -117,7 +117,10 @@ export default function LoginSettings() {
                                    <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3">Modal Illustration</h2>
                                    
                                    <div className="space-y-4">
-                                        <label className={labelClass}>Left Panel Decorative Image</label>
+                                        <div className="flex items-center justify-between">
+                                             <label className={labelClass}>Left Panel Decorative Image</label>
+                                             <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Recommended: 800 x 1200 px (2:3)</span>
+                                        </div>
                                         
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                                              {/* Left Side: Upload zone */}
@@ -137,7 +140,7 @@ export default function LoginSettings() {
                                                                  {imageFile ? imageFile.name : "Drag & drop or browse"}
                                                             </p>
                                                             <p className="text-xs text-gray-400 leading-normal font-sans px-4">
-                                                                 Supports PNG, JPG, JPEG, and WEBP. High-resolution vertical layout is recommended.
+                                                                 Supports PNG, JPG, JPEG, and WEBP. Recommended size: 800 x 1200 px (Portrait 2:3 aspect ratio).
                                                             </p>
                                                        </div>
                                                   </div>

@@ -456,10 +456,14 @@ export default function Locations() {
 
                                         {activeTab === "image" && (
                                              <div className="space-y-4">
-                                                  <div>
-                                                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Featured Image</label>
-                                                       <ImageUploader initialImage={itemImageurl} setImage={(file) => setItemImageFile(file)} />
-                                                  </div>
+                                                   <div>
+                                                        <div className="flex items-center justify-between mb-2">
+                                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Featured Image</label>
+                                                             <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Recommended: 900 x 600 px (3:2)</span>
+                                                        </div>
+                                                        <ImageUploader initialImage={itemImageurl} setImage={(file) => setItemImageFile(file)} />
+                                                        <p className="text-[11px] text-gray-400 mt-1">Suggested size: 900 x 600 px or 800 x 600 px (looks best on both mobile and PC layouts).</p>
+                                                   </div>
                                                   <div>
                                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Image Alt Text</label>
                                                        <input value={itemImageAlt} onChange={(e) => setItemImageAlt(e.target.value)} placeholder="Alt text for accessibility" className={inputClass} />

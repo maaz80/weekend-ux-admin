@@ -381,8 +381,11 @@ export default function AboutData() {
                                         <input type="text" value={heroBtnName} onChange={(e) => setHeroBtnName(e.target.value)} className={inputClass} placeholder="e.g. Learn More" />
                                    </div>
                               </div>
-                              <div>
-                                   <label className={labelClass}>Hero Background Image</label>
+                              <div className="space-y-2">
+                                   <div className="flex items-center justify-between">
+                                        <label className={labelClass}>Hero Background Image</label>
+                                        <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Recommended: 1600 x 900 px (16:9)</span>
+                                   </div>
                                    <div className="flex items-center gap-4 mt-2">
                                         <div className="h-16 w-32 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center p-2 overflow-hidden shrink-0">
                                              {heroImageFile ? (
@@ -393,15 +396,18 @@ export default function AboutData() {
                                                   <HiOutlinePhotograph className="w-5 h-5 text-gray-400" />
                                              )}
                                         </div>
-                                        <input
-                                             type="file"
-                                             accept="image/*"
-                                             onChange={(e) => {
-                                                  const file = e.target.files[0];
-                                                  if (file) setHeroImageFile(file);
-                                             }}
-                                             className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 cursor-pointer"
-                                        />
+                                        <div className="flex-1">
+                                             <input
+                                                  type="file"
+                                                  accept="image/*"
+                                                  onChange={(e) => {
+                                                       const file = e.target.files[0];
+                                                       if (file) setHeroImageFile(file);
+                                                  }}
+                                                  className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 cursor-pointer"
+                                             />
+                                             <p className="text-[10px] text-gray-400 mt-1">Suggested size: 1600 x 900 px (16:9 aspect ratio, keep main subject centered).</p>
+                                        </div>
                                    </div>
                               </div>
                          </div>
@@ -576,7 +582,10 @@ export default function AboutData() {
                                              <input type="text" value={memberRole} onChange={(e) => setMemberRole(e.target.value)} className={inputClass} placeholder="e.g. Lead Designer" required />
                                         </div>
                                         <div>
-                                             <label className={labelClass}>Profile Image</label>
+                                             <div className="flex items-center justify-between mb-1.5">
+                                                  <label className={labelClass}>Profile Image</label>
+                                                  <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Recommended: 600 x 800 px (3:4)</span>
+                                             </div>
                                              <div className="flex items-center gap-3">
                                                   <div className="h-12 w-12 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
                                                        {memberFile ? (
@@ -587,18 +596,21 @@ export default function AboutData() {
                                                             <HiOutlinePhotograph className="w-5 h-5 text-gray-400" />
                                                        )}
                                                   </div>
-                                                  <input
-                                                       type="file"
-                                                       accept="image/*"
-                                                       onChange={(e) => {
-                                                            const file = e.target.files[0];
-                                                            if (file) {
-                                                                 setMemberFile(file);
-                                                                 setMemberImgUrl(URL.createObjectURL(file));
-                                                            }
-                                                       }}
-                                                       className="text-xs file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 cursor-pointer"
-                                                  />
+                                                  <div className="flex-1">
+                                                       <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            onChange={(e) => {
+                                                                 const file = e.target.files[0];
+                                                                 if (file) {
+                                                                      setMemberFile(file);
+                                                                      setMemberImgUrl(URL.createObjectURL(file));
+                                                                 }
+                                                            }}
+                                                            className="text-xs file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 cursor-pointer"
+                                                       />
+                                                       <p className="text-[10px] text-gray-400 mt-1">Suggested size: 600 x 800 px (portrait layout for cards).</p>
+                                                  </div>
                                              </div>
                                         </div>
                                         <button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer text-sm">

@@ -832,8 +832,12 @@ export default function Courses() {
 
                                    {/* Cover Image */}
                                    <div className="space-y-1.5">
-                                        <label className={labelClass}>Course Thumbnail Image</label>
+                                        <div className="flex items-center justify-between">
+                                             <label className={labelClass}>Course Thumbnail Image</label>
+                                             <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Recommended: 800 x 450 px (16:9)</span>
+                                        </div>
                                         <ImageUploader setImage={setImage} initialImage={editItem?.image} />
+                                        <p className="text-[11px] text-gray-400 mt-1">Suggested size: 800 x 450 px (ideal for standard wide card layout on desktop and mobile).</p>
                                         <div className="mt-2">
                                              <label className={labelClass}>Image Alt Text</label>
                                              <input

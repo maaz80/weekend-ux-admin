@@ -233,7 +233,10 @@ export default function Testimonials() {
 
                               <form onSubmit={handleSave} className="p-6 space-y-4">
                                    <div className="space-y-1.5">
-                                        <label className={labelClass}>Customer Avatar</label>
+                                        <div className="flex items-center justify-between">
+                                             <label className={labelClass}>Customer Avatar</label>
+                                             <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Recommended: 200 x 200 px (1:1)</span>
+                                        </div>
                                         <div className="flex gap-4 items-center">
                                              <div className="h-16 w-16 rounded-full bg-gray-150 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
                                                   {avatarPreviewUrl ? (
@@ -263,6 +266,9 @@ export default function Testimonials() {
                                                             </span>
                                                        </div>
                                                   </div>
+                                                  <p className="text-[10px] text-gray-400 mt-1 leading-normal font-sans">
+                                                       Suggested size: 200 x 200 px (square aspect ratio 1:1, will be automatically cropped to a circle).
+                                                  </p>
                                              </div>
                                         </div>
                                    </div>

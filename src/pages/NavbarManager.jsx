@@ -164,7 +164,10 @@ export default function NavbarManager() {
                                    <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3">Header Branding</h2>
                                    
                                    <div className="space-y-1.5">
-                                        <label className={labelClass}>Logo Image</label>
+                                        <div className="flex items-center justify-between">
+                                             <label className={labelClass}>Logo Image</label>
+                                             <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Recommended: 300 x 100 px</span>
+                                        </div>
                                         <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-center">
                                              {/* Logo Preview */}
                                              <div className="h-16 w-36 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center p-2 overflow-hidden shrink-0">
@@ -173,6 +176,7 @@ export default function NavbarManager() {
                                                             src={URL.createObjectURL(logoFile)}
                                                             className="max-h-full max-w-full object-contain"
                                                             alt="Logo preview"
+                                                            onLoad={(e) => URL.revokeObjectURL(e.target.src)}
                                                        />
                                                   ) : logoUrl ? (
                                                        <img
@@ -204,7 +208,7 @@ export default function NavbarManager() {
                                                        </div>
                                                   </div>
                                                   <p className="text-[10px] text-gray-400 mt-1 leading-normal font-sans">
-                                                       Upload your brand's header logo. Supports PNG, JPG, JPEG, and WEBP. Leave empty to keep using the current logo.
+                                                       Upload your brand's header logo. Recommended size: 300 x 100 px (aspect ratio 3:1, PNG with transparent background is preferred).
                                                   </p>
                                              </div>
                                         </div>

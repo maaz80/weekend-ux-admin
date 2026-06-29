@@ -470,8 +470,12 @@ export default function Blogs() {
 
                                    {/* Cover Image */}
                                    <div className="space-y-1.5">
-                                        <label className={labelClass}>Cover Image</label>
+                                        <div className="flex items-center justify-between">
+                                             <label className={labelClass}>Cover Image</label>
+                                             <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Recommended: 900 x 600 px (3:2)</span>
+                                        </div>
                                         <ImageUploader setImage={setImage} initialImage={editItem?.image} />
+                                        <p className="text-[11px] text-gray-400 mt-1">Suggested size: 900 x 600 px (works best across mobile & PC screens).</p>
                                         <div className="mt-2">
                                              <label className={labelClass}>Image Alt Text</label>
                                              <input
