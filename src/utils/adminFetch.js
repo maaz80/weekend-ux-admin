@@ -31,6 +31,12 @@ const getRequestPath = (input) => {
 };
 
 const needsAdminKey = (input, init) => {
+     const method = getRequestMethod(input, init);
+
+     if (SAFE_METHODS.has(method)) {
+          return false;
+     }
+
      const path = getRequestPath(input);
 
      return path.startsWith("/api/") && !PUBLIC_WRITE_PATHS.has(path);
