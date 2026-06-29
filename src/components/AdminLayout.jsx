@@ -96,7 +96,7 @@ export default function AdminLayout({ children }) {
                                         <img src={logoUrl} alt="Weekend UX Logo" className="h-8 w-auto max-w-[64px] object-contain rounded-md shadow-sm" />
                                    ) : (
                                         <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-orange-100">
-                                             K
+                                             W
                                         </div>
                                    )}
                                    <span className="text-gray-900 font-bold text-lg tracking-tight">

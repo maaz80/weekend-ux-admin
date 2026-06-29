@@ -82,7 +82,7 @@ export default function Login() {
                               <img src={logoUrl} alt="Weekend UX Logo" className="h-12 w-auto max-w-[200px] object-contain drop-shadow-sm" />
                          ) : (
                               <div className="w-12 h-12 rounded-2xl bg-orange-500 flex items-center justify-center text-white font-extrabold text-2xl shadow-lg shadow-orange-500/20">
-                                   K
+                                   W
                               </div>
                          )}
                          <div>
