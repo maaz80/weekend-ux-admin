@@ -93,7 +93,7 @@ export default function AdminLayout({ children }) {
                          <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100 shrink-0">
                               <Link to="/" className="flex items-center gap-2.5">
                                    {logoUrl ? (
-                                        <img src={logoUrl} alt="Weekend UX Logo" className="h-8 w-auto max-w-[64px] object-contain rounded-md shadow-sm" />
+                                        <img src={logoUrl} alt="Weekend UX Logo" className="h-8 w-auto max-w-16 object-contain rounded-md shadow-sm" />
                                    ) : (
                                         <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-orange-100">
                                              W
