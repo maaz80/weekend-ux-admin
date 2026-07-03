@@ -10,7 +10,7 @@ export default function NavbarManager() {
      const [saving, setSaving] = useState(false);
      const [toast, setToast] = useState({ show: false, message: "" });
 
-     // State fields matching Kreeya's Navbar schema
+     // State fields matching Weekend UX's Navbar schema
      const [logoUrl, setLogoUrl] = useState("");
      const [logoAlt, setLogoAlt] = useState("");
      const [logoFile, setLogoFile] = useState(null);
@@ -33,7 +33,7 @@ export default function NavbarManager() {
                     const data = await res.json();
                     if (data) {
                          setLogoUrl(data.logo?.image || "");
-                         setLogoAlt(data.logo?.alt || "Kreeya Logo");
+                         setLogoAlt(data.logo?.alt || "Weekend UX Logo");
                          const moreData = data.moreItems || {};
                          setMoreTitle(moreData.title || "More");
                          setMoreDropdownItems(moreData.dropdown_items || []);
@@ -221,7 +221,7 @@ export default function NavbarManager() {
                                              value={logoAlt}
                                              onChange={(e) => setLogoAlt(e.target.value)}
                                              className={inputClass}
-                                             placeholder="e.g. Kreeya Logo"
+                                             placeholder="e.g. Weekend UX Logo"
                                              required
                                         />
                                    </div>

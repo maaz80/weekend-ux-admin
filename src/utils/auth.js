@@ -1,4 +1,4 @@
-const ADMIN_TOKEN_STORAGE = "kreeya_admin_token";
+const ADMIN_TOKEN_STORAGE = "weekendux_admin_token";
 
 export const getAdminToken = () => localStorage.getItem(ADMIN_TOKEN_STORAGE) || "";
 

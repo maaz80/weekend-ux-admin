@@ -385,7 +385,7 @@ export default function FooterManager() {
                                         <label className="block text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1.5">Footer Copyright Text</label>
                                         <input
                                              type="text"
-                                             placeholder="e.g., © 2026 - Kreeya Design All Rights Reserved."
+                                             placeholder="e.g., © 2026 - Weekend UX All Rights Reserved."
                                              value={copyright}
                                              onChange={(e) => setCopyright(e.target.value)}
                                              className={inputClass}

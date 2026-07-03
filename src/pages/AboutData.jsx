@@ -370,7 +370,7 @@ export default function AboutData() {
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                    <div>
                                         <label className={labelClass}>Hero Title</label>
-                                        <input type="text" value={heroTitle} onChange={(e) => setHeroTitle(e.target.value)} className={inputClass} placeholder="e.g. We are Kreeya" />
+                                        <input type="text" value={heroTitle} onChange={(e) => setHeroTitle(e.target.value)} className={inputClass} placeholder="e.g. We are Weekend UX" />
                                    </div>
                                    <div>
                                         <label className={labelClass}>Hero Heading</label>

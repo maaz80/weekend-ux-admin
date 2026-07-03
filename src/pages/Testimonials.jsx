@@ -13,13 +13,17 @@ export default function Testimonials() {
      const [saving, setSaving] = useState(false);
      const [showModal, setShowModal] = useState(false);
 
-     // Modal states
      const [name, setName] = useState("");
      const [role, setRole] = useState("");
      const [quote, setQuote] = useState("");
-     const [avatarFile, setAvatarFile] = useState(null);
-     const [avatarPreviewUrl, setAvatarPreviewUrl] = useState("");
      const [editingId, setEditingId] = useState(null);
+
+     const getInitials = (nameStr) => {
+          if (!nameStr) return "";
+          const parts = nameStr.trim().split(/\s+/);
+          if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+          return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+     };
 
      const fetchTestimonials = async () => {
           try {
@@ -45,8 +49,6 @@ export default function Testimonials() {
           setName("");
           setRole("");
           setQuote("");
-          setAvatarFile(null);
-          setAvatarPreviewUrl("");
           setShowModal(true);
      };
 
@@ -55,8 +57,6 @@ export default function Testimonials() {
           setName(t.name || "");
           setRole(t.role || "");
           setQuote(t.quote || "");
-          setAvatarFile(null);
-          setAvatarPreviewUrl(t.avatar || "");
           setShowModal(true);
      };
 
@@ -74,13 +74,7 @@ export default function Testimonials() {
                formData.append("role", role);
                formData.append("quote", quote);
 
-               if (avatarFile) {
-                    formData.append("avatar", avatarFile);
-               } else if (!editingId) {
-                    showToast("Please select an avatar image.", "error");
-                    setSaving(false);
-                    return;
-               }
+               // No avatar upload required
 
                let url = `${API}/testimonials`;
                let method = "POST";
@@ -181,11 +175,9 @@ export default function Testimonials() {
                                                   "{t.quote}"
                                              </p>
                                              <div className="flex items-center gap-3 pt-2">
-                                                  <img
-                                                       src={t.avatar}
-                                                       alt={t.name}
-                                                       className="w-11 h-11 rounded-full object-cover border border-gray-200 shrink-0"
-                                                  />
+                                                  <div className="w-11 h-11 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm shrink-0 select-none">
+                                                       {getInitials(t.name)}
+                                                  </div>
                                                   <div className="min-w-0">
                                                        <h3 className="font-bold text-gray-900 text-sm truncate">{t.name}</h3>
                                                        <p className="text-gray-400 text-xs truncate">{t.role}</p>
@@ -232,47 +224,6 @@ export default function Testimonials() {
                               </div>
 
                               <form onSubmit={handleSave} className="p-6 space-y-4">
-                                   <div className="space-y-1.5">
-                                        <div className="flex items-center justify-between">
-                                             <label className={labelClass}>Customer Avatar</label>
-                                             <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Recommended: 200 x 200 px (1:1)</span>
-                                        </div>
-                                        <div className="flex gap-4 items-center">
-                                             <div className="h-16 w-16 rounded-full bg-gray-150 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
-                                                  {avatarPreviewUrl ? (
-                                                       <img src={avatarPreviewUrl} alt="Avatar preview" className="h-full w-full object-cover" />
-                                                  ) : (
-                                                       <HiOutlinePhotograph className="w-6 h-6 text-gray-400" />
-                                                  )}
-                                             </div>
-                                             <div className="flex-1">
-                                                  <div className="border border-dashed border-gray-300 hover:border-orange-500 rounded-xl px-4 py-2.5 bg-gray-50/50 hover:bg-orange-50/10 transition flex items-center justify-center gap-2 cursor-pointer text-center relative group min-h-12">
-                                                       <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            onChange={(e) => {
-                                                                 const file = e.target.files[0];
-                                                                 if (file) {
-                                                                      setAvatarFile(file);
-                                                                      setAvatarPreviewUrl(URL.createObjectURL(file));
-                                                                 }
-                                                            }}
-                                                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-                                                       />
-                                                       <div className="flex items-center gap-2 text-gray-500 group-hover:text-orange-500 transition">
-                                                            <HiOutlineUpload className="w-4 h-4" />
-                                                            <span className="text-xs font-semibold">
-                                                                 {avatarFile ? avatarFile.name : "Choose avatar..."}
-                                                            </span>
-                                                       </div>
-                                                  </div>
-                                                  <p className="text-[10px] text-gray-400 mt-1 leading-normal font-sans">
-                                                       Suggested size: 200 x 200 px (square aspect ratio 1:1, will be automatically cropped to a circle).
-                                                  </p>
-                                             </div>
-                                        </div>
-                                   </div>
-
                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
                                              <label className={labelClass}>Full Name</label>

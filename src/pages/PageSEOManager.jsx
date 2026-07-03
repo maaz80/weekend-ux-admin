@@ -11,7 +11,7 @@ const PAGES = [
      { id: 'category-blogs', title: 'Blogs', slug: '/category/blogs' },
      { id: 'courses', title: 'Courses', slug: '/courses' },
      { id: 'about-us', title: 'About Us', slug: '/about-us' },
-     { id: 'location', title: 'Location', slug: '/location' },
+     // { id: 'location', title: 'Location', slug: '/location' },
      { id: 'not-found', title: '404 Page', slug: '*' },
 ];
 

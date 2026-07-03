@@ -147,7 +147,7 @@ export default function AdminLayout({ children }) {
                                    </div>
                                    <div className="min-w-0">
                                         <p className="text-sm font-semibold text-gray-800 truncate font-sans">Administrator</p>
-                                        <p className="text-xs text-gray-400 truncate font-sans">admin@kreeya.com</p>
+                                        <p className="text-xs text-gray-400 truncate font-sans">admin@weekendux.com</p>
                                    </div>
                               </div>
                          </div>
