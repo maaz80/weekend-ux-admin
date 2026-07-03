@@ -41,7 +41,7 @@ function PageRow({ page, seoData, onChange, onSave, saving, saved, loading }) {
                                    placeholder="Meta title..."
                                    className="w-full px-4 py-2.5 text-xs border border-gray-200 rounded-xl bg-white text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200"
                               />
-                              <span className={`absolute right-3.5 bottom-[-18px] text-[9px] font-semibold ${titleLength > 55 ? 'text-red-500' : 'text-gray-400'}`}>
+                              <span className={`absolute right-3.5 -bottom-4.5 text-[9px] font-semibold ${titleLength > 55 ? 'text-red-500' : 'text-gray-400'}`}>
                                    {titleLength}/60
                               </span>
                          </div>
@@ -56,7 +56,7 @@ function PageRow({ page, seoData, onChange, onSave, saving, saved, loading }) {
                                    placeholder="Meta description..."
                                    className="w-full px-4 py-2.5 text-xs border border-gray-200 rounded-xl bg-white text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200"
                               />
-                              <span className={`absolute right-3.5 bottom-[-18px] text-[9px] font-semibold ${descriptionLength > 190 ? 'text-red-500' : 'text-gray-400'}`}>
+                              <span className={`absolute right-3.5 -bottom-4.5 text-[9px] font-semibold ${descriptionLength > 190 ? 'text-red-500' : 'text-gray-400'}`}>
                                    {descriptionLength}/200
                               </span>
                          </div>
@@ -68,7 +68,7 @@ function PageRow({ page, seoData, onChange, onSave, saving, saved, loading }) {
                     <button
                          onClick={onSave}
                          disabled={loading || saving || !seoData?.title || !seoData?.description}
-                         className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 min-w-[80px] flex items-center justify-center cursor-pointer shadow-sm ${
+                         className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 min-w-20 flex items-center justify-center cursor-pointer shadow-sm ${
                               saved
                                    ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-100'
                                    : loading || saving || !seoData?.title || !seoData?.description
