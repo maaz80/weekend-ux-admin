@@ -20,7 +20,7 @@ export default function HomeData() {
       const [heroStart, setHeroStart] = useState("");
       const [heroMid, setHeroMid] = useState("");
       const [heroEnd, setHeroEnd] = useState("");
-      const [heroDesc, setHeroDesc] = useState("");
+      const [heroPoints, setHeroPoints] = useState(["", "", "", ""]);
       const [heroBtn, setHeroBtn] = useState("");
       const [heroImage, setHeroImage] = useState("");
       const [heroImageFile, setHeroImageFile] = useState(null);
@@ -139,7 +139,7 @@ export default function HomeData() {
                           startheading: h.startheading,
                           midheading: h.midheading,
                           endheading: h.endheading,
-                          description: h.description,
+                          points: h.points || [],
                           buttonName: h.buttonName,
                           bgImage: h.bgImage
                      })),
@@ -223,7 +223,7 @@ export default function HomeData() {
                 startheading: heroStart,
                 midheading: heroMid,
                 endheading: heroEnd,
-                description: heroDesc,
+                points: heroPoints.map(p => p.trim()),
                 buttonName: heroBtn,
                 bgImage: heroImage,
                 file: heroImageFile
@@ -243,7 +243,7 @@ export default function HomeData() {
            setHeroStart("");
            setHeroMid("");
            setHeroEnd("");
-           setHeroDesc("");
+           setHeroPoints(["", "", "", ""]);
            setHeroBtn("");
            setHeroImage("");
            setHeroImageFile(null);
@@ -255,7 +255,9 @@ export default function HomeData() {
            setHeroStart(item.startheading || "");
            setHeroMid(item.midheading || "");
            setHeroEnd(item.endheading || "");
-           setHeroDesc(item.description || "");
+           const rawPoints = Array.isArray(item.points) ? item.points : [];
+           const filledPoints = [...rawPoints, "", "", "", ""].slice(0, 4);
+           setHeroPoints(filledPoints);
            setHeroBtn(item.buttonName || "");
            setHeroImage(item.bgImage || "");
            setHeroImageFile(item.file || null);
@@ -270,7 +272,7 @@ export default function HomeData() {
                 setHeroStart("");
                 setHeroMid("");
                 setHeroEnd("");
-                setHeroDesc("");
+                setHeroPoints(["", "", "", ""]);
                 setHeroBtn("");
                 setHeroImage("");
                 setHeroImageFile(null);
@@ -416,9 +418,22 @@ export default function HomeData() {
                                              <label className={labelClass}>Button Name</label>
                                              <input type="text" value={heroBtn} onChange={(e) => setHeroBtn(e.target.value)} className={inputClass} placeholder="e.g. Book a Call" />
                                         </div>
-                                        <div>
-                                             <label className={labelClass}>Description</label>
-                                             <textarea value={heroDesc} onChange={(e) => setHeroDesc(e.target.value)} rows={3} className={`${inputClass} resize-none`} placeholder="Slide description..." />
+                                        <div className="space-y-2">
+                                             <label className={labelClass}>Hero Points (3-4 points)</label>
+                                             {heroPoints.map((point, pIdx) => (
+                                                  <input
+                                                       key={pIdx}
+                                                       type="text"
+                                                       value={point}
+                                                       onChange={(e) => {
+                                                            const newPoints = [...heroPoints];
+                                                            newPoints[pIdx] = e.target.value;
+                                                            setHeroPoints(newPoints);
+                                                       }}
+                                                       className={inputClass}
+                                                       placeholder={`Point ${pIdx + 1}`}
+                                                  />
+                                             ))}
                                         </div>
                                         <div className="space-y-1.5">
                                              <div className="flex items-center justify-between">
@@ -471,7 +486,15 @@ export default function HomeData() {
                                                                  <div className="min-w-0">
                                                                       <p className="text-sm font-bold text-gray-800 truncate">{slide.startheading} {slide.midheading} {slide.endheading}</p>
                                                                       {slide.title && <p className="text-[10px] text-orange-500 font-medium">{slide.title}</p>}
-                                                                      <p className="text-xs text-gray-400 truncate max-w-xs">{slide.description}</p>
+                                                                      {Array.isArray(slide.points) && slide.points.length > 0 ? (
+                                                                           <ul className="text-[11px] text-gray-400 space-y-0.5 mt-1 list-disc list-inside">
+                                                                                {slide.points.filter(p => p.trim() !== "").map((p, pIdx) => (
+                                                                                     <span key={pIdx} className="block truncate max-w-xs">• {p}</span>
+                                                                                ))}
+                                                                           </ul>
+                                                                      ) : (
+                                                                           <p className="text-[11px] text-gray-400 italic">No points added</p>
+                                                                      )}
                                                                  </div>
                                                             </div>
                                                             <div className="flex gap-2 shrink-0">
