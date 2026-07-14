@@ -14,7 +14,6 @@ export default function Testimonials() {
      const [showModal, setShowModal] = useState(false);
 
      const [name, setName] = useState("");
-     const [role, setRole] = useState("");
      const [quote, setQuote] = useState("");
      const [editingId, setEditingId] = useState(null);
 
@@ -47,7 +46,6 @@ export default function Testimonials() {
      const openAddModal = () => {
           setEditingId(null);
           setName("");
-          setRole("");
           setQuote("");
           setShowModal(true);
      };
@@ -55,15 +53,14 @@ export default function Testimonials() {
      const openEditModal = (t) => {
           setEditingId(t._id);
           setName(t.name || "");
-          setRole(t.role || "");
           setQuote(t.quote || "");
           setShowModal(true);
      };
 
      const handleSave = async (e) => {
           e.preventDefault();
-          if (!name || !role || !quote) {
-               showToast("Please fill in name, role, and quote.", "error");
+          if (!name || !quote) {
+               showToast("Please fill in name and quote.", "error");
                return;
           }
 
@@ -71,7 +68,6 @@ export default function Testimonials() {
           try {
                const formData = new FormData();
                formData.append("name", name);
-               formData.append("role", role);
                formData.append("quote", quote);
 
                // No avatar upload required
@@ -180,7 +176,6 @@ export default function Testimonials() {
                                                   </div>
                                                   <div className="min-w-0">
                                                        <h3 className="font-bold text-gray-900 text-sm truncate">{t.name}</h3>
-                                                       <p className="text-gray-400 text-xs truncate">{t.role}</p>
                                                   </div>
                                              </div>
                                         </div>
@@ -224,7 +219,7 @@ export default function Testimonials() {
                               </div>
 
                               <form onSubmit={handleSave} className="p-6 space-y-4">
-                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                   <div className="grid grid-cols-1 gap-4">
                                         <div className="space-y-1.5">
                                              <label className={labelClass}>Full Name</label>
                                              <input
@@ -235,17 +230,7 @@ export default function Testimonials() {
                                                   required
                                              />
                                         </div>
-                                        <div className="space-y-1.5">
-                                             <label className={labelClass}>Job Title / Role</label>
-                                             <input
-                                                  value={role}
-                                                  onChange={(e) => setRole(e.target.value)}
-                                                  placeholder="e.g. Lead Designer"
-                                                  className={inputClass}
-                                                  required
-                                             />
-                                        </div>
-                                    </div>
+                                   </div>
 
                                    <div className="space-y-1.5">
                                         <label className={labelClass}>Feedback Quote</label>
