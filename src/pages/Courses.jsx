@@ -27,379 +27,420 @@ export default function Courses() {
      const [showModal, setShowModal] = useState(false);
      const [editIndex, setEditIndex] = useState(null); // stores index in 'courses' array
      const [editItem, setEditItem] = useState(null);
-     const [uploading, setUploading] = useState(false);
+      const [uploading, setUploading] = useState(false);
+ 
+      // Course Form States
+      const [title, setTitle] = useState("");
+      const [alt, setAlt] = useState("");
+      const [author, setAuthor] = useState("");
+      const [startDate, setStartDate] = useState("");
+      const [category, setCategory] = useState("");
+      const [overview, setOverview] = useState("");
+      const [slug, setSlug] = useState("");
+      const [seoTitle, setSeoTitle] = useState("");
+      const [seoDescription, setSeoDescription] = useState("");
+      const [image, setImage] = useState(null);
 
-     // Course Form States
-     const [title, setTitle] = useState("");
-     const [alt, setAlt] = useState("");
-     const [author, setAuthor] = useState("");
-     const [courseLength, setCourseLength] = useState("");
-     const [students, setStudents] = useState("");
-     const [level, setLevel] = useState("");
-     const [totalLessons, setTotalLessons] = useState("");
-     const [startDate, setStartDate] = useState("");
-     const [duration, setDuration] = useState("");
-     const [category, setCategory] = useState("");
-     const [overview, setOverview] = useState("");
-     const [slug, setSlug] = useState("");
-     const [seoTitle, setSeoTitle] = useState("");
-     const [seoDescription, setSeoDescription] = useState("");
-     const [image, setImage] = useState(null);
+      // New Promo & Brochure Custom Fields
+      const [promoTitle, setPromoTitle] = useState("");
+      const [promoDescription, setPromoDescription] = useState("");
+      const [promoBenefits, setPromoBenefits] = useState("");
+      const [brochureTitle, setBrochureTitle] = useState("");
+      const [brochureSubtext, setBrochureSubtext] = useState("");
+      const [brochurePhones, setBrochurePhones] = useState("");
+      const [brochureLink, setBrochureLink] = useState("");
+ 
+      // Chapter States
+      const [chapters, setChapters] = useState([]);
+      const [faqTitle, setFaqTitle] = useState("");
+      const [faqStartheading, setFaqStartheading] = useState("");
+      const [faqMidheading, setFaqMidheading] = useState("");
+      const [faqEndheading, setFaqEndheading] = useState("");
+      const [faqDescription, setFaqDescription] = useState("");
+      const [faqItems, setFaqItems] = useState([]);
 
-     // Chapter States
-     const [chapters, setChapters] = useState([]);
-     const [faqTitle, setFaqTitle] = useState("");
-     const [faqStartheading, setFaqStartheading] = useState("");
-     const [faqMidheading, setFaqMidheading] = useState("");
-     const [faqEndheading, setFaqEndheading] = useState("");
-     const [faqDescription, setFaqDescription] = useState("");
-     const [faqItems, setFaqItems] = useState([]);
+      // Short-Term Courses Section States
+      const [shortTermTitle, setShortTermTitle] = useState("");
+      const [shortTermDescription, setShortTermDescription] = useState("");
+      const [shortTermItems, setShortTermItems] = useState([]);
 
-     const fetchCourses = async () => {
-          try {
-               const res = await fetch(`${API_URL}/courses`);
-               if (res.ok) {
-                    const data = await res.json();
-                    setCourses(data.course || []);
-                    if (data.hero) setHero(data.hero);
-                    if (data.card) setCard(data.card);
-                    if (data.relatedBlogs) setRelatedBlogs(data.relatedBlogs);
-               }
-          } catch (err) {
-               console.error("Error fetching courses data:", err);
-          }
-     };
+      // Student Case Studies Section States
+      const [caseStudiesTitle, setCaseStudiesTitle] = useState("");
+      const [caseStudiesDescription, setCaseStudiesDescription] = useState("");
+      const [caseStudiesButtonText, setCaseStudiesButtonText] = useState("");
+      const [caseStudiesItems, setCaseStudiesItems] = useState([]);
 
-     useEffect(() => {
-          fetchCourses();
-     }, []);
+      // Career Domains Section States
+      const [careerDomainsTitle, setCareerDomainsTitle] = useState("");
+      const [careerDomainsDescription, setCareerDomainsDescription] = useState("");
+      const [careerDomainsItems, setCareerDomainsItems] = useState([]);
+ 
+      const fetchCourses = async () => {
+           try {
+                const res = await fetch(`${API_URL}/courses`);
+                if (res.ok) {
+                     const data = await res.json();
+                     setCourses(data.course || []);
+                     if (data.hero) setHero(data.hero);
+                     if (data.card) setCard(data.card);
+                     if (data.relatedBlogs) setRelatedBlogs(data.relatedBlogs);
+                }
+           } catch (err) {
+                console.error("Error fetching courses data:", err);
+           }
+      };
+ 
+      useEffect(() => {
+           fetchCourses();
+      }, []);
+ 
+      const saveGlobalConfig = async () => {
+           try {
+                setSavingPageTitle(true);
+                const res = await fetch(`${API_URL}/courses`, {
+                     method: "PUT",
+                     headers: {
+                          "Content-Type": "application/json",
+                          "Authorization": `Bearer ${getAdminToken()}`
+                     },
+                     body: JSON.stringify({
+                          hero,
+                          card,
+                          relatedBlogs,
+                          course: courses
+                     })
+                });
+                if (res.ok) {
+                     showToast("Global configuration saved successfully!", "success");
+                     fetchCourses();
+                } else {
+                     showToast("Failed to save global configuration.", "error");
+                }
+           } catch (err) {
+                console.error("Error saving global config:", err);
+                showToast("Server error occurred.", "error");
+           } finally {
+                setSavingPageTitle(false);
+           }
+      };
+ 
+      const resetForm = () => {
+           setTitle("");
+           setAlt("");
+           setAuthor("");
+           setStartDate("");
+           setCategory("");
+           setOverview("");
+           setSlug("");
+           setSeoTitle("");
+           setSeoDescription("");
+           setImage(null);
+           setPromoTitle("");
+           setPromoDescription("");
+           setPromoBenefits("");
+           setBrochureTitle("");
+           setBrochureSubtext("");
+           setBrochurePhones("");
+           setBrochureLink("");
+           setShortTermTitle("");
+           setShortTermDescription("");
+           setShortTermItems([]);
+           setCaseStudiesTitle("");
+           setCaseStudiesDescription("");
+           setCaseStudiesButtonText("");
+           setCaseStudiesItems([]);
+           setCareerDomainsTitle("");
+           setCareerDomainsDescription("");
+           setCareerDomainsItems([]);
+           setChapters([]);
+           setFaqTitle("");
+           setFaqStartheading("");
+           setFaqMidheading("");
+           setFaqEndheading("");
+           setFaqDescription("");
+           setFaqItems([]);
+           setEditIndex(null);
+           setEditItem(null);
+      };
+ 
+      const openUpload = () => {
+           resetForm();
+           setShowModal(true);
+      };
+ 
+      const openEdit = (course, index) => {
+           resetForm();
+           setEditIndex(index);
+           setEditItem(course);
+ 
+           setTitle(course.title || "");
+           setAlt(course.alt || "");
+           setAuthor(course.author || "");
+           setStartDate(course.startdate || "");
+           setCategory(course.category || "");
+           setOverview(course.overview || "");
+           setSlug(course.slug || "");
+           setSeoTitle(course.seotitle || "");
+           setSeoDescription(course.seodescription || "");
+           setPromoTitle(course.promoTitle || "");
+           setPromoDescription(course.promoDescription || "");
+           setPromoBenefits(course.promoBenefits || "");
+           setBrochureTitle(course.brochureTitle || "");
+           setBrochureSubtext(course.brochureSubtext || "");
+           setBrochurePhones(course.brochurePhones || "");
+           setBrochureLink(course.brochureLink || "");
+           setShortTermTitle(course.shortTerm?.title || "");
+           setShortTermDescription(course.shortTerm?.description || "");
+           setShortTermItems(course.shortTerm?.items || []);
+           setCaseStudiesTitle(course.caseStudies?.title || "");
+           setCaseStudiesDescription(course.caseStudies?.description || "");
+           setCaseStudiesButtonText(course.caseStudies?.buttonText || "");
+           setCaseStudiesItems(course.caseStudies?.items || []);
+           setCareerDomainsTitle(course.careerDomains?.title || "");
+           setCareerDomainsDescription(course.careerDomains?.description || "");
+           setCareerDomainsItems(course.careerDomains?.items || []);
+ 
+           if (course.chapter) {
+                if (Array.isArray(course.chapter)) {
+                     setChapters(course.chapter.map(ch => ({
+                          chaptername: ch.chaptername || "",
+                          lessons: Array.isArray(ch.lessons)
+                               ? ch.lessons.map(l => ({ lessonname: typeof l === "object" ? (l.lessonname || "") : l }))
+                               : []
+                     })));
+                } else {
+                     setChapters([{
+                          chaptername: course.chapter.chaptername || "",
+                          lessons: Array.isArray(course.chapter.lessons)
+                               ? course.chapter.lessons.map(l => ({ lessonname: typeof l === "object" ? (l.lessonname || "") : l }))
+                               : []
+                     }]);
+                }
+           } else {
+                setChapters([]);
+           }
+ 
+           const courseFaq = course.faq || {};
+           if (Array.isArray(courseFaq)) {
+                setFaqItems(courseFaq);
+                setFaqTitle("");
+                setFaqStartheading("");
+                setFaqMidheading("");
+                setFaqEndheading("");
+                setFaqDescription("");
+           } else {
+                setFaqTitle(courseFaq.title || "");
+                setFaqStartheading(courseFaq.startheading || "");
+                setFaqMidheading(courseFaq.midheading || "");
+                setFaqEndheading(courseFaq.endheading || "");
+                setFaqDescription(courseFaq.description || "");
+                setFaqItems(courseFaq.items || []);
+           }
+ 
+           setShowModal(true);
+      };
+ 
+      const addChapter = () => {
+           setChapters([...chapters, { chaptername: "", lessons: [] }]);
+      };
+ 
+      const removeChapter = (chapterIdx) => {
+           setChapters(chapters.filter((_, idx) => idx !== chapterIdx));
+      };
+ 
+      const updateChapterField = (chapterIdx, key, value) => {
+           setChapters(prev => prev.map((ch, idx) => idx === chapterIdx ? { ...ch, [key]: value } : ch));
+      };
+ 
+      const addLesson = (chapterIdx) => {
+           setChapters(prev => prev.map((ch, idx) => {
+                if (idx === chapterIdx) {
+                     return {
+                          ...ch,
+                          lessons: [...(ch.lessons || []), { lessonname: "" }]
+                     };
+                }
+                return ch;
+           }));
+      };
+ 
+      const removeLesson = (chapterIdx, lessonIdx) => {
+           setChapters(prev => prev.map((ch, idx) => {
+                if (idx === chapterIdx) {
+                     return {
+                          ...ch,
+                          lessons: (ch.lessons || []).filter((_, lIdx) => lIdx !== lessonIdx)
+                     };
+                }
+                return ch;
+           }));
+      };
+ 
+      const updateLessonField = (chapterIdx, lessonIdx, key, value) => {
+           setChapters(prev => prev.map((ch, idx) => {
+                if (idx === chapterIdx) {
+                     const updatedLessons = [...(ch.lessons || [])];
+                     if (typeof key === "object" && key !== null) {
+                          updatedLessons[lessonIdx] = { ...updatedLessons[lessonIdx], ...key };
+                     } else {
+                          updatedLessons[lessonIdx] = { ...updatedLessons[lessonIdx], [key]: value };
+                     }
+                     return { ...ch, lessons: updatedLessons };
+                }
+                return ch;
+           }));
+      };
 
-     const saveGlobalConfig = async () => {
-          try {
-               setSavingPageTitle(true);
-               const res = await fetch(`${API_URL}/courses`, {
-                    method: "PUT",
-                    headers: {
-                         "Content-Type": "application/json",
-                         "Authorization": `Bearer ${getAdminToken()}`
-                    },
-                    body: JSON.stringify({
-                         hero,
-                         card,
-                         relatedBlogs,
-                         course: courses
-                    })
-               });
-               if (res.ok) {
-                    showToast("Global configuration saved successfully!", "success");
-                    fetchCourses();
-               } else {
-                    showToast("Failed to save global configuration.", "error");
-               }
-          } catch (err) {
-               console.error("Error saving global config:", err);
-               showToast("Server error occurred.", "error");
-          } finally {
-               setSavingPageTitle(false);
-          }
-     };
-
-     const resetForm = () => {
-          setTitle("");
-          setAlt("");
-          setAuthor("");
-          setCourseLength("");
-          setStudents("");
-          setLevel("");
-          setTotalLessons("");
-          setStartDate("");
-          setDuration("");
-          setCategory("");
-          setOverview("");
-          setSlug("");
-          setSeoTitle("");
-          setSeoDescription("");
-          setImage(null);
-          setChapters([]);
-          setFaqTitle("");
-          setFaqStartheading("");
-          setFaqMidheading("");
-          setFaqEndheading("");
-          setFaqDescription("");
-          setFaqItems([]);
-          setEditIndex(null);
-          setEditItem(null);
-     };
-
-     const openUpload = () => {
-          resetForm();
-          setShowModal(true);
-     };
-
-     const openEdit = (course, index) => {
-          resetForm();
-          setEditIndex(index);
-          setEditItem(course);
-
-          setTitle(course.title || "");
-          setAlt(course.alt || "");
-          setAuthor(course.author || "");
-          setCourseLength(course.courselength || "");
-          setStudents(course.totalstudents || "");
-          setLevel(course.levels || "");
-          setTotalLessons(course.totallessons || "");
-          setStartDate(course.startdate || "");
-          setDuration(course.duration || "");
-          setCategory(course.category || "");
-          setOverview(course.overview || "");
-          setSlug(course.slug || "");
-          setSeoTitle(course.seotitle || "");
-          setSeoDescription(course.seodescription || "");
-
-          if (course.chapter) {
-               if (Array.isArray(course.chapter)) {
-                    setChapters(course.chapter.map(ch => ({
-                         chaptername: ch.chaptername || "",
-                         totallessons: ch.totallessons || "",
-                         lessons: ch.lessons || []
-                    })));
-               } else {
-                    setChapters([{
-                         chaptername: course.chapter.chaptername || "",
-                         totallessons: course.chapter.totallessons || "",
-                         lessons: course.chapter.lessons || []
-                    }]);
-               }
-          } else {
-               setChapters([]);
-          }
-
-          const courseFaq = course.faq || {};
-          if (Array.isArray(courseFaq)) {
-               setFaqItems(courseFaq);
-               setFaqTitle("");
-               setFaqStartheading("");
-               setFaqMidheading("");
-               setFaqEndheading("");
-               setFaqDescription("");
-          } else {
-               setFaqTitle(courseFaq.title || "");
-               setFaqStartheading(courseFaq.startheading || "");
-               setFaqMidheading(courseFaq.midheading || "");
-               setFaqEndheading(courseFaq.endheading || "");
-               setFaqDescription(courseFaq.description || "");
-               setFaqItems(courseFaq.items || []);
-          }
-
-          setShowModal(true);
-     };
-
-     const addChapter = () => {
-          setChapters([...chapters, { chaptername: "", totallessons: "", lessons: [] }]);
-     };
-
-     const removeChapter = (chapterIdx) => {
-          setChapters(chapters.filter((_, idx) => idx !== chapterIdx));
-     };
-
-     const updateChapterField = (chapterIdx, key, value) => {
-          setChapters(prev => prev.map((ch, idx) => idx === chapterIdx ? { ...ch, [key]: value } : ch));
+       const addShortTermItem = () => {
+            setShortTermItems([...shortTermItems, { title: "", description: "", duration: "", iconText: "" }]);
        };
 
-     const addLesson = (chapterIdx) => {
-          setChapters(prev => prev.map((ch, idx) => {
-               if (idx === chapterIdx) {
-                    return {
-                         ...ch,
-                         lessons: [...(ch.lessons || []), { lessonname: "", duration: "", video: { videourl: "", duration: "" }, file: null, videoName: "" }]
-                    };
-               }
-               return ch;
-          }));
-     };
+       const removeShortTermItem = (itemIdx) => {
+            setShortTermItems(shortTermItems.filter((_, idx) => idx !== itemIdx));
+       };
 
-     const removeLesson = (chapterIdx, lessonIdx) => {
-          setChapters(prev => prev.map((ch, idx) => {
-               if (idx === chapterIdx) {
-                    return {
-                         ...ch,
-                         lessons: (ch.lessons || []).filter((_, lIdx) => lIdx !== lessonIdx)
-                    };
-               }
-               return ch;
-          }));
-     };
+       const updateShortTermItemField = (itemIdx, key, value) => {
+            setShortTermItems(prev => prev.map((item, idx) => idx === itemIdx ? { ...item, [key]: value } : item));
+       };
 
-     const updateLessonField = (chapterIdx, lessonIdx, key, value) => {
-          setChapters(prev => prev.map((ch, idx) => {
-               if (idx === chapterIdx) {
-                    const updatedLessons = [...(ch.lessons || [])];
-                    if (typeof key === "object" && key !== null) {
-                         updatedLessons[lessonIdx] = { ...updatedLessons[lessonIdx], ...key };
-                    } else {
-                         updatedLessons[lessonIdx] = { ...updatedLessons[lessonIdx], [key]: value };
-                    }
-                    return { ...ch, lessons: updatedLessons };
-               }
-               return ch;
-          }));
-     };
+       const addCaseStudyItem = () => {
+            setCaseStudiesItems([...caseStudiesItems, { image: "", alt: "", link: "" }]);
+       };
 
-     const uploadVideoDirect = async (file, chapterIdx, lessonIdx) => {
-          try {
-               updateLessonField(chapterIdx, lessonIdx, { uploading: true, uploadProgress: 0, uploadError: null, videoName: file.name });
+       const removeCaseStudyItem = (itemIdx) => {
+            setCaseStudiesItems(caseStudiesItems.filter((_, idx) => idx !== itemIdx));
+       };
 
-               // Create a clean SEO friendly public ID for Cloudinary
-               const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-               const seoName = baseName
-                    .toLowerCase()
-                    .replace(/[^a-z0-9]+/g, "-")
-                    .replace(/^-+|-+$/g, "") || "video";
+       const updateCaseStudyItemField = (itemIdx, key, value) => {
+            setCaseStudiesItems(prev => prev.map((item, idx) => idx === itemIdx ? { ...item, [key]: value } : item));
+       };
 
-               // Fetch upload signature from backend
-               const signatureRes = await fetch(`${API_URL}/cloudinary-signature?folder=courses/videos&public_id=${seoName}`);
-               if (!signatureRes.ok) {
-                    throw new Error("Failed to generate upload signature from server.");
-               }
-               const { signature, timestamp, apiKey, cloudName, folder } = await signatureRes.json();
+        const addCareerDomainItem = () => {
+             setCareerDomainsItems([...careerDomainsItems, { name: "", link: "", iconName: "", color: "" }]);
+        };
 
-               // Prepare FormData for Cloudinary
-               const formData = new FormData();
-               formData.append("file", file);
-               formData.append("signature", signature);
-               formData.append("timestamp", timestamp);
-               formData.append("api_key", apiKey);
-               formData.append("folder", folder);
-               formData.append("public_id", seoName);
+        const removeCareerDomainItem = (itemIdx) => {
+             setCareerDomainsItems(careerDomainsItems.filter((_, idx) => idx !== itemIdx));
+        };
 
-               const xhr = new XMLHttpRequest();
+        const updateCareerDomainItemField = (itemIdx, key, value) => {
+             setCareerDomainsItems(prev => prev.map((item, idx) => idx === itemIdx ? { ...item, [key]: value } : item));
+        };
 
-               const uploadPromise = new Promise((resolve, reject) => {
-                    xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`);
-
-                    xhr.upload.onprogress = (event) => {
-                         if (event.lengthComputable) {
-                              const percent = Math.round((event.loaded / event.total) * 100);
-                              updateLessonField(chapterIdx, lessonIdx, { uploadProgress: percent });
-                         }
-                    };
-
-                    xhr.onload = () => {
-                         if (xhr.status === 200) {
-                              const data = JSON.parse(xhr.responseText);
-                              resolve(data.secure_url);
-                         } else {
-                              reject(new Error(`Cloudinary responded with status ${xhr.status}`));
-                         }
-                    };
-
-                    xhr.onerror = () => {
-                         reject(new Error("Network error during direct upload."));
-                    };
-
-                    xhr.send(formData);
-               });
-
-               const secureUrl = await uploadPromise;
-
-               // Update state with Cloudinary secure URL and clear file pointer
-               updateLessonField(chapterIdx, lessonIdx, {
-                    video: {
-                         videourl: secureUrl,
-                         duration: ""
-                    },
-                    file: null,
-                    videoName: file.name,
-                    uploading: false,
-                    uploadProgress: 100
-               });
-
-               showToast("Video uploaded successfully to Cloudinary!", "success");
-          } catch (err) {
-               console.error("Direct upload error:", err);
-               updateLessonField(chapterIdx, lessonIdx, { uploading: false, uploadError: err.message });
-               showToast(`Video upload failed: ${err.message}`, "error");
-          }
-     };
-
-     const saveCourse = async () => {
-          setUploading(true);
-          try {
-               const updatedCourse = {
-                    title,
-                    alt: alt || title,
-                    author,
-                    courselength: courseLength,
-                    totalstudents: students,
-                    levels: level,
-                    totallessons: totalLessons,
-                    startdate: startDate,
-                    duration,
-                    category,
-                    overview,
-                    slug,
-                    seotitle: seoTitle || title,
-                    seodescription: seoDescription || overview,
-                    image: editItem ? editItem.image : "",
-                    faq: {
-                         title: faqTitle,
-                         startheading: faqStartheading,
-                         midheading: faqMidheading,
-                         endheading: faqEndheading,
-                         description: faqDescription,
-                         items: faqItems
-                    },
+      const saveCourse = async () => {
+           setUploading(true);
+           try {
+                const updatedCourse = {
+                     title,
+                     alt: alt || title,
+                     author,
+                     startdate: startDate,
+                     category,
+                     overview,
+                     slug,
+                     seotitle: seoTitle || title,
+                     seodescription: seoDescription || overview,
+                     image: editItem ? editItem.image : "",
+                     promoTitle,
+                     promoDescription,
+                     promoBenefits,
+                     brochureTitle,
+                     brochureSubtext,
+                     brochurePhones,
+                     brochureLink,
+                     faq: {
+                          title: faqTitle,
+                          startheading: faqStartheading,
+                          midheading: faqMidheading,
+                          endheading: faqEndheading,
+                          description: faqDescription,
+                          items: faqItems
+                     },
                      chapter: chapters.map(ch => ({
                           chaptername: ch.chaptername,
-                          totallessons: ch.totallessons,
                           lessons: (ch.lessons || []).map(l => ({
-                               lessonname: l.lessonname,
-                               video: {
-                                    videourl: l.video?.videourl || "",
-                                    duration: l.video?.duration || l.duration || ""
-                               }
+                               lessonname: l.lessonname
                           }))
-                     }))
-               };
+                     })),
+                     shortTerm: {
+                          title: shortTermTitle,
+                          description: shortTermDescription,
+                          items: shortTermItems.map(item => ({
+                               title: item.title || "",
+                               description: item.description || "",
+                               duration: item.duration || "",
+                               iconText: item.iconText || ""
+                          }))
+                     },
+                     caseStudies: {
+                          title: caseStudiesTitle,
+                          description: caseStudiesDescription,
+                          buttonText: caseStudiesButtonText,
+                          items: caseStudiesItems.map(item => ({
+                               image: (item.image && item.image instanceof File) ? "" : (item.image || ""),
+                               alt: item.alt || "",
+                               link: item.link || ""
+                          }))
+                     },
+                     careerDomains: {
+                          title: careerDomainsTitle,
+                          description: careerDomainsDescription,
+                          items: careerDomainsItems.map(item => ({
+                               name: item.name || "",
+                               link: item.link || "",
+                               iconName: item.iconName || "",
+                               color: item.color || ""
+                          }))
+                     }
+                };
+ 
+                let nextCourses = [...courses];
+                if (editIndex !== null) {
+                     nextCourses[editIndex] = updatedCourse;
+                } else {
+                     nextCourses.push(updatedCourse);
+                }
+ 
+                const formData = new FormData();
+                formData.append("data", JSON.stringify({
+                     hero,
+                     card,
+                     relatedBlogs,
+                     course: nextCourses
+                }));
+ 
+                if (image) {
+                     formData.append(`courseImage_${editIndex !== null ? editIndex : courses.length}`, image);
+                }
 
-               let nextCourses = [...courses];
-               if (editIndex !== null) {
-                    nextCourses[editIndex] = updatedCourse;
-               } else {
-                    nextCourses.push(updatedCourse);
-               }
-
-               const formData = new FormData();
-               formData.append("data", JSON.stringify({
-                    hero,
-                    card,
-                    relatedBlogs,
-                    course: nextCourses
-               }));
-
-               if (image) {
-                    formData.append(`courseImage_${editIndex !== null ? editIndex : courses.length}`, image);
-               }
-
-               const res = await fetch(`${API_URL}/courses`, {
-                    method: "PUT",
-                    body: formData
-               });
-
-               if (res.ok) {
-                    setShowModal(false);
-                    fetchCourses();
-               } else {
-                    const errData = await res.json();
-                    showToast(errData.error || "Failed to save course.", "error");
-               }
-          } catch (err) {
-               console.error("Error saving course:", err);
-               showToast("Server error occurred.", "error");
-          } finally {
-               setUploading(false);
-          }
-     };
+                caseStudiesItems.forEach((item, itemIdx) => {
+                     if (item.image && item.image instanceof File) {
+                          formData.append(`course_${editIndex !== null ? editIndex : courses.length}_caseStudy_${itemIdx}`, item.image);
+                     }
+                });
+ 
+                const res = await fetch(`${API_URL}/courses`, {
+                     method: "PUT",
+                     headers: {
+                          "Authorization": `Bearer ${getAdminToken()}`
+                     },
+                     body: formData
+                });
+ 
+                if (res.ok) {
+                     setShowModal(false);
+                     fetchCourses();
+                } else {
+                     const errData = await res.json();
+                     showToast(errData.error || "Failed to save course.", "error");
+                }
+           } catch (err) {
+                console.error("Error saving course:", err);
+                showToast("Server error occurred.", "error");
+           } finally {
+                setUploading(false);
+           }
+      };
 
      const deleteCourse = async (index) => {
           if (!window.confirm(`Are you sure you want to delete "${courses[index].title}"?`)) return;
@@ -432,8 +473,6 @@ export default function Courses() {
 
      const inputClass = "w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:bg-white transition-all duration-200";
      const labelClass = "block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5";
-
-     const isAnyVideoUploading = chapters.some(ch => ch.lessons?.some(l => l.uploading));
 
      return (
           <div className="min-h-screen bg-gray-50/50 pb-12 font-sans">
@@ -515,18 +554,6 @@ export default function Courses() {
                                                        <p className="text-xs text-gray-400 line-clamp-3 leading-normal">
                                                             {course.overview}
                                                        </p>
-                                                  </div>
-
-                                                  <div className="flex items-center gap-3 text-[11px] text-gray-400 border-y border-gray-100 py-3 font-medium">
-                                                       <span className="flex items-center gap-1">
-                                                            📅 {course.courselength}
-                                                       </span>
-                                                       <span className="flex items-center gap-1">
-                                                            👥 {course.totalstudents}
-                                                       </span>
-                                                       <span className="ml-auto bg-gray-550/10 text-orange-600 font-semibold px-2 py-0.5 rounded-md">
-                                                            {course.levels}
-                                                       </span>
                                                   </div>
 
                                                   <div className="flex gap-2.5 pt-2">
@@ -738,67 +765,17 @@ export default function Courses() {
                                         </div>
                                    </div>
 
+                                   <div className="space-y-1.5">
+                                        <label className={labelClass}>Author Name</label>
+                                        <input
+                                             value={author}
+                                             onChange={(e) => setAuthor(e.target.value)}
+                                             placeholder="e.g. Jane Doe"
+                                             className={inputClass}
+                                        />
+                                   </div>
+
                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1.5">
-                                             <label className={labelClass}>Author Name</label>
-                                             <input
-                                                  value={author}
-                                                  onChange={(e) => setAuthor(e.target.value)}
-                                                  placeholder="e.g. Jane Doe"
-                                                  className={inputClass}
-                                             />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                             <label className={labelClass}>Course Duration (Total Hours)</label>
-                                             <input
-                                                  value={duration}
-                                                  onChange={(e) => setDuration(e.target.value)}
-                                                  placeholder="e.g. 30h 45m"
-                                                  className={inputClass}
-                                             />
-                                        </div>
-                                   </div>
-
-                                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                        <div className="space-y-1.5">
-                                             <label className={labelClass}>Course Length (Weeks/Months)</label>
-                                             <input
-                                                  value={courseLength}
-                                                  onChange={(e) => setCourseLength(e.target.value)}
-                                                  placeholder="e.g. 12 Weeks"
-                                                  className={inputClass}
-                                             />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                             <label className={labelClass}>Total Students Enrolled</label>
-                                             <input
-                                                  value={students}
-                                                  onChange={(e) => setStudents(e.target.value)}
-                                                  placeholder="e.g. 1,200"
-                                                  className={inputClass}
-                                             />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                             <label className={labelClass}>Target Level</label>
-                                             <input
-                                                  value={level}
-                                                  onChange={(e) => setLevel(e.target.value)}
-                                                  placeholder="e.g. All Levels"
-                                                  className={inputClass}
-                                             />
-                                        </div>
-                                   </div>
-
-                                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                        <div className="space-y-1.5">
-                                             <label className={labelClass}>Total Lessons</label>
-                                             <input
-                                                  value={totalLessons}
-                                                  onChange={(e) => setTotalLessons(e.target.value)}
-                                                  placeholder="e.g. 45"
-                                                  className={inputClass}
-                                             />
-                                        </div>
                                         <div className="space-y-1.5">
                                              <label className={labelClass}>Course Start Date</label>
                                              <input
@@ -849,6 +826,72 @@ export default function Courses() {
                                         </div>
                                    </div>
 
+                                   {/* Promo & Brochure Custom Fields */}
+                                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2 pt-2">Promo & Brochure Fields</p>
+
+                                   <div className="grid grid-cols-1 gap-4">
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>Promo Section Heading</label>
+                                             <input
+                                                  value={promoTitle}
+                                                  onChange={(e) => setPromoTitle(e.target.value)}
+                                                  placeholder="e.g. UI UX Design Courses in Delhi at Affordable Fees"
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>Promo Section Description</label>
+                                             <textarea
+                                                  value={promoDescription}
+                                                  onChange={(e) => setPromoDescription(e.target.value)}
+                                                  placeholder="The demand for skilled UI/UX designers has increased..."
+                                                  rows={3}
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>Promo Benefits List (comma-separated)</label>
+                                             <textarea
+                                                  value={promoBenefits}
+                                                  onChange={(e) => setPromoBenefits(e.target.value)}
+                                                  placeholder="Training Since 2006, Small Batches, Experienced Faculty..."
+                                                  rows={2}
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                   </div>
+
+                                   <div className="grid grid-cols-1 gap-4 mt-4">
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>Brochure Banner Title</label>
+                                             <input
+                                                  value={brochureTitle}
+                                                  onChange={(e) => setBrochureTitle(e.target.value)}
+                                                  placeholder="e.g. Comprehensive Syllabus for UI UX Design Training"
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>Brochure Banner Subtext</label>
+                                             <textarea
+                                                  value={brochureSubtext}
+                                                  onChange={(e) => setBrochureSubtext(e.target.value)}
+                                                  placeholder="Chart your path to a thriving career..."
+                                                  rows={2}
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>Brochure Banner Contact Phones</label>
+                                             <input
+                                                  value={brochurePhones}
+                                                  onChange={(e) => setBrochurePhones(e.target.value)}
+                                                  placeholder="e.g. +91 9911782350 or +91 9811818122"
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                   </div>
+
                                    {/* SEO Configurations */}
                                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2 pt-2">SEO Configurations</p>
 
@@ -871,6 +914,329 @@ export default function Courses() {
                                                   rows={2}
                                                   className={inputClass}
                                              />
+                                        </div>
+                                   </div>
+
+                                   {/* Short-Term Courses Section */}
+                                   <div className="border-t border-gray-100 pt-4 space-y-4">
+                                        <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                                             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Short-Term Courses (Slider Section)</p>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 gap-4">
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>Short-Term Section Title</label>
+                                                  <input
+                                                       value={shortTermTitle}
+                                                       onChange={(e) => setShortTermTitle(e.target.value)}
+                                                       placeholder="e.g. Short-term UX Design Courses"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>Short-Term Section Description</label>
+                                                  <textarea
+                                                       value={shortTermDescription}
+                                                       onChange={(e) => setShortTermDescription(e.target.value)}
+                                                       placeholder="e.g. Check out the short duration courses for building a strong foundation..."
+                                                       rows={2}
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                        </div>
+
+                                        {/* Short-Term Cards List */}
+                                        <div className="space-y-3 pt-2">
+                                             <div className="flex items-center justify-between border-b border-gray-50 pb-1.5">
+                                                  <p className="text-xs font-bold text-gray-500">Short-Term Cards ({shortTermItems.length})</p>
+                                                  <button
+                                                       type="button"
+                                                       onClick={addShortTermItem}
+                                                       className="inline-flex items-center gap-1 bg-orange-50 hover:bg-orange-100 text-orange-600 text-[11px] font-bold px-2.5 py-1.5 rounded transition-colors cursor-pointer"
+                                                  >
+                                                       + Add Short-Term Card
+                                                  </button>
+                                             </div>
+
+                                             {shortTermItems.map((item, itemIdx) => (
+                                                  <div key={itemIdx} className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3 relative group text-left">
+                                                       <button
+                                                            type="button"
+                                                            onClick={() => removeShortTermItem(itemIdx)}
+                                                            className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-xs transition-colors duration-150 cursor-pointer"
+                                                       >
+                                                            Remove
+                                                       </button>
+                                                       
+                                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                            <div className="space-y-1">
+                                                                 <label className="text-[11px] font-bold text-gray-500">Card Title</label>
+                                                                 <input
+                                                                      value={item.title || ""}
+                                                                      onChange={(e) => updateShortTermItemField(itemIdx, "title", e.target.value)}
+                                                                      placeholder="e.g. Adobe XD Course"
+                                                                      className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                                 />
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                 <label className="text-[11px] font-bold text-gray-500">Duration Text</label>
+                                                                 <input
+                                                                      value={item.duration || ""}
+                                                                      onChange={(e) => updateShortTermItemField(itemIdx, "duration", e.target.value)}
+                                                                      placeholder="e.g. DURATION: 01 MONTH"
+                                                                      className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                                 />
+                                                            </div>
+                                                       </div>
+
+                                                       <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                                                            <div className="sm:col-span-1 space-y-1">
+                                                                 <label className="text-[11px] font-bold text-gray-500">Icon / Logo Text</label>
+                                                                 <input
+                                                                      value={item.iconText || ""}
+                                                                      onChange={(e) => updateShortTermItemField(itemIdx, "iconText", e.target.value)}
+                                                                      placeholder="e.g. Xd"
+                                                                      className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                                 />
+                                                            </div>
+                                                            <div className="sm:col-span-3 space-y-1">
+                                                                 <label className="text-[11px] font-bold text-gray-500">Description</label>
+                                                                 <textarea
+                                                                      value={item.description || ""}
+                                                                      onChange={(e) => updateShortTermItemField(itemIdx, "description", e.target.value)}
+                                                                      placeholder="Adobe XD is a superb tool for UI and UX designers..."
+                                                                      rows={2}
+                                                                      className="w-full p-2 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                                 />
+                                                            </div>
+                                                       </div>
+                                                  </div>
+                                             ))}
+
+                                             {shortTermItems.length === 0 && (
+                                                  <p className="text-xs text-gray-400 text-center py-2 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">No short-term cards added yet. Click "+ Add Short-Term Card" above to build your slider.</p>
+                                             )}
+                                        </div>
+
+                                   </div>
+
+                                   {/* Student Case Studies Section */}
+                                   <div className="border-t border-gray-100 pt-4 space-y-4">
+                                        <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                                             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Student Case Studies Section</p>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 gap-4">
+                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                  <div className="space-y-1.5">
+                                                       <label className={labelClass}>Case Studies Title</label>
+                                                       <input
+                                                            value={caseStudiesTitle}
+                                                            onChange={(e) => setCaseStudiesTitle(e.target.value)}
+                                                            placeholder="e.g. UX Case Studies by Our Students"
+                                                            className={inputClass}
+                                                       />
+                                                  </div>
+                                                  <div className="space-y-1.5">
+                                                       <label className={labelClass}>View All Button Text</label>
+                                                       <input
+                                                            value={caseStudiesButtonText}
+                                                            onChange={(e) => setCaseStudiesButtonText(e.target.value)}
+                                                            placeholder="e.g. View All Works"
+                                                            className={inputClass}
+                                                       />
+                                                  </div>
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>Case Studies Section Description</label>
+                                                  <textarea
+                                                       value={caseStudiesDescription}
+                                                       onChange={(e) => setCaseStudiesDescription(e.target.value)}
+                                                       placeholder="e.g. Click and explore our students UX projects done in the institute..."
+                                                       rows={2}
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                        </div>
+
+                                        {/* Case Studies Cards List */}
+                                        <div className="space-y-3 pt-2">
+                                             <div className="flex items-center justify-between border-b border-gray-50 pb-1.5">
+                                                  <p className="text-xs font-bold text-gray-500">Case Study Cards ({caseStudiesItems.length})</p>
+                                                  <button
+                                                       type="button"
+                                                       onClick={addCaseStudyItem}
+                                                       className="inline-flex items-center gap-1 bg-orange-50 hover:bg-orange-100 text-orange-600 text-[11px] font-bold px-2.5 py-1.5 rounded transition-colors cursor-pointer"
+                                                  >
+                                                       + Add Case Study Card
+                                                  </button>
+                                             </div>
+
+                                             {caseStudiesItems.map((item, itemIdx) => (
+                                                  <div key={itemIdx} className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3 relative group text-left">
+                                                       <button
+                                                            type="button"
+                                                            onClick={() => removeCaseStudyItem(itemIdx)}
+                                                            className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-xs transition-colors duration-155 cursor-pointer"
+                                                       >
+                                                            Remove
+                                                       </button>
+                                                       
+                                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                            <div className="space-y-1">
+                                                                 <label className="text-[11px] font-bold text-gray-500">Card Image Alt Text</label>
+                                                                 <input
+                                                                      value={item.alt || ""}
+                                                                      onChange={(e) => updateCaseStudyItemField(itemIdx, "alt", e.target.value)}
+                                                                      placeholder="e.g. Case Study 1 mockup"
+                                                                      className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                                 />
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                 <label className="text-[11px] font-bold text-gray-500">Link URL</label>
+                                                                 <input
+                                                                      value={item.link || ""}
+                                                                      onChange={(e) => updateCaseStudyItemField(itemIdx, "link", e.target.value)}
+                                                                      placeholder="e.g. # or URL"
+                                                                      className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                                 />
+                                                            </div>
+                                                       </div>
+
+                                                       <div className="space-y-1.5">
+                                                            <label className="text-[11px] font-bold text-gray-500">Card Image Upload</label>
+                                                            <ImageUploader 
+                                                                 setImage={(imgFile) => updateCaseStudyItemField(itemIdx, "image", imgFile)}
+                                                                 initialImage={typeof item.image === "string" ? item.image : null}
+                                                            />
+                                                       </div>
+                                                  </div>
+                                             ))}
+
+                                             {caseStudiesItems.length === 0 && (
+                                                  <p className="text-xs text-gray-400 text-center py-2 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">No case studies added yet. Click "+ Add Case Study Card" above to build your slider.</p>
+                                             )}
+                                        </div>
+
+                                   </div>
+
+                                   {/* Career Domains Section */}
+                                   <div className="border-t border-gray-100 pt-4 space-y-4">
+                                        <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                                             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Career Domains Section</p>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 gap-4">
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>Career Domains Section Title</label>
+                                                  <input
+                                                       value={careerDomainsTitle}
+                                                       onChange={(e) => setCareerDomainsTitle(e.target.value)}
+                                                       placeholder="e.g. Explore More Career Domains"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>Career Domains Section Description</label>
+                                                  <textarea
+                                                       value={careerDomainsDescription}
+                                                       onChange={(e) => setCareerDomainsDescription(e.target.value)}
+                                                       placeholder="e.g. Discover ADMEC's diverse courses to continuously enhance your skills..."
+                                                       rows={2}
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                        </div>
+
+                                        {/* Career Domains Items List */}
+                                        <div className="space-y-3 pt-2">
+                                             <div className="flex items-center justify-between border-b border-gray-50 pb-1.5">
+                                                  <p className="text-xs font-bold text-gray-500">Domain Cards ({careerDomainsItems.length})</p>
+                                                  <button
+                                                       type="button"
+                                                       onClick={addCareerDomainItem}
+                                                       className="inline-flex items-center gap-1 bg-orange-50 hover:bg-orange-100 text-orange-600 text-[11px] font-bold px-2.5 py-1.5 rounded transition-colors cursor-pointer"
+                                                  >
+                                                       + Add Domain Card
+                                                  </button>
+                                             </div>
+
+                                             {careerDomainsItems.map((item, itemIdx) => (
+                                                  <div key={itemIdx} className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3 relative group text-left">
+                                                       <button
+                                                            type="button"
+                                                            onClick={() => removeCareerDomainItem(itemIdx)}
+                                                            className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-xs transition-colors duration-155 cursor-pointer"
+                                                       >
+                                                            Remove
+                                                       </button>
+                                                       
+                                                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                                                            <div className="space-y-1">
+                                                                 <label className="text-[11px] font-bold text-gray-500">Domain Name</label>
+                                                                 <input
+                                                                      value={item.name || ""}
+                                                                      onChange={(e) => updateCareerDomainItemField(itemIdx, "name", e.target.value)}
+                                                                      placeholder="e.g. Graphic Design"
+                                                                      className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                                 />
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                 <label className="text-[11px] font-bold text-gray-500">Link URL</label>
+                                                                 <input
+                                                                      value={item.link || ""}
+                                                                      onChange={(e) => updateCareerDomainItemField(itemIdx, "link", e.target.value)}
+                                                                      placeholder="e.g. # or URL"
+                                                                      className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                                 />
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                 <label className="text-[11px] font-bold text-gray-500">Select Icon Style</label>
+                                                                 <select
+                                                                      value={item.iconName || ""}
+                                                                      onChange={(e) => updateCareerDomainItemField(itemIdx, "iconName", e.target.value)}
+                                                                      className="w-full h-9 px-2 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs bg-white font-urbanist"
+                                                                 >
+                                                                      <option value="">-- Choose Icon --</option>
+                                                                      <option value="graphic">Graphic Design (Brush)</option>
+                                                                      <option value="web">Web Design (Globe)</option>
+                                                                      <option value="post">Post Production (Sliders)</option>
+                                                                      <option value="analytics">Data Analytics (Line Chart)</option>
+                                                                      <option value="cad">CAD & Architecture (Temple/Building)</option>
+                                                                      <option value="animation">3D Animation (Cube)</option>
+                                                                      <option value="code">Web Development (Code Brackets)</option>
+                                                                      <option value="textile">CAD Textile Design (Geometric Pattern)</option>
+                                                                      <option value="software">Software Development (Gears)</option>
+                                                                      <option value="marketing">Digital Marketing (Megaphone)</option>
+                                                                      <option value="ai">Machine Learning & AI (Android Robot)</option>
+                                                                      <option value="video">Video Editing (YouTube Play)</option>
+                                                                 </select>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                 <label className="text-[11px] font-bold text-gray-500">Card Color / Theme</label>
+                                                                 <div className="flex gap-1.5 items-center">
+                                                                      <input
+                                                                           type="color"
+                                                                           value={item.color || "#10B981"}
+                                                                           onChange={(e) => updateCareerDomainItemField(itemIdx, "color", e.target.value)}
+                                                                           className="w-8 h-8 rounded border border-gray-300 p-0 cursor-pointer overflow-hidden"
+                                                                      />
+                                                                      <input
+                                                                           type="text"
+                                                                           value={item.color || ""}
+                                                                           onChange={(e) => updateCareerDomainItemField(itemIdx, "color", e.target.value)}
+                                                                           placeholder="Hex color code"
+                                                                           className="flex-1 h-9 px-2 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                                      />
+                                                                 </div>
+                                                            </div>
+                                                       </div>
+                                                  </div>
+                                             ))}
+
+                                             {careerDomainsItems.length === 0 && (
+                                                  <p className="text-xs text-gray-400 text-center py-2 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">No career domains added yet. Click "+ Add Domain Card" above to build your domain links.</p>
+                                             )}
                                         </div>
                                    </div>
 
@@ -899,26 +1265,14 @@ export default function Courses() {
                                                    </button>
 
                                                    <div className="text-sm font-bold text-gray-700">Chapter #{chIdx + 1}</div>
-
-                                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                        <div className="space-y-1.5">
-                                                             <label className={labelClass}>Chapter Name</label>
-                                                             <input
-                                                                  value={chapter.chaptername || ""}
-                                                                  onChange={(e) => updateChapterField(chIdx, "chaptername", e.target.value)}
-                                                                  placeholder="e.g. Introduction to Figma"
-                                                                  className={inputClass}
-                                                             />
-                                                        </div>
-                                                        <div className="space-y-1.5">
-                                                             <label className={labelClass}>Chapter Total Lessons Count</label>
-                                                             <input
-                                                                  value={chapter.totallessons || ""}
-                                                                  onChange={(e) => updateChapterField(chIdx, "totallessons", e.target.value)}
-                                                                  placeholder="e.g. 5"
-                                                                  className={inputClass}
-                                                             />
-                                                        </div>
+                                                   <div className="space-y-1.5">
+                                                        <label className={labelClass}>Chapter Name</label>
+                                                        <input
+                                                             value={chapter.chaptername || ""}
+                                                             onChange={(e) => updateChapterField(chIdx, "chaptername", e.target.value)}
+                                                             placeholder="e.g. Introduction to Figma"
+                                                             className={inputClass}
+                                                        />
                                                    </div>
 
                                                    {/* Lessons list for this chapter */}
@@ -948,68 +1302,14 @@ export default function Courses() {
                                                                             </button>
                                                                        </div>
 
-                                                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                                            <div className="space-y-1.5">
-                                                                                 <label className={labelClass}>Lesson Title</label>
-                                                                                 <input
-                                                                                      value={lesson.lessonname || ""}
-                                                                                      onChange={(e) => updateLessonField(chIdx, lIdx, "lessonname", e.target.value)}
-                                                                                      placeholder="e.g. Figma Interface Tour"
-                                                                                      className={inputClass}
-                                                                                 />
-                                                                            </div>
-                                                                            <div className="space-y-1.5">
-                                                                                 <label className={labelClass}>Lesson Duration</label>
-                                                                                 <input
-                                                                                      value={lesson.video?.duration || lesson.duration || ""}
-                                                                                      onChange={(e) => updateLessonField(chIdx, lIdx, "duration", e.target.value)}
-                                                                                      placeholder="e.g. 10:15"
-                                                                                      className={inputClass}
-                                                                                 />
-                                                                            </div>
-                                                                       </div>
-
-                                                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                                                                            <div className="space-y-1.5">
-                                                                                 <label className={labelClass}>Lesson Video File (.mp4, .webm)</label>
-                                                                                 <input
-                                                                                      type="file"
-                                                                                      accept="video/*"
-                                                                                      disabled={lesson.uploading}
-                                                                                      onChange={(e) => {
-                                                                                           const file = e.target.files?.[0];
-                                                                                           if (file) {
-                                                                                                uploadVideoDirect(file, chIdx, lIdx);
-                                                                                           }
-                                                                                      }}
-                                                                                      className="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                                 />
-                                                                            </div>
-
-                                                                            <div className="flex flex-col justify-end text-xs text-gray-500 pb-1">
-                                                                                 {lesson.uploading ? (
-                                                                                      <div className="w-full space-y-1.5">
-                                                                                           <div className="flex justify-between text-xs font-semibold text-orange-600">
-                                                                                                <span>Uploading to Cloudinary...</span>
-                                                                                                <span>{lesson.uploadProgress || 0}%</span>
-                                                                                           </div>
-                                                                                           <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
-                                                                                                <div
-                                                                                                     className="bg-orange-500 h-full transition-all duration-200"
-                                                                                                     style={{ width: `${lesson.uploadProgress || 0}%` }}
-                                                                                                />
-                                                                                           </div>
-                                                                                      </div>
-                                                                                 ) : lesson.uploadError ? (
-                                                                                      <span className="text-red-500 font-medium">Error: {lesson.uploadError}</span>
-                                                                                 ) : lesson.video?.videourl ? (
-                                                                                      <span className="text-green-600 truncate font-medium" title={lesson.video.videourl}>
-                                                                                           Uploaded URL: {lesson.video.videourl}
-                                                                                      </span>
-                                                                                 ) : (
-                                                                                      <span className="text-gray-400">No video selected or uploaded yet.</span>
-                                                                                 )}
-                                                                            </div>
+                                                                       <div className="space-y-1.5">
+                                                                            <label className={labelClass}>Lesson Title</label>
+                                                                            <input
+                                                                                 value={lesson.lessonname || ""}
+                                                                                 onChange={(e) => updateLessonField(chIdx, lIdx, "lessonname", e.target.value)}
+                                                                                 placeholder="e.g. Figma Interface Tour"
+                                                                                 className={inputClass}
+                                                                            />
                                                                        </div>
                                                                   </div>
                                                              ))}
@@ -1150,8 +1450,8 @@ export default function Courses() {
                                    </button>
                                    <button
                                         onClick={saveCourse}
-                                        disabled={uploading || !title || isAnyVideoUploading}
-                                        className={`px-6 py-2.5 text-sm font-semibold text-white rounded-xl shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer flex items-center gap-2 ${uploading || !title || isAnyVideoUploading
+                                        disabled={uploading || !title}
+                                        className={`px-6 py-2.5 text-sm font-semibold text-white rounded-xl shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer flex items-center gap-2 ${uploading || !title
                                                   ? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
                                                   : "bg-orange-500 hover:bg-orange-600 shadow-orange-200"
                                              }`}
@@ -1160,11 +1460,6 @@ export default function Courses() {
                                              <>
                                                   <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                                                   <span>Saving Course...</span>
-                                             </>
-                                        ) : isAnyVideoUploading ? (
-                                             <>
-                                                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                                  <span>Uploading Videos...</span>
                                              </>
                                         ) : (
                                              <span>{editItem ? "Save Changes" : "Publish Course"}</span>
