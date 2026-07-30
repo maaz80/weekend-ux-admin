@@ -31,6 +31,14 @@ export default function Blogs() {
      const [faqDescription, setFaqDescription] = useState("");
      const [faqItems, setFaqItems] = useState([]);
 
+     const [authorName, setAuthorName] = useState('');
+     const [authorDesignation, setAuthorDesignation] = useState('');
+     const [authorBio, setAuthorBio] = useState('');
+     const [authorAvatar, setAuthorAvatar] = useState(null);
+     const [authorTwitter, setAuthorTwitter] = useState('');
+     const [authorLinkedin, setAuthorLinkedin] = useState('');
+     const [authorUpdatedDate, setAuthorUpdatedDate] = useState('');
+
      // Blog Page Configuration States
      const [heroStarttitle, setHeroStarttitle] = useState("");
      const [heroEndtitle, setHeroEndtitle] = useState("");
@@ -114,6 +122,13 @@ export default function Blogs() {
           setFaqEndheading("");
           setFaqDescription("");
           setFaqItems([]);
+          setAuthorName('');
+          setAuthorDesignation('');
+          setAuthorBio('');
+          setAuthorAvatar(null);
+          setAuthorTwitter('');
+          setAuthorLinkedin('');
+          setAuthorUpdatedDate('');
           setShowModal(true);
      };
 
@@ -150,6 +165,15 @@ export default function Blogs() {
                setFaqDescription(blogFaq.description || "");
                setFaqItems(blogFaq.items || []);
           }
+
+          const blogAuthor = blog.author || {};
+          setAuthorName(blogAuthor.name || '');
+          setAuthorDesignation(blogAuthor.designation || '');
+          setAuthorBio(blogAuthor.bio || '');
+          setAuthorAvatar(null);
+          setAuthorTwitter(blogAuthor.twitter || '');
+          setAuthorLinkedin(blogAuthor.linkedin || '');
+          setAuthorUpdatedDate(blogAuthor.updatedDate || '');
           setShowModal(true);
      };
 
@@ -178,6 +202,16 @@ export default function Blogs() {
                items: faqItems
           };
           formData.append("faq", JSON.stringify(faqPayload));
+
+          const authorPayload = {
+               name: authorName,
+               designation: authorDesignation,
+               bio: authorBio,
+               twitter: authorTwitter,
+               linkedin: authorLinkedin,
+               updatedDate: authorUpdatedDate
+          };
+          formData.append('author', JSON.stringify(authorPayload));
 
           if (image) formData.append("image", image);
 
@@ -507,6 +541,58 @@ export default function Blogs() {
                                                   onChange={(e) => setSeoDescription(e.target.value)}
                                                   placeholder="Optimize SEO description for search results snippet..."
                                                   rows={2}
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                   </div>
+
+                                   {/* Author Information */}
+                                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2 pt-2">Author Information</p>
+
+                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>Author Name</label>
+                                             <input
+                                                  value={authorName}
+                                                  onChange={(e) => setAuthorName(e.target.value)}
+                                                  placeholder="e.g. Vipul Rajput"
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>Author Designation</label>
+                                             <input
+                                                  value={authorDesignation}
+                                                  onChange={(e) => setAuthorDesignation(e.target.value)}
+                                                  placeholder="e.g. SEO & AEO Expert"
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>Twitter / X URL</label>
+                                             <input
+                                                  value={authorTwitter}
+                                                  onChange={(e) => setAuthorTwitter(e.target.value)}
+                                                  placeholder="e.g. https://x.com/username"
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>LinkedIn URL</label>
+                                             <input
+                                                  value={authorLinkedin}
+                                                  onChange={(e) => setAuthorLinkedin(e.target.value)}
+                                                  placeholder="e.g. https://linkedin.com/in/username"
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                        <div className="space-y-1.5 sm:col-span-2">
+                                             <label className={labelClass}>Author Bio</label>
+                                             <textarea
+                                                  value={authorBio}
+                                                  onChange={(e) => setAuthorBio(e.target.value)}
+                                                  placeholder="Short bio about the author..."
+                                                  rows={3}
                                                   className={inputClass}
                                              />
                                         </div>
