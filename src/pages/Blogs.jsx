@@ -30,6 +30,7 @@ export default function Blogs() {
      const [faqEndheading, setFaqEndheading] = useState("");
      const [faqDescription, setFaqDescription] = useState("");
      const [faqItems, setFaqItems] = useState([]);
+     const [schemas, setSchemas] = useState([]);
 
      const [authorName, setAuthorName] = useState('');
      const [authorDesignation, setAuthorDesignation] = useState('');
@@ -129,6 +130,7 @@ export default function Blogs() {
           setAuthorTwitter('');
           setAuthorLinkedin('');
           setAuthorUpdatedDate('');
+          setSchemas([]);
           setShowModal(true);
      };
 
@@ -148,6 +150,7 @@ export default function Blogs() {
           setSeoDescription(blog.seodescription || "");
           setSlug(blog.slug || "");
           setFeatured(blog.featured || false);
+          setSchemas(blog.schemas || []);
           
           const blogFaq = blog.faq || {};
           if (Array.isArray(blogFaq)) {
@@ -212,6 +215,7 @@ export default function Blogs() {
                updatedDate: authorUpdatedDate
           };
           formData.append('author', JSON.stringify(authorPayload));
+          formData.append('schemas', JSON.stringify(schemas));
 
           if (image) formData.append("image", image);
 
@@ -543,6 +547,45 @@ export default function Blogs() {
                                                   rows={2}
                                                   className={inputClass}
                                              />
+                                        </div>
+                                   </div>
+
+                                   {/* Schemas Section */}
+                                   <div className="space-y-3 bg-gray-50/50 p-4 rounded-xl border border-gray-150">
+                                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-gray-200/60 pb-1.5">JSON-LD Schema Scripts</p>
+                                        <div className="space-y-3">
+                                             {schemas.map((schema, index) => (
+                                                  <div key={index} className="flex gap-2 items-start">
+                                                       <textarea
+                                                            value={schema}
+                                                            onChange={e => {
+                                                                 const newSchemas = [...schemas];
+                                                                 newSchemas[index] = e.target.value;
+                                                                 setSchemas(newSchemas);
+                                                            }}
+                                                            placeholder='e.g. {"@context": "https://schema.org", "@type": "BlogPosting", ...}'
+                                                            rows={2}
+                                                            className={inputClass}
+                                                       />
+                                                       <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                 const newSchemas = schemas.filter((_, idx) => idx !== index);
+                                                                 setSchemas(newSchemas);
+                                                            }}
+                                                            className="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg text-xs transition-colors cursor-pointer mt-1"
+                                                       >
+                                                            ✕
+                                                       </button>
+                                                  </div>
+                                             ))}
+                                             <button
+                                                  type="button"
+                                                  onClick={() => setSchemas([...schemas, ''])}
+                                                  className="text-orange-500 hover:text-orange-600 text-xs font-bold flex items-center gap-1 cursor-pointer"
+                                             >
+                                                  + Add Schema Script
+                                             </button>
                                         </div>
                                    </div>
 

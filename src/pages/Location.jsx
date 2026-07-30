@@ -46,6 +46,7 @@ export default function Locations() {
      const [faqEndheading, setFaqEndheading] = useState("");
      const [faqDescription, setFaqDescription] = useState("");
      const [faqItems, setFaqItems] = useState([]);
+     const [itemSchemas, setItemSchemas] = useState([]);
 
      const [loadingAction, setLoadingAction] = useState(null);
 
@@ -72,8 +73,6 @@ export default function Locations() {
      const saveLocation = async () => {
           if (loadingAction) return;
           setLoadingAction("location");
-          const formData = new FormData();
-          formData.append("data", JSON.stringify(locationForm));
 
           const url = locationModal?.location
                ? `${API}/locations/${locationModal.location._id}`
@@ -83,9 +82,10 @@ export default function Locations() {
                const res = await fetch(url, {
                     method: locationModal?.location ? "PUT" : "POST",
                     headers: {
+                         "Content-Type": "application/json",
                          "Authorization": `Bearer ${getAdminToken()}`
                     },
-                    body: formData
+                    body: JSON.stringify(locationForm)
                });
 
                if (!res.ok) {
@@ -167,6 +167,7 @@ export default function Locations() {
                setFaqDescription(itemFaq.description || "");
                setFaqItems(itemFaq.items || []);
           }
+          setItemSchemas(item?.schemas || []);
      };
 
      const saveItem = async () => {
@@ -209,7 +210,8 @@ export default function Locations() {
                     endheading: faqEndheading,
                     description: faqDescription,
                     items: faqItems
-               }
+               },
+               schemas: itemSchemas
           };
 
           const formData = new FormData();
@@ -394,7 +396,8 @@ export default function Locations() {
                                              { id: "content", label: "Page Content" },
                                              { id: "image", label: "Hero/Featured Image" },
                                              { id: "blogs", label: "Related Blogs" },
-                                             { id: "faq", label: "FAQ" }
+                                             { id: "faq", label: "FAQ" },
+                                             { id: "schemas", label: "Schemas" }
                                         ].map(tab => (
                                              <button
                                                   key={tab.id}
@@ -498,116 +501,153 @@ export default function Locations() {
                                              </div>
                                         )}
 
-                                        {activeTab === "faq" && (
-                                             <div className="space-y-4 text-left">
-                                                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Frequently Asked Questions (FAQs)</p>
-                                                  
-                                                  {/* FAQ Headings Inputs */}
-                                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                       <div>
-                                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">FAQ Section Title</label>
-                                                            <input
-                                                                 value={faqTitle}
-                                                                 onChange={(e) => setFaqTitle(e.target.value)}
-                                                                 placeholder="e.g. FAQ"
-                                                                 className={inputClass}
-                                                            />
-                                                       </div>
-                                                       <div>
-                                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">FAQ Start Heading</label>
-                                                            <input
-                                                                 value={faqStartheading}
-                                                                 onChange={(e) => setFaqStartheading(e.target.value)}
-                                                                 placeholder="e.g. All You"
-                                                                 className={inputClass}
-                                                            />
-                                                       </div>
-                                                       <div>
-                                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">FAQ Mid Heading</label>
-                                                            <input
-                                                                 value={faqMidheading}
-                                                                 onChange={(e) => setFaqMidheading(e.target.value)}
-                                                                 placeholder="e.g. Need"
-                                                                 className={inputClass}
-                                                            />
-                                                       </div>
-                                                       <div>
-                                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">FAQ End Heading</label>
-                                                            <input
-                                                                 value={faqEndheading}
-                                                                 onChange={(e) => setFaqEndheading(e.target.value)}
-                                                                 placeholder="e.g. To Know"
-                                                                 className={inputClass}
-                                                            />
-                                                       </div>
-                                                       <div className="sm:col-span-2">
-                                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">FAQ Section Description</label>
-                                                            <textarea
-                                                                 value={faqDescription}
-                                                                 onChange={(e) => setFaqDescription(e.target.value)}
-                                                                 placeholder="FAQ section description..."
-                                                                 rows={2}
-                                                                 className={inputClass}
-                                                            />
-                                                       </div>
-                                                  </div>
+                                         {activeTab === "faq" && (
+                                              <div className="space-y-6">
+                                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                        <div>
+                                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">FAQ Section Title</label>
+                                                             <input
+                                                                  value={faqTitle}
+                                                                  onChange={(e) => setFaqTitle(e.target.value)}
+                                                                  placeholder="e.g. FAQ"
+                                                                  className={inputClass}
+                                                             />
+                                                        </div>
+                                                        <div>
+                                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">FAQ Start Heading</label>
+                                                             <input
+                                                                  value={faqStartheading}
+                                                                  onChange={(e) => setFaqStartheading(e.target.value)}
+                                                                  placeholder="e.g. All You"
+                                                                  className={inputClass}
+                                                             />
+                                                        </div>
+                                                        <div>
+                                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">FAQ Mid Heading</label>
+                                                             <input
+                                                                  value={faqMidheading}
+                                                                  onChange={(e) => setFaqMidheading(e.target.value)}
+                                                                  placeholder="e.g. Need"
+                                                                  className={inputClass}
+                                                             />
+                                                        </div>
+                                                        <div>
+                                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">FAQ End Heading</label>
+                                                             <input
+                                                                  value={faqEndheading}
+                                                                  onChange={(e) => setFaqEndheading(e.target.value)}
+                                                                  placeholder="e.g. To Know"
+                                                                  className={inputClass}
+                                                             />
+                                                        </div>
+                                                        <div className="sm:col-span-2">
+                                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">FAQ Section Description</label>
+                                                             <textarea
+                                                                  value={faqDescription}
+                                                                  onChange={(e) => setFaqDescription(e.target.value)}
+                                                                  placeholder="FAQ section description..."
+                                                                  rows={2}
+                                                                  className={inputClass}
+                                                             />
+                                                        </div>
+                                                   </div>
 
-                                                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1 mt-4">FAQ Q&A Items</p>
-                                                  <div className="space-y-4">
-                                                       {faqItems.map((item, index) => (
-                                                            <div key={index} className="p-4 bg-slate-50 rounded-xl border border-slate-200 relative space-y-3">
-                                                                 <button
-                                                                      type="button"
-                                                                      onClick={() => {
-                                                                           setFaqItems(prev => prev.filter((_, i) => i !== index));
-                                                                      }}
-                                                                      className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-500 transition-colors border border-red-100 cursor-pointer"
-                                                                 >
-                                                                      <HiOutlineTrash className="text-sm" />
-                                                                 </button>
-                                                                 <div className="space-y-1.5 pr-8">
-                                                                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Question {index + 1}</label>
-                                                                      <input
-                                                                           value={item.ques}
-                                                                           onChange={(e) => {
-                                                                                const val = e.target.value;
-                                                                                setFaqItems(prev => prev.map((f, i) => i === index ? { ...f, ques: val } : f));
-                                                                           }}
-                                                                           placeholder="e.g. What is the address?"
-                                                                           className={inputClass}
-                                                                           required
-                                                                      />
-                                                                 </div>
-                                                                 <div className="space-y-1.5 pr-8">
-                                                                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Answer {index + 1}</label>
-                                                                      <textarea
-                                                                           value={item.ans}
-                                                                           onChange={(e) => {
-                                                                                const val = e.target.value;
-                                                                                setFaqItems(prev => prev.map((f, i) => i === index ? { ...f, ans: val } : f));
-                                                                           }}
-                                                                           placeholder="Answer content..."
-                                                                           rows={2}
-                                                                           className={inputClass}
-                                                                           required
-                                                                      />
-                                                                 </div>
-                                                            </div>
-                                                       ))}
+                                                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1 mt-4">FAQ Q&A Items</p>
+                                                   <div className="space-y-4">
+                                                        {faqItems.map((item, index) => (
+                                                             <div key={index} className="p-4 bg-slate-50 rounded-xl border border-slate-200 relative space-y-3">
+                                                                  <button
+                                                                       type="button"
+                                                                       onClick={() => {
+                                                                            setFaqItems(prev => prev.filter((_, i) => i !== index));
+                                                                       }}
+                                                                       className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-500 transition-colors border border-red-100 cursor-pointer"
+                                                                  >
+                                                                       <HiOutlineTrash className="text-sm" />
+                                                                  </button>
+                                                                  <div className="space-y-1.5 pr-8">
+                                                                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Question {index + 1}</label>
+                                                                       <input
+                                                                            value={item.ques}
+                                                                            onChange={(e) => {
+                                                                                 const val = e.target.value;
+                                                                                 setFaqItems(prev => prev.map((f, i) => i === index ? { ...f, ques: val } : f));
+                                                                            }}
+                                                                            placeholder="e.g. What is the address?"
+                                                                            className={inputClass}
+                                                                            required
+                                                                       />
+                                                                  </div>
+                                                                  <div className="space-y-1.5 pr-8">
+                                                                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Answer {index + 1}</label>
+                                                                       <textarea
+                                                                            value={item.ans}
+                                                                            onChange={(e) => {
+                                                                                 const val = e.target.value;
+                                                                                 setFaqItems(prev => prev.map((f, i) => i === index ? { ...f, ans: val } : f));
+                                                                            }}
+                                                                            placeholder="Answer content..."
+                                                                            rows={2}
+                                                                            className={inputClass}
+                                                                            required
+                                                                       />
+                                                                  </div>
+                                                             </div>
+                                                        ))}
 
-                                                       <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                 setFaqItems(prev => [...prev, { ques: "", ans: "" }]);
-                                                            }}
-                                                            className="w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 hover:text-blue-600 hover:border-blue-500 transition-all font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer bg-white"
-                                                       >
-                                                            <HiOutlinePlus className="text-sm" />
-                                                            Add FAQ Item
-                                                       </button>
-                                                  </div>
-                                             </div>
-                                        )}
+                                                        <button
+                                                             type="button"
+                                                             onClick={() => {
+                                                                  setFaqItems(prev => [...prev, { ques: "", ans: "" }]);
+                                                             }}
+                                                             className="w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 hover:text-blue-600 hover:border-blue-500 transition-all font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer bg-white"
+                                                        >
+                                                             <HiOutlinePlus className="text-sm" />
+                                                             Add FAQ Item
+                                                        </button>
+                                                   </div>
+                                              </div>
+                                         )}
+
+                                         {activeTab === "schemas" && (
+                                              <div className="space-y-4">
+                                                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1">JSON-LD Schema Scripts</p>
+                                                   <div className="space-y-3">
+                                                        {itemSchemas.map((schema, index) => (
+                                                             <div key={index} className="flex gap-2 items-start">
+                                                                  <textarea
+                                                                       value={schema}
+                                                                       onChange={e => {
+                                                                            const newSchemas = [...itemSchemas];
+                                                                            newSchemas[index] = e.target.value;
+                                                                            setItemSchemas(newSchemas);
+                                                                       }}
+                                                                       placeholder='e.g. {"@context": "https://schema.org", "@type": "Place", ...}'
+                                                                       rows={3}
+                                                                       className={inputClass}
+                                                                  />
+                                                                  <button
+                                                                       type="button"
+                                                                       onClick={() => {
+                                                                            const newSchemas = itemSchemas.filter((_, idx) => idx !== index);
+                                                                            setItemSchemas(newSchemas);
+                                                                       }}
+                                                                       className="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg text-xs transition-colors cursor-pointer mt-1"
+                                                                  >
+                                                                       ✕
+                                                                  </button>
+                                                             </div>
+                                                        ))}
+                                                        <button
+                                                             type="button"
+                                                             onClick={() => setItemSchemas([...itemSchemas, ''])}
+                                                             className="text-blue-600 hover:text-blue-700 text-xs font-bold flex items-center gap-1 cursor-pointer"
+                                                        >
+                                                             + Add Schema Script
+                                                        </button>
+                                                   </div>
+                                              </div>
+                                         )}
                                    </div>
                               </div>
                          </div>

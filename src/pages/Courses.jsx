@@ -40,6 +40,7 @@ export default function Courses() {
       const [seoTitle, setSeoTitle] = useState("");
       const [seoDescription, setSeoDescription] = useState("");
       const [image, setImage] = useState(null);
+      const [schemas, setSchemas] = useState([]);
 
       // New Promo & Brochure Custom Fields
       const [promoTitle, setPromoTitle] = useState("");
@@ -159,6 +160,7 @@ export default function Courses() {
            setFaqEndheading("");
            setFaqDescription("");
            setFaqItems([]);
+           setSchemas([]);
            setEditIndex(null);
            setEditItem(null);
       };
@@ -199,6 +201,7 @@ export default function Courses() {
            setCareerDomainsTitle(course.careerDomains?.title || "");
            setCareerDomainsDescription(course.careerDomains?.description || "");
            setCareerDomainsItems(course.careerDomains?.items || []);
+           setSchemas(course.schemas || []);
  
            if (course.chapter) {
                 if (Array.isArray(course.chapter)) {
@@ -391,7 +394,8 @@ export default function Courses() {
                                iconName: item.iconName || "",
                                color: item.color || ""
                           }))
-                     }
+                     },
+                     schemas: schemas
                 };
  
                 let nextCourses = [...courses];
@@ -914,6 +918,45 @@ export default function Courses() {
                                                   rows={2}
                                                   className={inputClass}
                                              />
+                                        </div>
+                                   </div>
+
+                                   {/* Schemas Section */}
+                                   <div className="space-y-3 bg-gray-50/50 p-4 rounded-xl border border-gray-150">
+                                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-gray-200/60 pb-1.5">JSON-LD Schema Scripts</p>
+                                        <div className="space-y-3">
+                                             {schemas.map((schema, index) => (
+                                                  <div key={index} className="flex gap-2 items-start">
+                                                       <textarea
+                                                            value={schema}
+                                                            onChange={e => {
+                                                                 const newSchemas = [...schemas];
+                                                                 newSchemas[index] = e.target.value;
+                                                                 setSchemas(newSchemas);
+                                                            }}
+                                                            placeholder='e.g. {"@context": "https://schema.org", "@type": "Course", ...}'
+                                                            rows={2}
+                                                            className={inputClass}
+                                                       />
+                                                       <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                 const newSchemas = schemas.filter((_, idx) => idx !== index);
+                                                                 setSchemas(newSchemas);
+                                                            }}
+                                                            className="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg text-xs transition-colors cursor-pointer mt-1"
+                                                       >
+                                                            ✕
+                                                       </button>
+                                                  </div>
+                                             ))}
+                                             <button
+                                                  type="button"
+                                                  onClick={() => setSchemas([...schemas, ''])}
+                                                  className="text-orange-500 hover:text-orange-600 text-xs font-bold flex items-center gap-1 cursor-pointer"
+                                             >
+                                                  + Add Schema Script
+                                             </button>
                                         </div>
                                    </div>
 
