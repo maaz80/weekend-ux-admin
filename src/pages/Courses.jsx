@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getAdminToken } from "../utils/auth.js";
 import Breadcrumb from "../components/BreadCrumb.jsx";
 import ImageUploader from "../components/ImageUploader.jsx";
+import Editor from "../components/Editor.jsx";
 import { useToast } from "../context/ToastContext";
 import { HiOutlinePlus, HiOutlineTrash } from "react-icons/hi";
 
@@ -32,7 +33,6 @@ export default function Courses() {
       // Course Form States
       const [title, setTitle] = useState("");
       const [alt, setAlt] = useState("");
-      const [author, setAuthor] = useState("");
       const [startDate, setStartDate] = useState("");
       const [category, setCategory] = useState("");
       const [overview, setOverview] = useState("");
@@ -46,6 +46,7 @@ export default function Courses() {
       const [promoTitle, setPromoTitle] = useState("");
       const [promoDescription, setPromoDescription] = useState("");
       const [promoBenefits, setPromoBenefits] = useState("");
+      const [promoSocialBottomContent, setPromoSocialBottomContent] = useState("");
       const [brochureTitle, setBrochureTitle] = useState("");
       const [brochureSubtext, setBrochureSubtext] = useState("");
       const [brochurePhones, setBrochurePhones] = useState("");
@@ -128,7 +129,6 @@ export default function Courses() {
       const resetForm = () => {
            setTitle("");
            setAlt("");
-           setAuthor("");
            setStartDate("");
            setCategory("");
            setOverview("");
@@ -139,6 +139,7 @@ export default function Courses() {
            setPromoTitle("");
            setPromoDescription("");
            setPromoBenefits("");
+           setPromoSocialBottomContent("");
            setBrochureTitle("");
            setBrochureSubtext("");
            setBrochurePhones("");
@@ -177,7 +178,6 @@ export default function Courses() {
  
            setTitle(course.title || "");
            setAlt(course.alt || "");
-           setAuthor(course.author || "");
            setStartDate(course.startdate || "");
            setCategory(course.category || "");
            setOverview(course.overview || "");
@@ -187,6 +187,7 @@ export default function Courses() {
            setPromoTitle(course.promoTitle || "");
            setPromoDescription(course.promoDescription || "");
            setPromoBenefits(course.promoBenefits || "");
+           setPromoSocialBottomContent(course.promoSocialBottomContent || "");
            setBrochureTitle(course.brochureTitle || "");
            setBrochureSubtext(course.brochureSubtext || "");
            setBrochurePhones(course.brochurePhones || "");
@@ -336,7 +337,6 @@ export default function Courses() {
                 const updatedCourse = {
                      title,
                      alt: alt || title,
-                     author,
                      startdate: startDate,
                      category,
                      overview,
@@ -347,6 +347,7 @@ export default function Courses() {
                      promoTitle,
                      promoDescription,
                      promoBenefits,
+                     promoSocialBottomContent,
                      brochureTitle,
                      brochureSubtext,
                      brochurePhones,
@@ -769,16 +770,6 @@ export default function Courses() {
                                         </div>
                                    </div>
 
-                                   <div className="space-y-1.5">
-                                        <label className={labelClass}>Author Name</label>
-                                        <input
-                                             value={author}
-                                             onChange={(e) => setAuthor(e.target.value)}
-                                             placeholder="e.g. Jane Doe"
-                                             className={inputClass}
-                                        />
-                                   </div>
-
                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
                                              <label className={labelClass}>Course Start Date</label>
@@ -861,6 +852,13 @@ export default function Courses() {
                                                   placeholder="Training Since 2006, Small Batches, Experienced Faculty..."
                                                   rows={2}
                                                   className={inputClass}
+                                             />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>Left Column Content (Below Social Media Icons - Rich Text Editor)</label>
+                                             <Editor
+                                                  value={promoSocialBottomContent}
+                                                  onChange={(html) => setPromoSocialBottomContent(html)}
                                              />
                                         </div>
                                    </div>
