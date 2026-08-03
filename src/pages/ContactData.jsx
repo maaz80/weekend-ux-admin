@@ -235,7 +235,7 @@ export default function ContactData() {
                                         </div>
                                         <div>
                                              <label className={labelClass}>Inquiry Email</label>
-                                             <input type="email" value={inqEmail} onChange={(e) => setInqEmail(e.target.value)} className={inputClass} placeholder="e.g. info@weekendux.com" />
+                                             <input type="email" value={inqEmail} onChange={(e) => setInqEmail(e.target.value)} className={inputClass} placeholder="e.g. info@weekendux.in" />
                                         </div>
                                         <div>
                                              <label className={labelClass}>Inquiry Phone</label>

@@ -86,6 +86,21 @@ export default function Courses() {
                      if (data.hero) setHero(data.hero);
                      if (data.card) setCard(data.card);
                      if (data.relatedBlogs) setRelatedBlogs(data.relatedBlogs);
+
+                     const csData = data.caseStudies || data.course?.[0]?.caseStudies;
+                     if (csData) {
+                          setCaseStudiesTitle(csData.title || "");
+                          setCaseStudiesDescription(csData.description || "");
+                          setCaseStudiesButtonText(csData.buttonText || "");
+                          setCaseStudiesItems(csData.items || []);
+                     }
+
+                     const cdData = data.careerDomains || data.course?.[0]?.careerDomains;
+                     if (cdData) {
+                          setCareerDomainsTitle(cdData.title || "");
+                          setCareerDomainsDescription(cdData.description || "");
+                          setCareerDomainsItems(cdData.items || []);
+                     }
                 }
            } catch (err) {
                 console.error("Error fetching courses data:", err);
@@ -99,18 +114,49 @@ export default function Courses() {
       const saveGlobalConfig = async () => {
            try {
                 setSavingPageTitle(true);
+                const formData = new FormData();
+                const globalCaseStudies = {
+                     title: caseStudiesTitle,
+                     description: caseStudiesDescription,
+                     buttonText: caseStudiesButtonText,
+                     items: caseStudiesItems.map(item => ({
+                          image: (item.image && item.image instanceof File) ? "" : (item.image || ""),
+                          alt: item.alt || "",
+                          link: item.link || ""
+                     }))
+                };
+                const globalCareerDomains = {
+                     title: careerDomainsTitle,
+                     description: careerDomainsDescription,
+                     items: careerDomainsItems.map(item => ({
+                          name: item.name || "",
+                          link: item.link || "",
+                          iconName: item.iconName || "",
+                          color: item.color || ""
+                     }))
+                };
+
+                formData.append("data", JSON.stringify({
+                     hero,
+                     card,
+                     relatedBlogs,
+                     caseStudies: globalCaseStudies,
+                     careerDomains: globalCareerDomains,
+                     course: courses
+                }));
+
+                caseStudiesItems.forEach((item, itemIdx) => {
+                     if (item.image && item.image instanceof File) {
+                          formData.append(`globalCaseStudy_${itemIdx}`, item.image);
+                     }
+                });
+
                 const res = await fetch(`${API_URL}/courses`, {
                      method: "PUT",
                      headers: {
-                          "Content-Type": "application/json",
                           "Authorization": `Bearer ${getAdminToken()}`
                      },
-                     body: JSON.stringify({
-                          hero,
-                          card,
-                          relatedBlogs,
-                          course: courses
-                     })
+                     body: formData
                 });
                 if (res.ok) {
                      showToast("Global configuration saved successfully!", "success");
@@ -704,7 +750,220 @@ export default function Courses() {
                                              />
                                         </div>
                                    </div>
-                              </div>
+                               </div>
+
+                               {/* 4. Global Student Portfolios (Case Studies) Config */}
+                               <div className="bg-white rounded-2xl p-6 shadow-md shadow-gray-200/50 space-y-4">
+                                    <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3 font-sans">4. Global Student Portfolios (Case Studies) Section</h2>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                         <div className="space-y-1.5">
+                                              <label className={labelClass}>Section Title</label>
+                                              <input
+                                                   value={caseStudiesTitle}
+                                                   onChange={(e) => setCaseStudiesTitle(e.target.value)}
+                                                   placeholder="e.g. UX Case Studies by Our Students"
+                                                   className={inputClass}
+                                              />
+                                         </div>
+                                         <div className="space-y-1.5">
+                                              <label className={labelClass}>View All Button Text</label>
+                                              <input
+                                                   value={caseStudiesButtonText}
+                                                   onChange={(e) => setCaseStudiesButtonText(e.target.value)}
+                                                   placeholder="e.g. View All Works"
+                                                   className={inputClass}
+                                              />
+                                         </div>
+                                         <div className="space-y-1.5 sm:col-span-2">
+                                              <label className={labelClass}>Section Description</label>
+                                              <textarea
+                                                   value={caseStudiesDescription}
+                                                   onChange={(e) => setCaseStudiesDescription(e.target.value)}
+                                                   placeholder="e.g. Click and explore our students UX projects..."
+                                                   rows={2}
+                                                   className={inputClass}
+                                              />
+                                         </div>
+                                    </div>
+
+                                    {/* Case Studies Cards List */}
+                                    <div className="space-y-3 pt-2">
+                                         <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                                              <p className="text-xs font-bold text-gray-700 uppercase tracking-wider">Portfolio Cards ({caseStudiesItems.length})</p>
+                                              <button
+                                                   type="button"
+                                                   onClick={addCaseStudyItem}
+                                                   className="inline-flex items-center gap-1 bg-orange-50 hover:bg-orange-100 text-orange-600 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                                              >
+                                                   + Add Portfolio Card
+                                              </button>
+                                         </div>
+
+                                         {caseStudiesItems.map((item, itemIdx) => (
+                                              <div key={itemIdx} className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3 relative group text-left">
+                                                   <button
+                                                        type="button"
+                                                        onClick={() => removeCaseStudyItem(itemIdx)}
+                                                        className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-xs transition-colors duration-155 cursor-pointer"
+                                                   >
+                                                        Remove
+                                                   </button>
+                                                   
+                                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                        <div className="space-y-1">
+                                                             <label className="text-[11px] font-bold text-gray-500">Alt Text / Title</label>
+                                                             <input
+                                                                  value={item.alt || ""}
+                                                                  onChange={(e) => updateCaseStudyItemField(itemIdx, "alt", e.target.value)}
+                                                                  placeholder="e.g. Case Study 1 mockup"
+                                                                  className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                             />
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                             <label className="text-[11px] font-bold text-gray-500">Link URL</label>
+                                                             <input
+                                                                  value={item.link || ""}
+                                                                  onChange={(e) => updateCaseStudyItemField(itemIdx, "link", e.target.value)}
+                                                                  placeholder="e.g. # or URL"
+                                                                  className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                             />
+                                                        </div>
+                                                   </div>
+
+                                                   <div className="space-y-1.5">
+                                                        <label className="text-[11px] font-bold text-gray-500">Card Image Upload</label>
+                                                        <ImageUploader 
+                                                             setImage={(imgFile) => updateCaseStudyItemField(itemIdx, "image", imgFile)}
+                                                             initialImage={typeof item.image === "string" ? item.image : null}
+                                                        />
+                                                   </div>
+                                              </div>
+                                         ))}
+
+                                         {caseStudiesItems.length === 0 && (
+                                              <p className="text-xs text-gray-400 text-center py-3 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">No portfolio items added yet. Click "+ Add Portfolio Card" above.</p>
+                                         )}
+                                    </div>
+                               </div>
+
+                               {/* 5. Global Career Domains Config */}
+                               <div className="bg-white rounded-2xl p-6 shadow-md shadow-gray-200/50 space-y-4">
+                                    <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3 font-sans">5. Global Career Domains Section</h2>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                         <div className="space-y-1.5 sm:col-span-2">
+                                              <label className={labelClass}>Section Title</label>
+                                              <input
+                                                   value={careerDomainsTitle}
+                                                   onChange={(e) => setCareerDomainsTitle(e.target.value)}
+                                                   placeholder="e.g. Explore More Career Domains"
+                                                   className={inputClass}
+                                              />
+                                         </div>
+                                         <div className="space-y-1.5 sm:col-span-2">
+                                              <label className={labelClass}>Section Description</label>
+                                              <textarea
+                                                   value={careerDomainsDescription}
+                                                   onChange={(e) => setCareerDomainsDescription(e.target.value)}
+                                                   placeholder="e.g. Discover ADMEC's diverse courses..."
+                                                   rows={2}
+                                                   className={inputClass}
+                                              />
+                                         </div>
+                                    </div>
+
+                                    {/* Career Domains Items List */}
+                                    <div className="space-y-3 pt-2">
+                                         <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                                              <p className="text-xs font-bold text-gray-700 uppercase tracking-wider">Domain Cards ({careerDomainsItems.length})</p>
+                                              <button
+                                                   type="button"
+                                                   onClick={addCareerDomainItem}
+                                                   className="inline-flex items-center gap-1 bg-orange-50 hover:bg-orange-100 text-orange-600 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                                              >
+                                                   + Add Domain Card
+                                              </button>
+                                         </div>
+
+                                         {careerDomainsItems.map((item, itemIdx) => (
+                                              <div key={itemIdx} className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3 relative group text-left">
+                                                   <button
+                                                        type="button"
+                                                        onClick={() => removeCareerDomainItem(itemIdx)}
+                                                        className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-xs transition-colors duration-155 cursor-pointer"
+                                                   >
+                                                        Remove
+                                                   </button>
+                                                   
+                                                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                                                        <div className="space-y-1">
+                                                             <label className="text-[11px] font-bold text-gray-500">Domain Name</label>
+                                                             <input
+                                                                  value={item.name || ""}
+                                                                  onChange={(e) => updateCareerDomainItemField(itemIdx, "name", e.target.value)}
+                                                                  placeholder="e.g. Graphic Design"
+                                                                  className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                             />
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                             <label className="text-[11px] font-bold text-gray-500">Link URL</label>
+                                                             <input
+                                                                  value={item.link || ""}
+                                                                  onChange={(e) => updateCareerDomainItemField(itemIdx, "link", e.target.value)}
+                                                                  placeholder="e.g. # or URL"
+                                                                  className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                             />
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                             <label className="text-[11px] font-bold text-gray-500">Select Icon Style</label>
+                                                             <select
+                                                                  value={item.iconName || ""}
+                                                                  onChange={(e) => updateCareerDomainItemField(itemIdx, "iconName", e.target.value)}
+                                                                  className="w-full h-9 px-2 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs bg-white"
+                                                             >
+                                                                  <option value="">-- Choose Icon --</option>
+                                                                  <option value="graphic">Graphic Design (Brush)</option>
+                                                                  <option value="web">Web Design (Globe)</option>
+                                                                  <option value="post">Post Production (Sliders)</option>
+                                                                  <option value="analytics">Data Analytics (Line Chart)</option>
+                                                                  <option value="cad">CAD & Architecture (Temple/Building)</option>
+                                                                  <option value="animation">3D Animation (Cube)</option>
+                                                                  <option value="code">Web Development (Code Brackets)</option>
+                                                                  <option value="textile">CAD Textile Design (Geometric Pattern)</option>
+                                                                  <option value="software">Software Development (Gears)</option>
+                                                                  <option value="marketing">Digital Marketing (Megaphone)</option>
+                                                                  <option value="ai">Machine Learning & AI (Android Robot)</option>
+                                                                  <option value="video">Video Editing (YouTube Play)</option>
+                                                             </select>
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                             <label className="text-[11px] font-bold text-gray-500">Card Color / Theme</label>
+                                                             <div className="flex gap-1.5 items-center">
+                                                                  <input
+                                                                       type="color"
+                                                                       value={item.color || "#10B981"}
+                                                                       onChange={(e) => updateCareerDomainItemField(itemIdx, "color", e.target.value)}
+                                                                       className="w-8 h-8 rounded border border-gray-300 p-0 cursor-pointer overflow-hidden"
+                                                                  />
+                                                                  <input
+                                                                       type="text"
+                                                                       value={item.color || ""}
+                                                                       onChange={(e) => updateCareerDomainItemField(itemIdx, "color", e.target.value)}
+                                                                       placeholder="Hex color code"
+                                                                       className="flex-1 h-9 px-2 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                                  />
+                                                             </div>
+                                                        </div>
+                                                   </div>
+                                              </div>
+                                         ))}
+
+                                         {careerDomainsItems.length === 0 && (
+                                              <p className="text-xs text-gray-400 text-center py-3 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">No career domains added yet. Click "+ Add Domain Card" above.</p>
+                                         )}
+                                    </div>
+                               </div>
 
                               {/* Save Actions */}
                               <div className="flex justify-end pt-4">
@@ -1061,225 +1320,6 @@ export default function Courses() {
 
                                    </div>
 
-                                   {/* Student Case Studies Section */}
-                                   <div className="border-t border-gray-100 pt-4 space-y-4">
-                                        <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-                                             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Student Case Studies Section</p>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 gap-4">
-                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                  <div className="space-y-1.5">
-                                                       <label className={labelClass}>Case Studies Title</label>
-                                                       <input
-                                                            value={caseStudiesTitle}
-                                                            onChange={(e) => setCaseStudiesTitle(e.target.value)}
-                                                            placeholder="e.g. UX Case Studies by Our Students"
-                                                            className={inputClass}
-                                                       />
-                                                  </div>
-                                                  <div className="space-y-1.5">
-                                                       <label className={labelClass}>View All Button Text</label>
-                                                       <input
-                                                            value={caseStudiesButtonText}
-                                                            onChange={(e) => setCaseStudiesButtonText(e.target.value)}
-                                                            placeholder="e.g. View All Works"
-                                                            className={inputClass}
-                                                       />
-                                                  </div>
-                                             </div>
-                                             <div className="space-y-1.5">
-                                                  <label className={labelClass}>Case Studies Section Description</label>
-                                                  <textarea
-                                                       value={caseStudiesDescription}
-                                                       onChange={(e) => setCaseStudiesDescription(e.target.value)}
-                                                       placeholder="e.g. Click and explore our students UX projects done in the institute..."
-                                                       rows={2}
-                                                       className={inputClass}
-                                                  />
-                                             </div>
-                                        </div>
-
-                                        {/* Case Studies Cards List */}
-                                        <div className="space-y-3 pt-2">
-                                             <div className="flex items-center justify-between border-b border-gray-50 pb-1.5">
-                                                  <p className="text-xs font-bold text-gray-500">Case Study Cards ({caseStudiesItems.length})</p>
-                                                  <button
-                                                       type="button"
-                                                       onClick={addCaseStudyItem}
-                                                       className="inline-flex items-center gap-1 bg-orange-50 hover:bg-orange-100 text-orange-600 text-[11px] font-bold px-2.5 py-1.5 rounded transition-colors cursor-pointer"
-                                                  >
-                                                       + Add Case Study Card
-                                                  </button>
-                                             </div>
-
-                                             {caseStudiesItems.map((item, itemIdx) => (
-                                                  <div key={itemIdx} className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3 relative group text-left">
-                                                       <button
-                                                            type="button"
-                                                            onClick={() => removeCaseStudyItem(itemIdx)}
-                                                            className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-xs transition-colors duration-155 cursor-pointer"
-                                                       >
-                                                            Remove
-                                                       </button>
-                                                       
-                                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                            <div className="space-y-1">
-                                                                 <label className="text-[11px] font-bold text-gray-500">Card Image Alt Text</label>
-                                                                 <input
-                                                                      value={item.alt || ""}
-                                                                      onChange={(e) => updateCaseStudyItemField(itemIdx, "alt", e.target.value)}
-                                                                      placeholder="e.g. Case Study 1 mockup"
-                                                                      className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
-                                                                 />
-                                                            </div>
-                                                            <div className="space-y-1">
-                                                                 <label className="text-[11px] font-bold text-gray-500">Link URL</label>
-                                                                 <input
-                                                                      value={item.link || ""}
-                                                                      onChange={(e) => updateCaseStudyItemField(itemIdx, "link", e.target.value)}
-                                                                      placeholder="e.g. # or URL"
-                                                                      className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
-                                                                 />
-                                                            </div>
-                                                       </div>
-
-                                                       <div className="space-y-1.5">
-                                                            <label className="text-[11px] font-bold text-gray-500">Card Image Upload</label>
-                                                            <ImageUploader 
-                                                                 setImage={(imgFile) => updateCaseStudyItemField(itemIdx, "image", imgFile)}
-                                                                 initialImage={typeof item.image === "string" ? item.image : null}
-                                                            />
-                                                       </div>
-                                                  </div>
-                                             ))}
-
-                                             {caseStudiesItems.length === 0 && (
-                                                  <p className="text-xs text-gray-400 text-center py-2 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">No case studies added yet. Click "+ Add Case Study Card" above to build your slider.</p>
-                                             )}
-                                        </div>
-
-                                   </div>
-
-                                   {/* Career Domains Section */}
-                                   <div className="border-t border-gray-100 pt-4 space-y-4">
-                                        <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-                                             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Career Domains Section</p>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 gap-4">
-                                             <div className="space-y-1.5">
-                                                  <label className={labelClass}>Career Domains Section Title</label>
-                                                  <input
-                                                       value={careerDomainsTitle}
-                                                       onChange={(e) => setCareerDomainsTitle(e.target.value)}
-                                                       placeholder="e.g. Explore More Career Domains"
-                                                       className={inputClass}
-                                                  />
-                                             </div>
-                                             <div className="space-y-1.5">
-                                                  <label className={labelClass}>Career Domains Section Description</label>
-                                                  <textarea
-                                                       value={careerDomainsDescription}
-                                                       onChange={(e) => setCareerDomainsDescription(e.target.value)}
-                                                       placeholder="e.g. Discover ADMEC's diverse courses to continuously enhance your skills..."
-                                                       rows={2}
-                                                       className={inputClass}
-                                                  />
-                                             </div>
-                                        </div>
-
-                                        {/* Career Domains Items List */}
-                                        <div className="space-y-3 pt-2">
-                                             <div className="flex items-center justify-between border-b border-gray-50 pb-1.5">
-                                                  <p className="text-xs font-bold text-gray-500">Domain Cards ({careerDomainsItems.length})</p>
-                                                  <button
-                                                       type="button"
-                                                       onClick={addCareerDomainItem}
-                                                       className="inline-flex items-center gap-1 bg-orange-50 hover:bg-orange-100 text-orange-600 text-[11px] font-bold px-2.5 py-1.5 rounded transition-colors cursor-pointer"
-                                                  >
-                                                       + Add Domain Card
-                                                  </button>
-                                             </div>
-
-                                             {careerDomainsItems.map((item, itemIdx) => (
-                                                  <div key={itemIdx} className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3 relative group text-left">
-                                                       <button
-                                                            type="button"
-                                                            onClick={() => removeCareerDomainItem(itemIdx)}
-                                                            className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-xs transition-colors duration-155 cursor-pointer"
-                                                       >
-                                                            Remove
-                                                       </button>
-                                                       
-                                                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                                                            <div className="space-y-1">
-                                                                 <label className="text-[11px] font-bold text-gray-500">Domain Name</label>
-                                                                 <input
-                                                                      value={item.name || ""}
-                                                                      onChange={(e) => updateCareerDomainItemField(itemIdx, "name", e.target.value)}
-                                                                      placeholder="e.g. Graphic Design"
-                                                                      className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
-                                                                 />
-                                                            </div>
-                                                            <div className="space-y-1">
-                                                                 <label className="text-[11px] font-bold text-gray-500">Link URL</label>
-                                                                 <input
-                                                                      value={item.link || ""}
-                                                                      onChange={(e) => updateCareerDomainItemField(itemIdx, "link", e.target.value)}
-                                                                      placeholder="e.g. # or URL"
-                                                                      className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
-                                                                 />
-                                                            </div>
-                                                            <div className="space-y-1">
-                                                                 <label className="text-[11px] font-bold text-gray-500">Select Icon Style</label>
-                                                                 <select
-                                                                      value={item.iconName || ""}
-                                                                      onChange={(e) => updateCareerDomainItemField(itemIdx, "iconName", e.target.value)}
-                                                                      className="w-full h-9 px-2 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs bg-white font-urbanist"
-                                                                 >
-                                                                      <option value="">-- Choose Icon --</option>
-                                                                      <option value="graphic">Graphic Design (Brush)</option>
-                                                                      <option value="web">Web Design (Globe)</option>
-                                                                      <option value="post">Post Production (Sliders)</option>
-                                                                      <option value="analytics">Data Analytics (Line Chart)</option>
-                                                                      <option value="cad">CAD & Architecture (Temple/Building)</option>
-                                                                      <option value="animation">3D Animation (Cube)</option>
-                                                                      <option value="code">Web Development (Code Brackets)</option>
-                                                                      <option value="textile">CAD Textile Design (Geometric Pattern)</option>
-                                                                      <option value="software">Software Development (Gears)</option>
-                                                                      <option value="marketing">Digital Marketing (Megaphone)</option>
-                                                                      <option value="ai">Machine Learning & AI (Android Robot)</option>
-                                                                      <option value="video">Video Editing (YouTube Play)</option>
-                                                                 </select>
-                                                            </div>
-                                                            <div className="space-y-1">
-                                                                 <label className="text-[11px] font-bold text-gray-500">Card Color / Theme</label>
-                                                                 <div className="flex gap-1.5 items-center">
-                                                                      <input
-                                                                           type="color"
-                                                                           value={item.color || "#10B981"}
-                                                                           onChange={(e) => updateCareerDomainItemField(itemIdx, "color", e.target.value)}
-                                                                           className="w-8 h-8 rounded border border-gray-300 p-0 cursor-pointer overflow-hidden"
-                                                                      />
-                                                                      <input
-                                                                           type="text"
-                                                                           value={item.color || ""}
-                                                                           onChange={(e) => updateCareerDomainItemField(itemIdx, "color", e.target.value)}
-                                                                           placeholder="Hex color code"
-                                                                           className="flex-1 h-9 px-2 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
-                                                                      />
-                                                                 </div>
-                                                            </div>
-                                                       </div>
-                                                  </div>
-                                             ))}
-
-                                             {careerDomainsItems.length === 0 && (
-                                                  <p className="text-xs text-gray-400 text-center py-2 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">No career domains added yet. Click "+ Add Domain Card" above to build your domain links.</p>
-                                             )}
-                                        </div>
-                                   </div>
 
                                    {/* Curriculum (Multiple Chapters) */}
                                     <div className="border-t border-gray-100 pt-4 space-y-4">

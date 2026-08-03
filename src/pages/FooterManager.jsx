@@ -398,7 +398,7 @@ export default function FooterManager() {
                                    <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                                         <div>
                                              <h2 className="text-lg font-bold text-gray-900">Social Media Icons & Links</h2>
-                                             <p className="text-xs text-gray-400 mt-1">Enter React Icons name (e.g. <code>FaFacebookF</code>, <code>RiTwitterXLine</code>, <code>FaInstagram</code>, <code>FaLinkedinIn</code>, <code>CiYoutube</code>) and profile URLs.</p>
+                                             <p className="text-xs text-gray-400 mt-1">Enter React Icons name (e.g. <code>SiFacebook</code>, <code>FaInstagram</code>, <code>FaLinkedinIn</code>, <code>SiYoutube</code>, <code>FaXTwitter</code>) and profile URLs.</p>
                                         </div>
                                         <button
                                              type="button"
