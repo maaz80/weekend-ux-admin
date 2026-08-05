@@ -342,7 +342,7 @@ export default function Courses() {
       };
 
        const addShortTermItem = () => {
-            setShortTermItems([...shortTermItems, { title: "", description: "", duration: "", iconText: "" }]);
+            setShortTermItems([...shortTermItems, { title: "", description: "", duration: "", iconText: "", image: "", alt: "" }]);
        };
 
        const removeShortTermItem = (itemIdx) => {
@@ -419,7 +419,9 @@ export default function Courses() {
                                title: item.title || "",
                                description: item.description || "",
                                duration: item.duration || "",
-                               iconText: item.iconText || ""
+                               iconText: item.iconText || "",
+                               image: (item.image && item.image instanceof File) ? "" : (item.image || ""),
+                               alt: item.alt || ""
                           }))
                      },
                      caseStudies: {
@@ -467,6 +469,12 @@ export default function Courses() {
                 caseStudiesItems.forEach((item, itemIdx) => {
                      if (item.image && item.image instanceof File) {
                           formData.append(`course_${editIndex !== null ? editIndex : courses.length}_caseStudy_${itemIdx}`, item.image);
+                     }
+                });
+
+                shortTermItems.forEach((item, itemIdx) => {
+                     if (item.image && item.image instanceof File) {
+                          formData.append(`course_${editIndex !== null ? editIndex : courses.length}_shortTerm_${itemIdx}`, item.image);
                      }
                 });
  
@@ -1307,6 +1315,25 @@ export default function Courses() {
                                                                       placeholder="Adobe XD is a superb tool for UI and UX designers..."
                                                                       rows={2}
                                                                       className="w-full p-2 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                                 />
+                                                            </div>
+                                                       </div>
+
+                                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                                                            <div className="space-y-1.5">
+                                                                 <label className="text-[11px] font-bold text-gray-500">Card Image Upload (Optional - replaces Icon)</label>
+                                                                 <ImageUploader 
+                                                                      setImage={(imgFile) => updateShortTermItemField(itemIdx, "image", imgFile)}
+                                                                      initialImage={typeof item.image === "string" ? item.image : null}
+                                                                 />
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                 <label className="text-[11px] font-bold text-gray-500">Image Alt Text</label>
+                                                                 <input
+                                                                      value={item.alt || ""}
+                                                                      onChange={(e) => updateShortTermItemField(itemIdx, "alt", e.target.value)}
+                                                                      placeholder="e.g. Adobe XD logo image"
+                                                                      className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
                                                                  />
                                                             </div>
                                                        </div>

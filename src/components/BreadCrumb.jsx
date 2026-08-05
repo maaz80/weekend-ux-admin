@@ -37,13 +37,13 @@ const Breadcrumb = () => {
                               <div key={routeTo} className="flex items-center gap-2">
                                    <HiChevronRight className="w-3.5 h-3.5 text-gray-400" />
                                    {isLast ? (
-                                        <span className="text-gray-950 font-semibold truncate max-w-[150px] sm:max-w-[300px]">
+                                        <span className="text-gray-950 font-semibold truncate max-w-37.5 sm:max-w-75">
                                              {label}
                                         </span>
                                    ) : (
                                         <Link
                                              to={routeTo}
-                                             className="hover:text-orange-500 transition-colors truncate max-w-[150px] sm:max-w-[300px]"
+                                             className="hover:text-orange-500 transition-colors truncate max-w-37.5 sm:max-w-75"
                                         >
                                              {label}
                                         </Link>
