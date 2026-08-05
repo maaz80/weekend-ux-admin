@@ -7,6 +7,7 @@ const Breadcrumb = () => {
 
      const pathnames = location.pathname.split("/").filter((x) => x);
 
+     
      const filteredPathnames =
           pathnames[0] === "location" && pathnames.length >= 3
                ? [pathnames[pathnames.length - 1]]
