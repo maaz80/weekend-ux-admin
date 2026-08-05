@@ -8,6 +8,7 @@ const PAGES = [
      { id: 'contact-us', title: 'Contact Us', slug: '/contact-us' },
      { id: 'privacy-policy', title: 'Privacy Policy', slug: '/privacy-policy' },
      { id: 'disclaimer', title: 'Disclaimer', slug: '/disclaimer' },
+     { id: 'terms-and-conditions-enrolment', title: 'Terms & Conditions', slug: '/terms-and-conditions-enrolment' },
      { id: 'category-blogs', title: 'Blogs', slug: '/category/blogs' },
      { id: 'courses', title: 'Courses', slug: '/courses' },
      { id: 'about-us', title: 'About Us', slug: '/about-us' },

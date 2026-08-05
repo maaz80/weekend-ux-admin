@@ -23,12 +23,18 @@ export default function PolicyData() {
      const [disclaimerContent, setDisclaimerContent] = useState("");
      const [disclaimerRelatedBlogs, setDisclaimerRelatedBlogs] = useState(null);
 
+     // Terms & Conditions State
+     const [termsTitle, setTermsTitle] = useState("");
+     const [termsContent, setTermsContent] = useState("");
+     const [termsRelatedBlogs, setTermsRelatedBlogs] = useState(null);
+
      const fetchPolicyData = async () => {
           try {
                setLoading(true);
-               const [resPolicy, resDisclaimer] = await Promise.all([
+               const [resPolicy, resDisclaimer, resTerms] = await Promise.all([
                     fetch(`${API_URL}/policy`),
-                    fetch(`${API_URL}/disclaimer`)
+                    fetch(`${API_URL}/disclaimer`),
+                    fetch(`${API_URL}/terms`)
                ]);
 
                if (resPolicy.ok) {
@@ -43,6 +49,13 @@ export default function PolicyData() {
                     setDisclaimerTitle(data.title || "Disclaimer");
                     setDisclaimerContent(data.content || "");
                     setDisclaimerRelatedBlogs(data.relatedBlogs || null);
+               }
+
+               if (resTerms.ok) {
+                    const data = await resTerms.json();
+                    setTermsTitle(data.title || "Terms & Conditions");
+                    setTermsContent(data.content || "");
+                    setTermsRelatedBlogs(data.relatedBlogs || null);
                }
           } catch (err) {
                console.error("Error fetching policy data:", err);
@@ -75,7 +88,15 @@ export default function PolicyData() {
                     disclaimerPayload.relatedBlogs = disclaimerRelatedBlogs;
                }
 
-               const [resPolicy, resDisclaimer] = await Promise.all([
+               const termsPayload = {
+                    title: termsTitle,
+                    content: termsContent
+               };
+               if (termsRelatedBlogs) {
+                    termsPayload.relatedBlogs = termsRelatedBlogs;
+               }
+
+               const [resPolicy, resDisclaimer, resTerms] = await Promise.all([
                     fetch(`${API_URL}/policy`, {
                          method: "PUT",
                          headers: {
@@ -91,11 +112,19 @@ export default function PolicyData() {
                               "Authorization": `Bearer ${getAdminToken()}`
                          },
                          body: JSON.stringify(disclaimerPayload)
+                    }),
+                    fetch(`${API_URL}/terms`, {
+                         method: "PUT",
+                         headers: {
+                              "Content-Type": "application/json",
+                              "Authorization": `Bearer ${getAdminToken()}`
+                         },
+                         body: JSON.stringify(termsPayload)
                     })
                ]);
 
-               if (resPolicy.ok && resDisclaimer.ok) {
-                    showToast("Disclaimer & Privacy Policy saved successfully!", "success");
+               if (resPolicy.ok && resDisclaimer.ok && resTerms.ok) {
+                    showToast("All legal pages saved successfully!", "success");
                     fetchPolicyData();
                } else {
                     showToast("Failed to save data.", "error");
@@ -125,7 +154,7 @@ export default function PolicyData() {
                <Breadcrumb />
                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 px-6 lg:px-10 max-w-7xl mx-auto">
                     <div>
-                         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Disclaimer & Privacy Policy</h1>
+                         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Legal Pages</h1>
                          <p className="text-sm text-gray-500 mt-1">Manage content of site policies</p>
                     </div>
                     <button
@@ -142,6 +171,7 @@ export default function PolicyData() {
                <div className="flex flex-wrap gap-2 px-6 lg:px-10 max-w-7xl mx-auto mb-8">
                     <button onClick={() => setActiveTab("privacy")} className={tabBtnClass("privacy")}>Privacy Policy</button>
                     <button onClick={() => setActiveTab("disclaimer")} className={tabBtnClass("disclaimer")}>Disclaimer</button>
+                    <button onClick={() => setActiveTab("terms")} className={tabBtnClass("terms")}>Terms & Conditions</button>
                </div>
 
                <div className="px-6 lg:px-10 max-w-7xl mx-auto">
@@ -182,6 +212,27 @@ export default function PolicyData() {
                                    <label className={labelClass}>Disclaimer Content</label>
                                    <div className="rounded-xl overflow-hidden shadow-sm shadow-gray-250/20 mt-1">
                                         <Editor value={disclaimerContent} onChange={setDisclaimerContent} />
+                                   </div>
+                              </div>
+                         </div>
+                    )}
+
+                    {activeTab === "terms" && (
+                         <div className="bg-white rounded-xl p-6 shadow-md shadow-gray-200/50 space-y-6">
+                              <div>
+                                   <label className={labelClass}>Terms & Conditions Page Title</label>
+                                   <input
+                                        type="text"
+                                        value={termsTitle}
+                                        onChange={(e) => setTermsTitle(e.target.value)}
+                                        className={inputClass}
+                                        placeholder="e.g. Terms & Conditions"
+                                   />
+                              </div>
+                              <div>
+                                   <label className={labelClass}>Terms & Conditions Content</label>
+                                   <div className="rounded-xl overflow-hidden shadow-sm shadow-gray-250/20 mt-1">
+                                        <Editor value={termsContent} onChange={setTermsContent} />
                                    </div>
                               </div>
                          </div>

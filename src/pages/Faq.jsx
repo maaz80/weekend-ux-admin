@@ -9,6 +9,7 @@ const PAGES = [
      { title: 'Contact Us', slug: 'contact-us' },
      { title: 'Privacy Policy', slug: 'privacy-policy' },
      { title: 'Disclaimer', slug: 'disclaimer' },
+     { title: 'Terms & Conditions', slug: 'terms-and-conditions-enrolment' },
      { title: 'Blogs', slug: 'category-blogs' },
      { title: 'Courses', slug: 'courses' },
      { title: 'About Us', slug: 'about-us' },
