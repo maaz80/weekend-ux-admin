@@ -373,6 +373,7 @@ export default function AboutData() {
                                         <input type="text" value={heroTitle} onChange={(e) => setHeroTitle(e.target.value)} className={inputClass} placeholder="e.g. We are Weekend UX" />
                                    </div>
                                    <div>
+                                   
                                         <label className={labelClass}>Hero Heading</label>
                                         <input type="text" value={heroHeading} onChange={(e) => setHeroHeading(e.target.value)} className={inputClass} placeholder="e.g. Designing a Better World Together" />
                                    </div>
