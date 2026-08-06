@@ -15,11 +15,13 @@ import {
      HiMenu,
      HiX,
      HiOutlineMenu,
-     HiOutlineLockClosed
+     HiOutlineLockClosed,
+     HiOutlineUserGroup
 } from "react-icons/hi";
 
 const navigationItems = [
      { name: "Overview", path: "/", icon: HiOutlineHome },
+     { name: "User Access", path: "/users", icon: HiOutlineUserGroup },
      { name: "Courses", path: "/courses", icon: HiOutlineAcademicCap },
      { name: "Blogs", path: "/blogs", icon: HiOutlineBookOpen },
      { name: "Locations", path: "/location", icon: HiOutlineLocationMarker },
