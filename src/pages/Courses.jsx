@@ -76,6 +76,22 @@ export default function Courses() {
       const [careerDomainsTitle, setCareerDomainsTitle] = useState("");
       const [careerDomainsDescription, setCareerDomainsDescription] = useState("");
       const [careerDomainsItems, setCareerDomainsItems] = useState([]);
+
+      // Course Videos Section States
+      const [videos, setVideos] = useState([]);
+      const [showVideoModal, setShowVideoModal] = useState(false);
+
+      const addVideoItem = () => {
+           setVideos(prev => [...prev, { video: "", alt: "", title: "", thumbnail: "" }]);
+      };
+
+      const removeVideoItem = (vIdx) => {
+           setVideos(prev => prev.filter((_, idx) => idx !== vIdx));
+      };
+
+      const updateVideoItemField = (vIdx, key, value) => {
+           setVideos(prev => prev.map((v, idx) => idx === vIdx ? { ...v, [key]: value } : v));
+      };
  
       const fetchCourses = async () => {
            try {
@@ -208,6 +224,8 @@ export default function Courses() {
            setFaqDescription("");
            setFaqItems([]);
            setSchemas([]);
+           setVideos([]);
+           setShowVideoModal(false);
            setEditIndex(null);
            setEditItem(null);
       };
@@ -221,7 +239,7 @@ export default function Courses() {
            resetForm();
            setEditIndex(index);
            setEditItem(course);
- 
+
            setTitle(course.title || "");
            setAlt(course.alt || "");
            setStartDate(course.startdate || "");
@@ -249,6 +267,7 @@ export default function Courses() {
            setCareerDomainsDescription(course.careerDomains?.description || "");
            setCareerDomainsItems(course.careerDomains?.items || []);
            setSchemas(course.schemas || []);
+           setVideos(course.videos || []);
  
            if (course.chapter) {
                 if (Array.isArray(course.chapter)) {
@@ -444,7 +463,13 @@ export default function Courses() {
                                color: item.color || ""
                           }))
                      },
-                     schemas: schemas
+                     schemas: schemas,
+                     videos: videos.map(v => ({
+                          video: (v.video && v.video instanceof File) ? "" : (v.video || ""),
+                          alt: v.alt || "",
+                          title: v.title || "",
+                          thumbnail: (v.thumbnail && v.thumbnail instanceof File) ? "" : (v.thumbnail || "")
+                     }))
                 };
  
                 let nextCourses = [...courses];
@@ -475,6 +500,15 @@ export default function Courses() {
                 shortTermItems.forEach((item, itemIdx) => {
                      if (item.image && item.image instanceof File) {
                           formData.append(`course_${editIndex !== null ? editIndex : courses.length}_shortTerm_${itemIdx}`, item.image);
+                     }
+                });
+
+                videos.forEach((v, vIdx) => {
+                     if (v.video && v.video instanceof File) {
+                          formData.append(`course_${editIndex !== null ? editIndex : courses.length}_video_${vIdx}`, v.video);
+                     }
+                     if (v.thumbnail && v.thumbnail instanceof File) {
+                          formData.append(`course_${editIndex !== null ? editIndex : courses.length}_videoThumb_${vIdx}`, v.thumbnail);
                      }
                 });
  
@@ -1071,11 +1105,6 @@ export default function Courses() {
 
                                    {/* Cover Image */}
                                    <div className="space-y-1.5">
-                                        <div className="flex items-center justify-between">
-                                             <label className={labelClass}>Course Thumbnail Image</label>
-                                             <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Recommended: 800 x 450 px (16:9)</span>
-                                        </div>
-                                        <ImageUploader setImage={setImage} initialImage={editItem?.image} />
                                         <p className="text-[11px] text-gray-400 mt-1">Suggested size: 800 x 450 px (ideal for standard wide card layout on desktop and mobile).</p>
                                         <div className="mt-2">
                                              <label className={labelClass}>Image Alt Text</label>
@@ -1086,6 +1115,25 @@ export default function Courses() {
                                                   className={inputClass}
                                              />
                                         </div>
+                                   </div>
+
+                                   {/* Course Videos Section Banner */}
+                                   <div className="bg-orange-50/60 p-4 rounded-2xl border border-orange-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                        <div>
+                                             <p className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-1.5 font-sans">
+                                                  <span className="text-orange-500">🎬</span> Course Session Recording Videos
+                                             </p>
+                                             <p className="text-xs text-gray-500 mt-0.5">
+                                                  Manage video recordings, title, alt text, and thumbnail for this course ({videos.length} video{videos.length !== 1 ? 's' : ''} added).
+                                             </p>
+                                        </div>
+                                        <button
+                                             type="button"
+                                             onClick={() => setShowVideoModal(true)}
+                                             className="px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer shrink-0"
+                                        >
+                                             <HiOutlinePlus size={15} /> Add course Videos
+                                        </button>
                                    </div>
 
                                    {/* Promo & Brochure Custom Fields */}
@@ -1572,6 +1620,144 @@ export default function Courses() {
                                         ) : (
                                              <span>{editItem ? "Save Changes" : "Publish Course"}</span>
                                         )}
+                                   </button>
+                              </div>
+                         </div>
+                    </div>
+               )}
+
+               {/* COURSE VIDEOS SUB-MODAL */}
+               {showVideoModal && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-99999 p-4">
+                         <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl max-h-[85vh] overflow-y-auto flex flex-col justify-between">
+                              {/* Sub-modal Header */}
+                              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl z-10">
+                                   <div>
+                                        <h3 className="text-base font-bold text-gray-900">
+                                             Add & Edit Course Videos ({videos.length})
+                                        </h3>
+                                        <p className="text-xs text-gray-400 mt-0.5">
+                                             Upload or link recording videos, title, alt text, and thumbnail images.
+                                        </p>
+                                   </div>
+                                   <button
+                                        type="button"
+                                        onClick={() => setShowVideoModal(false)}
+                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors cursor-pointer"
+                                   >
+                                        ✕
+                                   </button>
+                              </div>
+
+                              {/* Sub-modal Content */}
+                              <div className="p-6 space-y-5">
+                                   <div className="flex items-center justify-between">
+                                        <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">Video List</span>
+                                        <button
+                                             type="button"
+                                             onClick={addVideoItem}
+                                             className="px-3.5 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 font-bold rounded-lg text-xs flex items-center gap-1 cursor-pointer transition-colors"
+                                        >
+                                             <HiOutlinePlus size={14} /> Add Video
+                                        </button>
+                                   </div>
+
+                                   {videos.map((v, vIdx) => (
+                                        <div key={vIdx} className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3 relative text-left">
+                                             <button
+                                                  type="button"
+                                                  onClick={() => removeVideoItem(vIdx)}
+                                                  className="absolute top-2.5 right-2.5 w-6 h-6 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-500 text-xs font-bold transition-colors cursor-pointer"
+                                             >
+                                                  ✕
+                                             </button>
+                                             <div className="text-xs font-bold text-gray-700">Video #{vIdx + 1}</div>
+
+                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                  <div className="space-y-1">
+                                                       <label className="text-[11px] font-bold text-gray-500">Video Title</label>
+                                                       <input
+                                                            value={v.title || ""}
+                                                            onChange={(e) => updateVideoItemField(vIdx, "title", e.target.value)}
+                                                            placeholder="e.g. Session 1: Figma Wireframing"
+                                                            className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                       />
+                                                  </div>
+                                                  <div className="space-y-1">
+                                                       <label className="text-[11px] font-bold text-gray-500">Alt Text</label>
+                                                       <input
+                                                            value={v.alt || ""}
+                                                            onChange={(e) => updateVideoItemField(vIdx, "alt", e.target.value)}
+                                                            placeholder="e.g. Figma tutorial recording"
+                                                            className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                       />
+                                                  </div>
+                                             </div>
+
+                                             <div className="space-y-1">
+                                                  <label className="text-[11px] font-bold text-gray-500">Video URL / Direct Link</label>
+                                                  <input
+                                                       value={typeof v.video === "string" ? v.video : ""}
+                                                       onChange={(e) => updateVideoItemField(vIdx, "video", e.target.value)}
+                                                       placeholder="e.g. https://res.cloudinary.com/.../video.mp4 or YouTube link"
+                                                       className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                  />
+                                                  <div className="pt-1">
+                                                       <label className="text-[10px] font-semibold text-gray-400">Or Upload Video File:</label>
+                                                       <input
+                                                            type="file"
+                                                            accept="video/*"
+                                                            onChange={(e) => {
+                                                                 if (e.target.files && e.target.files[0]) {
+                                                                      updateVideoItemField(vIdx, "video", e.target.files[0]);
+                                                                 }
+                                                            }}
+                                                            className="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 cursor-pointer"
+                                                       />
+                                                       {v.video instanceof File && (
+                                                            <p className="text-[10px] text-emerald-600 font-bold mt-0.5">Selected file: {v.video.name}</p>
+                                                       )}
+                                                  </div>
+                                             </div>
+
+                                             <div className="space-y-1 pt-1">
+                                                  <label className="text-[11px] font-bold text-gray-500">Thumbnail Image URL / Upload</label>
+                                                  <input
+                                                       value={typeof v.thumbnail === "string" ? v.thumbnail : ""}
+                                                       onChange={(e) => updateVideoItemField(vIdx, "thumbnail", e.target.value)}
+                                                       placeholder="e.g. https://res.cloudinary.com/.../thumb.jpg"
+                                                       className="w-full h-9 px-3 mb-1 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-xs"
+                                                  />
+                                                  <ImageUploader
+                                                       setImage={(imgFile) => updateVideoItemField(vIdx, "thumbnail", imgFile)}
+                                                       initialImage={typeof v.thumbnail === "string" ? v.thumbnail : null}
+                                                  />
+                                             </div>
+                                        </div>
+                                   ))}
+
+                                   {videos.length === 0 && (
+                                        <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-200 space-y-2">
+                                             <p className="text-xs text-gray-400">No videos added yet for this course.</p>
+                                             <button
+                                                  type="button"
+                                                  onClick={addVideoItem}
+                                                  className="px-4 py-2 bg-orange-500 text-white font-bold rounded-lg text-xs cursor-pointer hover:bg-orange-600 transition"
+                                             >
+                                                  + Add First Video
+                                             </button>
+                                        </div>
+                                   )}
+                              </div>
+
+                              {/* Sub-modal Footer */}
+                              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-white sticky bottom-0 rounded-b-2xl">
+                                   <button
+                                        type="button"
+                                        onClick={() => setShowVideoModal(false)}
+                                        className="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl transition cursor-pointer shadow-sm"
+                                   >
+                                        Done ({videos.length} Video{videos.length !== 1 ? 's' : ''})
                                    </button>
                               </div>
                          </div>
