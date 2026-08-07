@@ -1730,7 +1730,7 @@ export default function Courses() {
                                                   />
                                                   <ImageUploader
                                                        setImage={(imgFile) => updateVideoItemField(vIdx, "thumbnail", imgFile)}
-                                                       initialImage={typeof v.thumbnail === "string" ? v.thumbnail : null}
+                                                       initialImage={v.thumbnail}
                                                   />
                                              </div>
                                         </div>

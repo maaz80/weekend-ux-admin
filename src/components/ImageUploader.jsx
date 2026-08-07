@@ -7,9 +7,11 @@ export default function ImageUploader({ setImage, initialImage }) {
      const [isDragActive, setIsDragActive] = useState(false);
 
      useEffect(() => {
-          if (initialImage) {
+          if (initialImage instanceof File) {
+               setPreview(URL.createObjectURL(initialImage));
+          } else if (typeof initialImage === "string" && initialImage) {
                setPreview(initialImage);
-          } else {
+          } else if (!initialImage) {
                setPreview(null);
           }
      }, [initialImage]);
