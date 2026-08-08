@@ -226,10 +226,11 @@ export default function UsersManager() {
                                                             ) : (
                                                                  <div className="flex flex-wrap gap-2">
                                                                        {u.enrolledCourses.map((ec, idx) => {
-                                                                            const cObj = ec.courseId || {};
-                                                                            const courseTitle = (typeof cObj === 'object' ? cObj.title || cObj.name : null) || ec.courseSlug || "Course";
-                                                                            const rawId = (typeof cObj === 'object' ? (cObj._id || cObj.slug) : cObj) || ec.courseSlug || ec.courseId;
-                                                                            const cId = typeof rawId === 'object' ? (rawId?._id || rawId?.slug || "") : (rawId || "");
+                                                                             const cObj = ec.courseId || {};
+                                                                             const formattedSlug = ec.courseSlug ? ec.courseSlug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : null;
+                                                                             const courseTitle = (typeof cObj === 'object' ? cObj.title || cObj.name : null) || formattedSlug || ec.courseSlug || "Course";
+                                                                             const rawId = (typeof cObj === 'object' ? (cObj._id || cObj.slug) : cObj) || ec.courseSlug || ec.courseId;
+                                                                             const cId = typeof rawId === 'object' ? (rawId?._id || rawId?.slug || "") : (rawId || "");
                                                                             return (
                                                                                  <span
                                                                                       key={cId?.toString() || idx}

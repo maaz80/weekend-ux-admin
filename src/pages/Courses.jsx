@@ -82,7 +82,7 @@ export default function Courses() {
       const [showVideoModal, setShowVideoModal] = useState(false);
 
       const addVideoItem = () => {
-           setVideos(prev => [...prev, { video: "", alt: "", title: "", thumbnail: "" }]);
+           setVideos(prev => [...prev, { video: "", alt: "", title: "", thumbnail: "", uploading: false, progress: 0, uploadError: "" }]);
       };
 
       const removeVideoItem = (vIdx) => {
@@ -91,6 +91,73 @@ export default function Courses() {
 
       const updateVideoItemField = (vIdx, key, value) => {
            setVideos(prev => prev.map((v, idx) => idx === vIdx ? { ...v, [key]: value } : v));
+      };
+
+      const uploadVideoFile = (file, onProgress) => {
+           return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                const formData = new FormData();
+                formData.append("video", file);
+
+                xhr.upload.onprogress = (e) => {
+                     if (e.lengthComputable) {
+                          const percent = Math.round((e.loaded / e.total) * 100);
+                          onProgress(percent);
+                     }
+                };
+
+                xhr.onload = () => {
+                     if (xhr.status >= 200 && xhr.status < 300) {
+                          try {
+                               const response = JSON.parse(xhr.responseText);
+                               if (response.url) {
+                                    resolve(response.url);
+                               } else {
+                                    reject(new Error(response.error || "Upload failed"));
+                               }
+                          } catch (err) {
+                               reject(err);
+                          }
+                     } else {
+                          try {
+                               const response = JSON.parse(xhr.responseText);
+                               reject(new Error(response.error || `Upload failed with status ${xhr.status}`));
+                          } catch {
+                               reject(new Error(`Upload failed with status ${xhr.status}`));
+                          }
+                     }
+                };
+
+                xhr.onerror = () => {
+                     reject(new Error("Network error during video upload"));
+                };
+
+                xhr.open("POST", `${API_URL}/admin/upload-video`);
+                const token = getAdminToken();
+                if (token) {
+                     xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+                }
+                xhr.send(formData);
+           });
+      };
+
+      const handleVideoFileUpload = async (vIdx, file) => {
+           if (!file) return;
+
+           setVideos(prev => prev.map((v, idx) => idx === vIdx ? { ...v, uploading: true, progress: 0, uploadError: "" } : v));
+
+           try {
+                const videoUrl = await uploadVideoFile(file, (percent) => {
+                     setVideos(prev => prev.map((v, idx) => idx === vIdx ? { ...v, progress: percent } : v));
+                });
+
+                setVideos(prev => prev.map((v, idx) => idx === vIdx ? { ...v, video: videoUrl, uploading: false, progress: 100, uploadError: "" } : v));
+                showToast("Video uploaded successfully!", "success");
+           } catch (err) {
+                console.error("Video upload failed:", err);
+                setVideos(prev => prev.map((v, idx) => idx === vIdx ? { ...v, uploading: false, uploadError: err.message || "Upload failed" } : v));
+                showToast(`Video upload failed: ${err.message || "Upload error"}`, "error");
+           }
       };
  
       const fetchCourses = async () => {
@@ -396,81 +463,85 @@ export default function Courses() {
              setCareerDomainsItems(prev => prev.map((item, idx) => idx === itemIdx ? { ...item, [key]: value } : item));
         };
 
-      const saveCourse = async () => {
-           setUploading(true);
-           try {
-                const updatedCourse = {
-                     title,
-                     alt: alt || title,
-                     startdate: startDate,
-                     category,
-                     overview,
-                     slug,
-                     seotitle: seoTitle || title,
-                     seodescription: seoDescription || overview,
-                     image: editItem ? editItem.image : "",
-                     promoTitle,
-                     promoDescription,
-                     promoBenefits,
-                     promoSocialBottomContent,
-                     brochureTitle,
-                     brochureSubtext,
-                     brochurePhones,
-                     brochureLink,
-                     faq: {
-                          title: faqTitle,
-                          startheading: faqStartheading,
-                          midheading: faqMidheading,
-                          endheading: faqEndheading,
-                          description: faqDescription,
-                          items: faqItems
-                     },
-                     chapter: chapters.map(ch => ({
-                          chaptername: ch.chaptername,
-                          lessons: (ch.lessons || []).map(l => ({
-                               lessonname: l.lessonname
-                          }))
-                     })),
-                     shortTerm: {
-                          title: shortTermTitle,
-                          description: shortTermDescription,
-                          items: shortTermItems.map(item => ({
-                               title: item.title || "",
-                               description: item.description || "",
-                               duration: item.duration || "",
-                               iconText: item.iconText || "",
-                               image: (item.image && item.image instanceof File) ? "" : (item.image || ""),
-                               alt: item.alt || ""
-                          }))
-                     },
-                     caseStudies: {
-                          title: caseStudiesTitle,
-                          description: caseStudiesDescription,
-                          buttonText: caseStudiesButtonText,
-                          items: caseStudiesItems.map(item => ({
-                               image: (item.image && item.image instanceof File) ? "" : (item.image || ""),
-                               alt: item.alt || "",
-                               link: item.link || ""
-                          }))
-                     },
-                     careerDomains: {
-                          title: careerDomainsTitle,
-                          description: careerDomainsDescription,
-                          items: careerDomainsItems.map(item => ({
-                               name: item.name || "",
-                               link: item.link || "",
-                               iconName: item.iconName || "",
-                               color: item.color || ""
-                          }))
-                     },
-                     schemas: schemas,
-                     videos: videos.map(v => ({
-                          video: (v.video && v.video instanceof File) ? "" : (v.video || ""),
-                          alt: v.alt || "",
-                          title: v.title || "",
-                          thumbnail: (v.thumbnail && v.thumbnail instanceof File) ? "" : (v.thumbnail || "")
-                     }))
-                };
+       const saveCourse = async () => {
+            setUploading(true);
+            try {
+                 const updatedCourse = {
+                      ...(editItem?._id ? { _id: editItem._id } : {}),
+                      title,
+                      alt: alt || title,
+                      startdate: startDate,
+                      category,
+                      overview,
+                      slug,
+                      seotitle: seoTitle || title,
+                      seodescription: seoDescription || overview,
+                      image: editItem ? editItem.image : "",
+                      promoTitle,
+                      promoDescription,
+                      promoBenefits,
+                      promoSocialBottomContent,
+                      brochureTitle,
+                      brochureSubtext,
+                      brochurePhones,
+                      brochureLink,
+                      faq: {
+                           title: faqTitle,
+                           startheading: faqStartheading,
+                           midheading: faqMidheading,
+                           endheading: faqEndheading,
+                           description: faqDescription,
+                           items: faqItems
+                      },
+                      chapter: chapters.map(ch => ({
+                           ...(ch._id ? { _id: ch._id } : {}),
+                           chaptername: ch.chaptername,
+                           lessons: (ch.lessons || []).map(l => ({
+                                ...(l._id ? { _id: l._id } : {}),
+                                lessonname: l.lessonname
+                           }))
+                      })),
+                      shortTerm: {
+                           title: shortTermTitle,
+                           description: shortTermDescription,
+                           items: shortTermItems.map(item => ({
+                                title: item.title || "",
+                                description: item.description || "",
+                                duration: item.duration || "",
+                                iconText: item.iconText || "",
+                                image: (item.image && item.image instanceof File) ? "" : (item.image || ""),
+                                alt: item.alt || ""
+                           }))
+                      },
+                      caseStudies: {
+                           title: caseStudiesTitle,
+                           description: caseStudiesDescription,
+                           buttonText: caseStudiesButtonText,
+                           items: caseStudiesItems.map(item => ({
+                                image: (item.image && item.image instanceof File) ? "" : (item.image || ""),
+                                alt: item.alt || "",
+                                link: item.link || ""
+                           }))
+                      },
+                      careerDomains: {
+                           title: careerDomainsTitle,
+                           description: careerDomainsDescription,
+                           items: careerDomainsItems.map(item => ({
+                                name: item.name || "",
+                                link: item.link || "",
+                                iconName: item.iconName || "",
+                                color: item.color || ""
+                           }))
+                      },
+                      schemas: schemas,
+                      videos: videos.map(v => ({
+                           ...(v._id ? { _id: v._id } : {}),
+                           video: (v.video && v.video instanceof File) ? "" : (v.video || ""),
+                           alt: v.alt || "",
+                           title: v.title || "",
+                           thumbnail: (v.thumbnail && v.thumbnail instanceof File) ? "" : (v.thumbnail || "")
+                      }))
+                 };
  
                 let nextCourses = [...courses];
                 if (editIndex !== null) {
@@ -1707,15 +1778,40 @@ export default function Courses() {
                                                        <input
                                                             type="file"
                                                             accept="video/*"
+                                                            disabled={v.uploading}
                                                             onChange={(e) => {
                                                                  if (e.target.files && e.target.files[0]) {
-                                                                      updateVideoItemField(vIdx, "video", e.target.files[0]);
+                                                                      handleVideoFileUpload(vIdx, e.target.files[0]);
                                                                  }
                                                             }}
-                                                            className="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 cursor-pointer"
+                                                            className="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 cursor-pointer disabled:opacity-50"
                                                        />
-                                                       {v.video instanceof File && (
-                                                            <p className="text-[10px] text-emerald-600 font-bold mt-0.5">Selected file: {v.video.name}</p>
+                                                       {v.uploading && (
+                                                            <div className="mt-2 space-y-1.5 bg-orange-50/80 p-2.5 rounded-lg border border-orange-200">
+                                                                 <div className="flex items-center justify-between text-[11px] font-bold text-orange-600">
+                                                                      <span className="flex items-center gap-1.5">
+                                                                           <div className="w-3 h-3 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                                                                           Uploading video...
+                                                                      </span>
+                                                                      <span>{v.progress || 0}%</span>
+                                                                 </div>
+                                                                 <div className="w-full bg-orange-200/60 rounded-full h-2 overflow-hidden">
+                                                                      <div
+                                                                           className="bg-orange-500 h-2 rounded-full transition-all duration-200"
+                                                                           style={{ width: `${v.progress || 0}%` }}
+                                                                      ></div>
+                                                                 </div>
+                                                            </div>
+                                                       )}
+                                                       {!v.uploading && v.video && typeof v.video === "string" && (
+                                                            <p className="text-[10px] text-emerald-600 font-bold mt-1 flex items-center gap-1">
+                                                                 <span>✓</span> Video Uploaded: <span className="font-mono text-gray-600 truncate max-w-xs">{v.video}</span>
+                                                            </p>
+                                                       )}
+                                                       {v.uploadError && (
+                                                            <p className="text-[10px] text-red-600 font-bold mt-1">
+                                                                 ✕ {v.uploadError}
+                                                            </p>
                                                        )}
                                                   </div>
                                              </div>
@@ -1755,9 +1851,21 @@ export default function Courses() {
                                    <button
                                         type="button"
                                         onClick={() => setShowVideoModal(false)}
-                                        className="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl transition cursor-pointer shadow-sm"
+                                        disabled={videos.some(v => v.uploading)}
+                                        className={`px-5 py-2 text-xs font-bold rounded-xl transition shadow-sm ${
+                                             videos.some(v => v.uploading)
+                                                  ? "bg-gray-300 text-gray-400 cursor-not-allowed"
+                                                  : "bg-orange-500 hover:bg-orange-600 text-white cursor-pointer"
+                                        }`}
                                    >
-                                        Done ({videos.length} Video{videos.length !== 1 ? 's' : ''})
+                                        {videos.some(v => v.uploading) ? (
+                                             <span className="flex items-center gap-2">
+                                                  <div className="w-3 h-3 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
+                                                  Uploading Video...
+                                             </span>
+                                        ) : (
+                                             `Done (${videos.length} Video${videos.length !== 1 ? 's' : ''})`
+                                        )}
                                    </button>
                               </div>
                          </div>
