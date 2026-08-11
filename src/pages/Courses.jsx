@@ -1176,6 +1176,11 @@ export default function Courses() {
 
                                    {/* Cover Image */}
                                    <div className="space-y-1.5">
+                                        <label className={labelClass}>Course Cover Image</label>
+                                        <ImageUploader
+                                             setImage={setImage}
+                                             initialImage={typeof editItem?.image === "string" ? editItem.image : null}
+                                        />
                                         <p className="text-[11px] text-gray-400 mt-1">Suggested size: 800 x 450 px (ideal for standard wide card layout on desktop and mobile).</p>
                                         <div className="mt-2">
                                              <label className={labelClass}>Image Alt Text</label>

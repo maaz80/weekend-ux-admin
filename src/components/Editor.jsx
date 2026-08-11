@@ -404,15 +404,16 @@ export default function Editor({ value, onChange }) {
                <style>{`
         /* ── Link styles ── */
         .editor-content-wrapper .ProseMirror a.editor-link {
-          color: #2563eb;
+          color: #FFD400;
+          font-weight: 700;
           text-decoration: underline;
           text-underline-offset: 3px;
           cursor: pointer;
-          transition: color 0.15s;
+          transition: color 0.15s, opacity 0.15s;
         }
 
         .editor-content-wrapper .ProseMirror a.editor-link:hover {
-          color: #1d4ed8;
+          opacity: 0.85;
         }
 
         /* Reset ProseMirror defaults */

@@ -2,11 +2,32 @@ import { useEffect, useState } from "react";
 import Editor from "../components/Editor";
 import ImageUploader from "../components/ImageUploader";
 import Breadcrumb from "../components/BreadCrumb";
-import { HiOutlinePlus, HiOutlineTrash, HiOutlineBookOpen, HiOutlineCalendar, HiOutlineClock } from "react-icons/hi";
+import { HiOutlinePlus, HiOutlineTrash, HiOutlineBookOpen, HiOutlineCalendar, HiOutlineClock, HiOutlineUserGroup, HiOutlinePencil, HiOutlineSparkles, HiOutlineCheck } from "react-icons/hi";
 import { getAdminToken } from "../utils/auth";
 import { useToast } from "../context/ToastContext";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/api';
+
+const DEFAULT_AUTHOR_TEMPLATES = [
+     {
+          id: "tpl-1",
+          label: "Vipul Rajput - Senior UX Designer",
+          name: "Vipul Rajput",
+          designation: "Senior Product Designer & Educator",
+          bio: "Experienced UI/UX Designer leading digital product experiences and mentoring aspiring designers.",
+          twitter: "https://x.com/vipulrajput",
+          linkedin: "https://linkedin.com/in/vipulrajput"
+     },
+     {
+          id: "tpl-2",
+          label: "Weekend UX Team (Editorial Board)",
+          name: "Weekend UX Team",
+          designation: "Editorial & Research Team",
+          bio: "Curated insights, tutorials, and career guidance by the Weekend UX design mentors.",
+          twitter: "https://x.com/weekendux",
+          linkedin: "https://linkedin.com/company/weekendux"
+     }
+];
 
 export default function Blogs() {
      const { showToast } = useToast();
@@ -40,6 +61,21 @@ export default function Blogs() {
      const [authorLinkedin, setAuthorLinkedin] = useState('');
      const [authorUpdatedDate, setAuthorUpdatedDate] = useState('');
 
+     // Author Templates States
+     const [authorTemplates, setAuthorTemplates] = useState(DEFAULT_AUTHOR_TEMPLATES);
+     const [showTemplatesModal, setShowTemplatesModal] = useState(false);
+     const [selectedTemplateId, setSelectedTemplateId] = useState("");
+     const [savingTemplates, setSavingTemplates] = useState(false);
+
+     const [editingTemplateId, setEditingTemplateId] = useState(null);
+     const [showTplForm, setShowTplForm] = useState(false);
+     const [tplLabel, setTplLabel] = useState("");
+     const [tplName, setTplName] = useState("");
+     const [tplDesignation, setTplDesignation] = useState("");
+     const [tplBio, setTplBio] = useState("");
+     const [tplTwitter, setTplTwitter] = useState("");
+     const [tplLinkedin, setTplLinkedin] = useState("");
+
      // Blog Page Configuration States
      const [heroStarttitle, setHeroStarttitle] = useState("");
      const [heroEndtitle, setHeroEndtitle] = useState("");
@@ -61,6 +97,22 @@ export default function Blogs() {
                          setFeaturedStarttitle(data.featuredblogs.starttitle || "");
                          setFeaturedEndtitle(data.featuredblogs.endtitle || "");
                     }
+                    if (Array.isArray(data.authorTemplates) && data.authorTemplates.length > 0) {
+                         setAuthorTemplates(data.authorTemplates);
+                         localStorage.setItem("admin_author_templates", JSON.stringify(data.authorTemplates));
+                    } else {
+                         const localSaved = localStorage.getItem("admin_author_templates");
+                         if (localSaved) {
+                              try {
+                                   const parsed = JSON.parse(localSaved);
+                                   if (Array.isArray(parsed) && parsed.length > 0) {
+                                        setAuthorTemplates(parsed);
+                                   }
+                              } catch (e) {
+                                   console.error("Error parsing saved templates:", e);
+                              }
+                         }
+                    }
                }
           } catch (err) {
                console.error("Error fetching blogs:", err);
@@ -70,6 +122,104 @@ export default function Blogs() {
      useEffect(() => {
           fetchBlogs();
      }, []);
+
+     const persistAuthorTemplates = async (templatesToSave) => {
+          setSavingTemplates(true);
+          setAuthorTemplates(templatesToSave);
+          try {
+               localStorage.setItem("admin_author_templates", JSON.stringify(templatesToSave));
+               const res = await fetch(`${API_URL}/blogs`, {
+                    method: "PUT",
+                    headers: {
+                         "Content-Type": "application/json",
+                         "Authorization": `Bearer ${getAdminToken()}`
+                    },
+                    body: JSON.stringify({
+                         authorTemplates: templatesToSave
+                    })
+               });
+               if (res.ok) {
+                    showToast("Author templates saved successfully!", "success");
+               }
+          } catch (err) {
+               console.error("Error saving author templates:", err);
+          } finally {
+               setSavingTemplates(false);
+          }
+     };
+
+     const handleOpenCreateTpl = () => {
+          setEditingTemplateId(null);
+          setTplLabel("");
+          setTplName("");
+          setTplDesignation("");
+          setTplBio("");
+          setTplTwitter("");
+          setTplLinkedin("");
+          setShowTplForm(true);
+     };
+
+     const handleOpenEditTpl = (tpl) => {
+          setEditingTemplateId(tpl.id);
+          setTplLabel(tpl.label || tpl.name || "");
+          setTplName(tpl.name || "");
+          setTplDesignation(tpl.designation || "");
+          setTplBio(tpl.bio || "");
+          setTplTwitter(tpl.twitter || "");
+          setTplLinkedin(tpl.linkedin || "");
+          setShowTplForm(true);
+     };
+
+     const handleSaveTplForm = async (e) => {
+          e.preventDefault();
+          if (!tplName.trim()) {
+               showToast("Author Name is required for template.", "error");
+               return;
+          }
+          const newTplObj = {
+               id: editingTemplateId || `tpl-${Date.now()}`,
+               label: tplLabel.trim() || tplName.trim(),
+               name: tplName.trim(),
+               designation: tplDesignation.trim(),
+               bio: tplBio.trim(),
+               twitter: tplTwitter.trim(),
+               linkedin: tplLinkedin.trim()
+          };
+
+          let updatedList;
+          if (editingTemplateId) {
+               updatedList = authorTemplates.map(t => t.id === editingTemplateId ? newTplObj : t);
+          } else {
+               updatedList = [...authorTemplates, newTplObj];
+          }
+          await persistAuthorTemplates(updatedList);
+          setShowTplForm(false);
+     };
+
+     const handleDeleteTpl = async (tplId) => {
+          if (!window.confirm("Are you sure you want to delete this author template?")) return;
+          const updatedList = authorTemplates.filter(t => t.id !== tplId);
+          await persistAuthorTemplates(updatedList);
+     };
+
+     const handleResetDefaultTpls = async () => {
+          if (!window.confirm("Reset all templates back to 4 default templates?")) return;
+          await persistAuthorTemplates(DEFAULT_AUTHOR_TEMPLATES);
+     };
+
+     const handleApplyTemplate = (tplId) => {
+          setSelectedTemplateId(tplId);
+          if (!tplId) return;
+          const found = authorTemplates.find(t => t.id === tplId);
+          if (found) {
+               setAuthorName(found.name || '');
+               setAuthorDesignation(found.designation || '');
+               setAuthorBio(found.bio || '');
+               setAuthorTwitter(found.twitter || '');
+               setAuthorLinkedin(found.linkedin || '');
+               showToast(`Author details pre-filled from "${found.label || found.name}"`, "success");
+          }
+     };
 
      const saveBlogPageTitles = async () => {
           try {
@@ -131,6 +281,7 @@ export default function Blogs() {
           setAuthorLinkedin('');
           setAuthorUpdatedDate('');
           setSchemas([]);
+          setSelectedTemplateId("");
           setShowModal(true);
      };
 
@@ -177,6 +328,7 @@ export default function Blogs() {
           setAuthorTwitter(blogAuthor.twitter || '');
           setAuthorLinkedin(blogAuthor.linkedin || '');
           setAuthorUpdatedDate(blogAuthor.updatedDate || '');
+          setSelectedTemplateId("");
           setShowModal(true);
      };
 
@@ -283,13 +435,26 @@ export default function Blogs() {
                               </p>
                          </div>
 
-                         <button
-                              onClick={openUpload}
-                              className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-md shadow-orange-200 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer shrink-0"
-                         >
-                              <HiOutlinePlus className="w-4 h-4 text-white" />
-                              <span>Upload Blog</span>
-                         </button>
+                         <div className="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap">
+                              <button
+                                   onClick={() => setShowTemplatesModal(true)}
+                                   className="inline-flex items-center gap-2 bg-white hover:bg-orange-50/60 border border-orange-200/80 text-orange-600 hover:text-orange-700 text-sm font-semibold px-4 py-2.5 rounded-xl shadow-xs transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                              >
+                                   <HiOutlineUserGroup className="w-4.5 h-4.5 text-orange-500" />
+                                   <span>Author Templates</span>
+                                   <span className="bg-orange-500 text-white text-[11px] px-2 py-0.5 rounded-full font-bold">
+                                        {authorTemplates.length}
+                                   </span>
+                              </button>
+
+                              <button
+                                   onClick={openUpload}
+                                   className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-md shadow-orange-200 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer shrink-0"
+                              >
+                                   <HiOutlinePlus className="w-4 h-4 text-white" />
+                                   <span>Upload Blog</span>
+                              </button>
+                         </div>
                     </div>
 
                     {/* Blog Page Titles Settings Card */}
@@ -420,7 +585,7 @@ export default function Blogs() {
                     )}
                </div>
 
-               {/* Add / Edit Modal */}
+               {/* Add / Edit Blog Post Modal */}
                {showModal && (
                     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                          <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl max-h-[92vh] overflow-y-auto flex flex-col justify-between">
@@ -437,7 +602,7 @@ export default function Blogs() {
                                    <button
                                         onClick={() => setShowModal(false)}
                                         className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors cursor-pointer"
-                                    >
+                                   >
                                         ✕
                                    </button>
                               </div>
@@ -589,55 +754,96 @@ export default function Blogs() {
                                         </div>
                                    </div>
 
-                                   {/* Author Information */}
-                                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2 pt-2">Author Information</p>
+                                   {/* Author Information Section */}
+                                   <div className="space-y-4 pt-2">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-2">
+                                             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Author Information</p>
+                                             {authorTemplates.length > 0 && (
+                                                  <span className="text-[11px] text-orange-600 font-medium bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-100">
+                                                       {authorTemplates.length} Template(s) Available
+                                                  </span>
+                                             )}
+                                        </div>
 
-                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1.5">
-                                             <label className={labelClass}>Author Name</label>
-                                             <input
-                                                  value={authorName}
-                                                  onChange={(e) => setAuthorName(e.target.value)}
-                                                  placeholder="e.g. Vipul Rajput"
-                                                  className={inputClass}
-                                             />
+                                        {/* Author Template Dropdown Auto-Fill */}
+                                        <div className="bg-gradient-to-r from-orange-50/80 to-amber-50/50 p-4 rounded-xl border border-orange-200/80 shadow-xs space-y-2">
+                                             <div className="flex items-center justify-between">
+                                                  <label className="text-xs font-bold text-orange-900 uppercase tracking-wider flex items-center gap-1.5">
+                                                       <HiOutlineSparkles className="w-4 h-4 text-orange-500" />
+                                                       Select Author Template to Auto-Fill
+                                                  </label>
+                                                  <button
+                                                       type="button"
+                                                       onClick={() => {
+                                                            setShowModal(false);
+                                                            setShowTemplatesModal(true);
+                                                       }}
+                                                       className="text-[11px] font-bold text-orange-600 hover:text-orange-700 underline cursor-pointer"
+                                                  >
+                                                       + Manage Templates
+                                                  </button>
+                                             </div>
+                                             <select
+                                                  value={selectedTemplateId}
+                                                  onChange={(e) => handleApplyTemplate(e.target.value)}
+                                                  className="w-full px-3.5 py-2.5 rounded-xl border border-orange-200 bg-white text-xs font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all cursor-pointer shadow-xs"
+                                             >
+                                                  <option value="">-- Choose Author Template (Click to Auto-Fill 5 Fields) --</option>
+                                                  {authorTemplates.map((tpl) => (
+                                                       <option key={tpl.id} value={tpl.id}>
+                                                            {tpl.label || tpl.name} ({tpl.designation || 'Author'})
+                                                       </option>
+                                                  ))}
+                                             </select>
                                         </div>
-                                        <div className="space-y-1.5">
-                                             <label className={labelClass}>Author Designation</label>
-                                             <input
-                                                  value={authorDesignation}
-                                                  onChange={(e) => setAuthorDesignation(e.target.value)}
-                                                  placeholder="e.g. SEO & AEO Expert"
-                                                  className={inputClass}
-                                             />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                             <label className={labelClass}>Twitter / X URL</label>
-                                             <input
-                                                  value={authorTwitter}
-                                                  onChange={(e) => setAuthorTwitter(e.target.value)}
-                                                  placeholder="e.g. https://x.com/username"
-                                                  className={inputClass}
-                                             />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                             <label className={labelClass}>LinkedIn URL</label>
-                                             <input
-                                                  value={authorLinkedin}
-                                                  onChange={(e) => setAuthorLinkedin(e.target.value)}
-                                                  placeholder="e.g. https://linkedin.com/in/username"
-                                                  className={inputClass}
-                                             />
-                                        </div>
-                                        <div className="space-y-1.5 sm:col-span-2">
-                                             <label className={labelClass}>Author Bio</label>
-                                             <textarea
-                                                  value={authorBio}
-                                                  onChange={(e) => setAuthorBio(e.target.value)}
-                                                  placeholder="Short bio about the author..."
-                                                  rows={3}
-                                                  className={inputClass}
-                                             />
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>Author Name</label>
+                                                  <input
+                                                       value={authorName}
+                                                       onChange={(e) => setAuthorName(e.target.value)}
+                                                       placeholder="e.g. Vipul Rajput"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>Author Designation</label>
+                                                  <input
+                                                       value={authorDesignation}
+                                                       onChange={(e) => setAuthorDesignation(e.target.value)}
+                                                       placeholder="e.g. SEO & AEO Expert"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>Twitter / X URL</label>
+                                                  <input
+                                                       value={authorTwitter}
+                                                       onChange={(e) => setAuthorTwitter(e.target.value)}
+                                                       placeholder="e.g. https://x.com/username"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>LinkedIn URL</label>
+                                                  <input
+                                                       value={authorLinkedin}
+                                                       onChange={(e) => setAuthorLinkedin(e.target.value)}
+                                                       placeholder="e.g. https://linkedin.com/in/username"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5 sm:col-span-2">
+                                                  <label className={labelClass}>Author Bio</label>
+                                                  <textarea
+                                                       value={authorBio}
+                                                       onChange={(e) => setAuthorBio(e.target.value)}
+                                                       placeholder="Short bio about the author..."
+                                                       rows={3}
+                                                       className={inputClass}
+                                                  />
+                                             </div>
                                         </div>
                                    </div>
 
@@ -650,116 +856,117 @@ export default function Blogs() {
                                              <Editor value={content} onChange={setContent} />
                                         </div>
                                    </div>
-                                    {/* FAQ Section */}
-                                    <div className="space-y-4 border-t border-gray-100 pt-4">
-                                         <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">Frequently Asked Questions (FAQs)</p>
-                                         
-                                         {/* FAQ Headings Inputs */}
-                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                              <div className="space-y-1.5">
-                                                   <label className={labelClass}>FAQ Section Title</label>
-                                                   <input
-                                                        value={faqTitle}
-                                                        onChange={(e) => setFaqTitle(e.target.value)}
-                                                        placeholder="e.g. FAQ"
-                                                        className={inputClass}
-                                                   />
-                                              </div>
-                                              <div className="space-y-1.5">
-                                                   <label className={labelClass}>FAQ Start Heading</label>
-                                                   <input
-                                                        value={faqStartheading}
-                                                        onChange={(e) => setFaqStartheading(e.target.value)}
-                                                        placeholder="e.g. All You"
-                                                        className={inputClass}
-                                                   />
-                                              </div>
-                                              <div className="space-y-1.5">
-                                                   <label className={labelClass}>FAQ Mid Heading</label>
-                                                   <input
-                                                        value={faqMidheading}
-                                                        onChange={(e) => setFaqMidheading(e.target.value)}
-                                                        placeholder="e.g. Need"
-                                                        className={inputClass}
-                                                   />
-                                              </div>
-                                              <div className="space-y-1.5">
-                                                   <label className={labelClass}>FAQ End Heading</label>
-                                                   <input
-                                                        value={faqEndheading}
-                                                        onChange={(e) => setFaqEndheading(e.target.value)}
-                                                        placeholder="e.g. To Know"
-                                                        className={inputClass}
-                                                   />
-                                              </div>
-                                              <div className="space-y-1.5 sm:col-span-2">
-                                                   <label className={labelClass}>FAQ Section Description</label>
-                                                   <textarea
-                                                        value={faqDescription}
-                                                        onChange={(e) => setFaqDescription(e.target.value)}
-                                                        placeholder="FAQ section description..."
-                                                        rows={2}
-                                                        className={inputClass}
-                                                   />
-                                              </div>
-                                         </div>
 
-                                         <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-1 mt-4">FAQ Q&A Items</p>
-                                         <div className="space-y-4">
-                                              {faqItems.map((item, index) => (
-                                                   <div key={index} className="p-4 bg-gray-50 rounded-xl border border-gray-200 relative space-y-3">
-                                                        <button
-                                                             type="button"
-                                                             onClick={() => {
-                                                                  setFaqItems(prev => prev.filter((_, i) => i !== index));
+                                   {/* FAQ Section */}
+                                   <div className="space-y-4 border-t border-gray-100 pt-4">
+                                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">Frequently Asked Questions (FAQs)</p>
+                                        
+                                        {/* FAQ Headings Inputs */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>FAQ Section Title</label>
+                                                  <input
+                                                       value={faqTitle}
+                                                       onChange={(e) => setFaqTitle(e.target.value)}
+                                                       placeholder="e.g. FAQ"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>FAQ Start Heading</label>
+                                                  <input
+                                                       value={faqStartheading}
+                                                       onChange={(e) => setFaqStartheading(e.target.value)}
+                                                       placeholder="e.g. All You"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>FAQ Mid Heading</label>
+                                                  <input
+                                                       value={faqMidheading}
+                                                       onChange={(e) => setFaqMidheading(e.target.value)}
+                                                       placeholder="e.g. Need"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>FAQ End Heading</label>
+                                                  <input
+                                                       value={faqEndheading}
+                                                       onChange={(e) => setFaqEndheading(e.target.value)}
+                                                       placeholder="e.g. To Know"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5 sm:col-span-2">
+                                                  <label className={labelClass}>FAQ Section Description</label>
+                                                  <textarea
+                                                       value={faqDescription}
+                                                       onChange={(e) => setFaqDescription(e.target.value)}
+                                                       placeholder="FAQ section description..."
+                                                       rows={2}
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                        </div>
+
+                                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-1 mt-4">FAQ Q&A Items</p>
+                                        <div className="space-y-4">
+                                             {faqItems.map((item, index) => (
+                                                  <div key={index} className="p-4 bg-gray-50 rounded-xl border border-gray-200 relative space-y-3">
+                                                       <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                 setFaqItems(prev => prev.filter((_, i) => i !== index));
                                                              }}
-                                                             className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-500 transition-colors cursor-pointer"
-                                                        >
-                                                             <HiOutlineTrash className="text-sm" />
-                                                        </button>
-                                                        <div className="space-y-1.5 pr-8">
-                                                             <label className={labelClass}>Question {index + 1}</label>
-                                                             <input
-                                                                  value={item.ques}
-                                                                  onChange={(e) => {
-                                                                       const val = e.target.value;
-                                                                       setFaqItems(prev => prev.map((f, i) => i === index ? { ...f, ques: val } : f));
-                                                                  }}
-                                                                  placeholder="e.g. What is UI UX?"
-                                                                  className={inputClass}
-                                                                  required
-                                                             />
-                                                        </div>
-                                                        <div className="space-y-1.5 pr-8">
-                                                             <label className={labelClass}>Answer {index + 1}</label>
-                                                             <textarea
-                                                                  value={item.ans}
-                                                                  onChange={(e) => {
-                                                                       const val = e.target.value;
-                                                                       setFaqItems(prev => prev.map((f, i) => i === index ? { ...f, ans: val } : f));
-                                                                  }}
-                                                                  placeholder="Answer content..."
-                                                                  rows={2}
-                                                                  className={inputClass}
-                                                                  required
-                                                             />
-                                                        </div>
-                                                   </div>
-                                              ))}
+                                                            className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-500 transition-colors cursor-pointer"
+                                                       >
+                                                            <HiOutlineTrash className="text-sm" />
+                                                       </button>
+                                                       <div className="space-y-1.5 pr-8">
+                                                            <label className={labelClass}>Question {index + 1}</label>
+                                                            <input
+                                                                 value={item.ques}
+                                                                 onChange={(e) => {
+                                                                      const val = e.target.value;
+                                                                      setFaqItems(prev => prev.map((f, i) => i === index ? { ...f, ques: val } : f));
+                                                                 }}
+                                                                 placeholder="e.g. What is UI UX?"
+                                                                 className={inputClass}
+                                                                 required
+                                                            />
+                                                       </div>
+                                                       <div className="space-y-1.5 pr-8">
+                                                            <label className={labelClass}>Answer {index + 1}</label>
+                                                            <textarea
+                                                                 value={item.ans}
+                                                                 onChange={(e) => {
+                                                                      const val = e.target.value;
+                                                                      setFaqItems(prev => prev.map((f, i) => i === index ? { ...f, ans: val } : f));
+                                                                 }}
+                                                                 placeholder="Answer content..."
+                                                                 rows={2}
+                                                                 className={inputClass}
+                                                                 required
+                                                            />
+                                                       </div>
+                                                  </div>
+                                             ))}
 
-                                              <button
-                                                   type="button"
-                                                   onClick={() => {
-                                                        setFaqItems(prev => [...prev, { ques: "", ans: "" }]);
-                                                   }}
-                                                   className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:text-orange-500 hover:border-orange-500 transition-all font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer bg-white"
-                                              >
-                                                   <HiOutlinePlus className="text-sm" />
-                                                   Add FAQ Item
-                                              </button>
-                                          </div>
-                                     </div>
-                                </div>
+                                             <button
+                                                  type="button"
+                                                  onClick={() => {
+                                                       setFaqItems(prev => [...prev, { ques: "", ans: "" }]);
+                                                  }}
+                                                  className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:text-orange-500 hover:border-orange-500 transition-all font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer bg-white"
+                                             >
+                                                  <HiOutlinePlus className="text-sm" />
+                                                  Add FAQ Item
+                                             </button>
+                                        </div>
+                                   </div>
+                              </div>
 
                               {/* Modal Footer */}
                               <div className="flex items-center justify-end gap-3 px-7 py-5 border-t border-gray-100 bg-white sticky bottom-0 rounded-b-2xl">
@@ -786,6 +993,240 @@ export default function Blogs() {
                                         ) : (
                                              <span>{editItem ? "Save Changes" : "Publish Blog"}</span>
                                         )}
+                                   </button>
+                              </div>
+                         </div>
+                    </div>
+               )}
+
+               {/* Author Templates Management Modal */}
+               {showTemplatesModal && (
+                    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                         <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto flex flex-col justify-between">
+                              {/* Modal Header */}
+                              <div className="flex items-center justify-between px-7 py-5 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl z-10">
+                                   <div>
+                                        <div className="flex items-center gap-2">
+                                             <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center">
+                                                  <HiOutlineUserGroup className="w-5 h-5" />
+                                             </div>
+                                             <h2 className="text-lg font-bold text-gray-900">
+                                                  Blog Author Templates
+                                             </h2>
+                                        </div>
+                                        <p className="text-xs text-gray-400 mt-1">
+                                             Manage saved author profiles to pre-fill all 5 author fields in any blog post instantly.
+                                        </p>
+                                   </div>
+                                   <button
+                                        onClick={() => {
+                                             setShowTemplatesModal(false);
+                                             setShowTplForm(false);
+                                        }}
+                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors cursor-pointer"
+                                   >
+                                        ✕
+                                   </button>
+                              </div>
+
+                              {/* Modal Body */}
+                              <div className="px-7 py-6 space-y-6">
+                                   {/* Action Header */}
+                                   <div className="flex items-center justify-between flex-wrap gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200/70">
+                                        <div>
+                                             <p className="text-xs font-bold text-gray-800 uppercase tracking-wider">
+                                                  Saved Profiles ({authorTemplates.length})
+                                             </p>
+                                             <p className="text-[11px] text-gray-500 mt-0.5">
+                                                  Create template profiles for different authors or guest writers.
+                                             </p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                             <button
+                                                  type="button"
+                                                  onClick={handleResetDefaultTpls}
+                                                  disabled={savingTemplates}
+                                                  className="text-xs font-semibold text-gray-600 hover:text-gray-900 bg-white border border-gray-200 px-3 py-2 rounded-xl transition-all cursor-pointer shadow-xs hover:bg-gray-50"
+                                             >
+                                                  Reset Defaults
+                                             </button>
+                                             <button
+                                                  type="button"
+                                                  onClick={handleOpenCreateTpl}
+                                                  className="inline-flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all cursor-pointer shadow-xs"
+                                             >
+                                                  <HiOutlinePlus className="w-4 h-4" />
+                                                  Add New Template
+                                             </button>
+                                        </div>
+                                   </div>
+
+                                   {/* Inline Create/Edit Form */}
+                                   {showTplForm && (
+                                        <form onSubmit={handleSaveTplForm} className="bg-orange-50/40 p-5 rounded-2xl border border-orange-200 space-y-4 shadow-sm">
+                                             <div className="flex items-center justify-between border-b border-orange-100 pb-2">
+                                                  <h3 className="text-xs font-bold text-orange-900 uppercase tracking-wider flex items-center gap-1.5">
+                                                       <HiOutlinePencil className="w-4 h-4 text-orange-500" />
+                                                       {editingTemplateId ? "Edit Author Template" : "Create New Author Template"}
+                                                  </h3>
+                                                  <button
+                                                       type="button"
+                                                       onClick={() => setShowTplForm(false)}
+                                                       className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer"
+                                                  >
+                                                       Cancel
+                                                  </button>
+                                             </div>
+
+                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                  <div className="space-y-1.5 sm:col-span-2">
+                                                       <label className={labelClass}>Template Label / Display Name</label>
+                                                       <input
+                                                            value={tplLabel}
+                                                            onChange={(e) => setTplLabel(e.target.value)}
+                                                            placeholder="e.g. Vipul Rajput - Senior Designer"
+                                                            className={inputClass}
+                                                            required
+                                                       />
+                                                  </div>
+                                                  <div className="space-y-1.5">
+                                                       <label className={labelClass}>Author Name</label>
+                                                       <input
+                                                            value={tplName}
+                                                            onChange={(e) => setTplName(e.target.value)}
+                                                            placeholder="e.g. Vipul Rajput"
+                                                            className={inputClass}
+                                                            required
+                                                       />
+                                                  </div>
+                                                  <div className="space-y-1.5">
+                                                       <label className={labelClass}>Author Designation</label>
+                                                       <input
+                                                            value={tplDesignation}
+                                                            onChange={(e) => setTplDesignation(e.target.value)}
+                                                            placeholder="e.g. Senior Product Designer"
+                                                            className={inputClass}
+                                                       />
+                                                  </div>
+                                                  <div className="space-y-1.5">
+                                                       <label className={labelClass}>Twitter / X URL</label>
+                                                       <input
+                                                            value={tplTwitter}
+                                                            onChange={(e) => setTplTwitter(e.target.value)}
+                                                            placeholder="e.g. https://x.com/username"
+                                                            className={inputClass}
+                                                       />
+                                                  </div>
+                                                  <div className="space-y-1.5">
+                                                       <label className={labelClass}>LinkedIn URL</label>
+                                                       <input
+                                                            value={tplLinkedin}
+                                                            onChange={(e) => setTplLinkedin(e.target.value)}
+                                                            placeholder="e.g. https://linkedin.com/in/username"
+                                                            className={inputClass}
+                                                       />
+                                                  </div>
+                                                  <div className="space-y-1.5 sm:col-span-2">
+                                                       <label className={labelClass}>Author Bio</label>
+                                                       <textarea
+                                                            value={tplBio}
+                                                            onChange={(e) => setTplBio(e.target.value)}
+                                                            placeholder="Brief bio about the author..."
+                                                            rows={2}
+                                                            className={inputClass}
+                                                       />
+                                                  </div>
+                                             </div>
+
+                                             <div className="flex justify-end gap-2 pt-2">
+                                                  <button
+                                                       type="button"
+                                                       onClick={() => setShowTplForm(false)}
+                                                       className="px-4 py-2 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer"
+                                                  >
+                                                       Cancel
+                                                  </button>
+                                                  <button
+                                                       type="submit"
+                                                       disabled={savingTemplates}
+                                                       className="px-5 py-2 text-xs font-bold text-white bg-orange-500 hover:bg-orange-600 rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5"
+                                                  >
+                                                       <HiOutlineCheck className="w-4 h-4" />
+                                                       <span>{editingTemplateId ? "Update Template" : "Save Template"}</span>
+                                                  </button>
+                                             </div>
+                                        </form>
+                                   )}
+
+                                   {/* Template Cards List */}
+                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {authorTemplates.map((tpl) => (
+                                             <div
+                                                  key={tpl.id}
+                                                  className="bg-white rounded-xl p-4 border border-gray-200/80 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between space-y-3 group"
+                                             >
+                                                  <div>
+                                                       <div className="flex items-start justify-between gap-2">
+                                                            <div>
+                                                                 <h4 className="font-bold text-gray-900 text-sm">
+                                                                      {tpl.label || tpl.name}
+                                                                 </h4>
+                                                                 {tpl.designation && (
+                                                                      <span className="inline-block mt-0.5 text-[11px] font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-100">
+                                                                           {tpl.designation}
+                                                                      </span>
+                                                                 )}
+                                                            </div>
+                                                            <div className="flex items-center gap-1 opacity-90">
+                                                                 <button
+                                                                      type="button"
+                                                                      onClick={() => handleOpenEditTpl(tpl)}
+                                                                      className="p-1.5 rounded-lg bg-gray-100 hover:bg-orange-100 hover:text-orange-600 text-gray-500 transition-colors cursor-pointer"
+                                                                      title="Edit Template"
+                                                                 >
+                                                                      <HiOutlinePencil className="w-3.5 h-3.5" />
+                                                                 </button>
+                                                                 <button
+                                                                      type="button"
+                                                                      onClick={() => handleDeleteTpl(tpl.id)}
+                                                                      className="p-1.5 rounded-lg bg-gray-100 hover:bg-red-100 hover:text-red-600 text-gray-500 transition-colors cursor-pointer"
+                                                                      title="Delete Template"
+                                                                 >
+                                                                      <HiOutlineTrash className="w-3.5 h-3.5" />
+                                                                 </button>
+                                                            </div>
+                                                       </div>
+
+                                                       <p className="text-xs text-gray-500 line-clamp-2 mt-2.5 leading-relaxed">
+                                                            {tpl.bio || "No bio provided."}
+                                                       </p>
+                                                  </div>
+
+                                                  <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
+                                                       <div className="truncate max-w-[180px]">
+                                                            <span className="font-medium text-gray-600">{tpl.name}</span>
+                                                       </div>
+                                                       {(tpl.twitter || tpl.linkedin) && (
+                                                            <span className="text-[10px] text-gray-400">
+                                                                 Socials linked
+                                                            </span>
+                                                       )}
+                                                  </div>
+                                             </div>
+                                        ))}
+                                   </div>
+                              </div>
+
+                              {/* Modal Footer */}
+                              <div className="flex items-center justify-end px-7 py-4 border-t border-gray-100 bg-white sticky bottom-0 rounded-b-2xl">
+                                   <button
+                                        onClick={() => {
+                                             setShowTemplatesModal(false);
+                                             setShowTplForm(false);
+                                        }}
+                                        className="px-6 py-2.5 text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer"
+                                   >
+                                        Close
                                    </button>
                               </div>
                          </div>
