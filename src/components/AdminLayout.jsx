@@ -41,7 +41,7 @@ const API = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
 
 export default function AdminLayout({ children }) {
      const [sidebarOpen, setSidebarOpen] = useState(false);
-     const [logoUrl, setLogoUrl] = useState("");
+     const [logoUrl, setLogoUrl] = useState("/logo.jpeg");
      const location = useLocation();
      const navigate = useNavigate();
 
@@ -94,13 +94,7 @@ export default function AdminLayout({ children }) {
                          {/* Brand Logo Header */}
                          <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100 shrink-0">
                               <Link to="/" className="flex items-center gap-2.5">
-                                   {logoUrl ? (
-                                        <img src={logoUrl} alt="Weekend UX Logo" className="h-8 w-auto max-w-16 object-contain rounded-md shadow-sm" />
-                                   ) : (
-                                        <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-orange-100">
-                                             W
-                                        </div>
-                                   )}
+                                   <img src={logoUrl || "/logo.jpeg"} alt="Weekend UX Logo" className="h-8 w-auto max-w-16 object-contain rounded-md shadow-sm" />
                                    <span className="text-gray-900 font-bold text-lg tracking-tight">
                                         WeekendUX<span className="text-orange-500 font-semibold">Admin</span>
                                    </span>
@@ -149,7 +143,7 @@ export default function AdminLayout({ children }) {
                                    </div>
                                    <div className="min-w-0">
                                         <p className="text-sm font-semibold text-gray-800 truncate font-sans">Administrator</p>
-                                        <p className="text-xs text-gray-400 truncate font-sans">admin@weekendux.com</p>
+                                        <p className="text-xs text-gray-400 truncate font-sans">support@weekendux.in</p>
                                    </div>
                               </div>
                          </div>

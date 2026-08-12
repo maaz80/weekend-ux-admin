@@ -11,7 +11,7 @@ export default function Login() {
      const [password, setPassword] = useState("");
      const [loading, setLoading] = useState(false);
      const [error, setError] = useState("");
-     const [logoUrl, setLogoUrl] = useState("");
+     const [logoUrl, setLogoUrl] = useState("/logo.jpeg");
 
      useEffect(() => {
           const fetchLogo = async () => {
@@ -78,13 +78,7 @@ export default function Login() {
                <div className="w-full max-w-md z-10 space-y-8">
                     {/* Brand / Logo */}
                     <div className="flex flex-col items-center justify-center text-center space-y-3">
-                         {logoUrl ? (
-                              <img src={logoUrl} alt="Weekend UX Logo" className="h-12 w-auto max-w-50 object-contain drop-shadow-sm" />
-                         ) : (
-                              <div className="w-12 h-12 rounded-2xl bg-orange-500 flex items-center justify-center text-white font-extrabold text-2xl shadow-lg shadow-orange-500/20">
-                                   W
-                              </div>
-                         )}
+                         <img src={logoUrl || "/logo.jpeg"} alt="Weekend UX Logo" className="h-12 w-auto max-w-50 object-contain drop-shadow-sm" />
                          <div>
                               <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
                                    Weekend UX Admin
