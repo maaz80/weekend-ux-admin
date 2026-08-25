@@ -81,6 +81,119 @@ export default function Courses() {
       const [videos, setVideos] = useState([]);
       const [showVideoModal, setShowVideoModal] = useState(false);
 
+      // Google Meet Modal & Dispatch States
+      const [showMeetModal, setShowMeetModal] = useState(false);
+      const [selectedCourseForMeet, setSelectedCourseForMeet] = useState("ALL");
+      const [meetUrl, setMeetUrl] = useState("");
+      const [meetTitle, setMeetTitle] = useState("Live Interactive UI/UX Class & Mentorship");
+      const [meetScheduledAt, setMeetScheduledAt] = useState("Today at 7:00 PM");
+      const [meetInstructions, setMeetInstructions] = useState("");
+      const [meetSaveToCourse, setMeetSaveToCourse] = useState(true);
+      const [sendingMeetEmail, setSendingMeetEmail] = useState(false);
+
+      const generateInstantMeetUrl = () => {
+           const chars = "abcdefghijklmnopqrstuvwxyz";
+           const seg = (len) => Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+           const url = `https://meet.google.com/wux-${seg(4)}-${seg(3)}`;
+           setMeetUrl(url);
+           return url;
+      };
+
+      const handleCourseSelectionChange = (courseVal) => {
+           setSelectedCourseForMeet(courseVal);
+           if (courseVal === "ALL") {
+                setMeetTitle("Live Interactive UI/UX Class & Mentorship");
+           } else {
+                const found = courses.find(c => (c._id && c._id.toString() === courseVal) || (c.slug === courseVal));
+                if (found && found.title) {
+                     setMeetTitle(`Live Session: ${found.title}`);
+                } else {
+                     setMeetTitle("Live Interactive Session");
+                }
+           }
+      };
+
+      const openMeetModal = (courseIdOrSlug = "ALL") => {
+           handleCourseSelectionChange(courseIdOrSlug);
+           generateInstantMeetUrl();
+           setMeetInstructions("");
+           setShowMeetModal(true);
+      };
+
+      const handleSendMeetLink = async (e) => {
+           e.preventDefault();
+           if (!meetUrl) {
+                showToast("Please enter a Google Meet link.", "error");
+                return;
+           }
+
+           setSendingMeetEmail(true);
+           try {
+                const targetCourseObj = courses.find(c => (c._id && c._id.toString() === selectedCourseForMeet) || (c.slug === selectedCourseForMeet));
+                
+                const res = await fetch(`${API_URL}/admin/send-meet-link`, {
+                     method: "POST",
+                     headers: {
+                          "Content-Type": "application/json",
+                          "Authorization": `Bearer ${getAdminToken()}`
+                     },
+                     body: JSON.stringify({
+                          courseId: selectedCourseForMeet,
+                          courseSlug: targetCourseObj?.slug || "",
+                          courseTitle: targetCourseObj?.title || "All Courses",
+                          meetUrl,
+                          title: meetTitle,
+                          scheduledAt: meetScheduledAt,
+                          instructions: meetInstructions,
+                          saveToCourse: meetSaveToCourse
+                     })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                     showToast(data.message || `Meet link successfully emailed to ${data.sentCount} students!`, "success");
+                     setShowMeetModal(false);
+                     setMeetUrl("");
+                     setMeetInstructions("");
+                     setMeetScheduledAt("Today at 7:00 PM");
+                     fetchCourses();
+                } else {
+                     showToast(data.error || "Failed to send meet emails.", "error");
+                }
+           } catch (err) {
+                console.error("Error sending meet emails:", err);
+                showToast("Server error occurred.", "error");
+           } finally {
+                setSendingMeetEmail(false);
+           }
+      };
+
+      const handleClearLiveClass = async (courseObj) => {
+           if (!window.confirm(`End live class for "${courseObj.title}"?`)) return;
+           try {
+                const res = await fetch(`${API_URL}/admin/clear-live-class`, {
+                     method: "POST",
+                     headers: {
+                          "Content-Type": "application/json",
+                          "Authorization": `Bearer ${getAdminToken()}`
+                     },
+                     body: JSON.stringify({
+                          courseId: courseObj._id,
+                          courseSlug: courseObj.slug
+                     })
+                });
+                if (res.ok) {
+                     showToast("Live class ended.", "success");
+                     fetchCourses();
+                } else {
+                     showToast("Failed to clear live class.", "error");
+                }
+           } catch (err) {
+                console.error("Error clearing live class:", err);
+                showToast("Server error occurred.", "error");
+           }
+      };
+
       const addVideoItem = () => {
            setVideos(prev => [...prev, { video: "", alt: "", title: "", thumbnail: "", uploading: false, progress: 0, uploadError: "" }]);
       };
@@ -649,15 +762,25 @@ export default function Courses() {
                          <p className="text-sm text-gray-500 mt-1">Manage single-document courses and layout metadata.</p>
                     </div>
 
-                    <button
-                         onClick={openUpload}
-                         className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-md shadow-orange-200 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer shrink-0"
-                    >
-                         <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                         </svg>
-                         Add Course
-                    </button>
+                    <div className="flex flex-wrap items-center gap-3">
+                         <button
+                              onClick={() => openMeetModal("ALL")}
+                              className="flex items-center gap-2 bg-orange-500 hover:bg-[#e6a300] text-black text-sm font-extrabold px-5 py-2.5 rounded-xl shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer shrink-0"
+                         >
+                              <span className="w-2.5 h-2.5 rounded-full bg-black animate-ping" />
+                              <span>🔴 Live Meet Link</span>
+                         </button>
+
+                         <button
+                              onClick={openUpload}
+                              className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-md shadow-orange-200 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer shrink-0"
+                         >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                              </svg>
+                              Add Course
+                         </button>
+                    </div>
                </div>
 
                <div className="flex border-b border-gray-200 mb-8 max-w-7xl mx-auto px-6 lg:px-10">
@@ -720,16 +843,40 @@ export default function Courses() {
                                                        </p>
                                                   </div>
 
-                                                  <div className="flex gap-2.5 pt-2">
+                                                  {/* Active Live Class Indicator */}
+                                                  {course.liveClass?.active && (
+                                                       <div className="bg-red-50 border border-red-200 rounded-xl p-2.5 flex items-center justify-between text-xs">
+                                                            <span className="font-extrabold text-red-700 flex items-center gap-1.5 truncate">
+                                                                 <span className="w-2 h-2 rounded-full bg-red-600 animate-ping shrink-0" />
+                                                                 <span>🔴 Live Active</span>
+                                                            </span>
+                                                            <button
+                                                                 type="button"
+                                                                 onClick={() => handleClearLiveClass(course)}
+                                                                 className="text-[10px] font-extrabold text-red-600 hover:text-red-800 hover:underline shrink-0 cursor-pointer"
+                                                            >
+                                                                 End Live
+                                                            </button>
+                                                       </div>
+                                                  )}
+
+                                                  <div className="flex gap-2 pt-2">
+                                                       <button
+                                                            onClick={() => openMeetModal(course._id || course.slug)}
+                                                            className="flex-1 flex items-center justify-center gap-1 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold py-2.5 rounded-xl transition-colors duration-200 cursor-pointer"
+                                                            title="Send Meet link to students of this course"
+                                                       >
+                                                            🔴 Send Meet
+                                                       </button>
                                                        <button
                                                             onClick={() => openEdit(course, index)}
-                                                            className="flex-1 flex items-center justify-center gap-1.5 bg-orange-550/10 hover:bg-orange-500/20 text-orange-600 text-xs font-bold py-2.5 rounded-xl transition-colors duration-200 cursor-pointer"
+                                                            className="flex-1 flex items-center justify-center gap-1 bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 text-xs font-bold py-2.5 rounded-xl transition-colors duration-200 cursor-pointer"
                                                        >
                                                             Edit
                                                        </button>
                                                        <button
                                                             onClick={() => deleteCourse(index)}
-                                                            className="flex-1 flex items-center justify-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-500 text-xs font-bold py-2.5 rounded-xl transition-colors duration-200 cursor-pointer"
+                                                            className="flex-1 flex items-center justify-center gap-1 bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-500 text-xs font-bold py-2.5 rounded-xl transition-colors duration-200 cursor-pointer"
                                                        >
                                                             Delete
                                                        </button>
@@ -1873,6 +2020,152 @@ export default function Courses() {
                                         )}
                                    </button>
                               </div>
+                         </div>
+                    </div>
+               )}
+
+               {/* GOOGLE MEET DISPATCH MODAL */}
+               {showMeetModal && (
+                    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
+                         <div className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-gray-100 overflow-hidden my-auto">
+                              {/* Header */}
+                              <div className="flex items-center justify-between px-6 py-4 bg-[#171717] text-white border-b-4 border-[#FFB500]">
+                                   <div className="flex items-center gap-2">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-[#FFB500] animate-ping" />
+                                        <h3 className="font-bold text-base text-white">🔴 Dispatch Google Meet to Enrolled Students</h3>
+                                   </div>
+                                   <button
+                                        type="button"
+                                        onClick={() => setShowMeetModal(false)}
+                                        className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm font-bold transition cursor-pointer"
+                                   >
+                                        ✕
+                                   </button>
+                              </div>
+
+                              {/* Form Body */}
+                              <form onSubmit={handleSendMeetLink} className="p-6 space-y-4">
+                                   <div>
+                                        <label className={labelClass}>Select Target Course</label>
+                                        <select
+                                             value={selectedCourseForMeet}
+                                             onChange={(e) => handleCourseSelectionChange(e.target.value)}
+                                             className={inputClass}
+                                        >
+                                             <option value="ALL">🌐 Send to ALL Registered Students (All Courses)</option>
+                                             {courses.map((c) => (
+                                                  <option key={c._id || c.slug} value={c._id || c.slug}>
+                                                       📚 {c.title}
+                                                  </option>
+                                             ))}
+                                        </select>
+                                   </div>
+
+                                   <div>
+                                        <div className="flex items-center justify-between mb-1.5">
+                                             <label className={labelClass} style={{ marginBottom: 0 }}>Google Meet Link *</label>
+                                             <div className="flex items-center gap-2">
+                                                  <button
+                                                       type="button"
+                                                       onClick={generateInstantMeetUrl}
+                                                       className="text-xs font-bold text-amber-600 hover:text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 cursor-pointer"
+                                                  >
+                                                       ⚡ Auto-Generate Link
+                                                  </button>
+                                                  <a
+                                                       href={meetUrl || "https://meet.google.com/new"}
+                                                       target="_blank"
+                                                       rel="noopener noreferrer"
+                                                       className="text-xs font-semibold text-gray-400 hover:text-gray-600 underline"
+                                                  >
+                                                       Open ↗
+                                                  </a>
+                                             </div>
+                                        </div>
+                                        <input
+                                             type="url"
+                                             required
+                                             value={meetUrl}
+                                             onChange={(e) => setMeetUrl(e.target.value)}
+                                             placeholder="e.g. https://meet.google.com/wux-abcd-efg"
+                                             className={inputClass}
+                                        />
+                                   </div>
+
+                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                             <label className={labelClass}>Session Title / Topic</label>
+                                             <input
+                                                  type="text"
+                                                  value={meetTitle}
+                                                  onChange={(e) => setMeetTitle(e.target.value)}
+                                                  placeholder="e.g. Live UI/UX Q&A Session"
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                        <div>
+                                             <label className={labelClass}>Scheduled Date & Time</label>
+                                             <input
+                                                  type="text"
+                                                  value={meetScheduledAt}
+                                                  onChange={(e) => setMeetScheduledAt(e.target.value)}
+                                                  placeholder="e.g. Today at 7:00 PM"
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                   </div>
+
+                                   <div>
+                                        <label className={labelClass}>Instructions / Agenda (Optional)</label>
+                                        <textarea
+                                             rows="2"
+                                             value={meetInstructions}
+                                             onChange={(e) => setMeetInstructions(e.target.value)}
+                                             placeholder="e.g. Keep your mics muted on join. Bring your Figma projects for review!"
+                                             className={inputClass}
+                                        />
+                                   </div>
+
+                                   <div className="flex items-center gap-3 pt-1">
+                                        <input
+                                             type="checkbox"
+                                             id="saveToCourse"
+                                             checked={meetSaveToCourse}
+                                             onChange={(e) => setMeetSaveToCourse(e.target.checked)}
+                                             className="w-4 h-4 text-amber-600 rounded focus:ring-amber-500 cursor-pointer"
+                                        />
+                                        <label htmlFor="saveToCourse" className="text-xs font-semibold text-gray-700 cursor-pointer select-none">
+                                             Display 🔴 "Join Live Meet" button on Student Dashboard
+                                        </label>
+                                   </div>
+
+                                   {/* Submit Actions */}
+                                   <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                                        <button
+                                             type="button"
+                                             onClick={() => setShowMeetModal(false)}
+                                             className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition cursor-pointer"
+                                        >
+                                             Cancel
+                                        </button>
+                                        <button
+                                             type="submit"
+                                             disabled={sendingMeetEmail}
+                                             className="px-6 py-2.5 bg-[#FFB400] hover:bg-[#e6a300] text-black font-extrabold text-xs rounded-xl shadow-md transition cursor-pointer flex items-center gap-2"
+                                        >
+                                             {sendingMeetEmail ? (
+                                                  <>
+                                                       <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                       <span>Sending Emails...</span>
+                                                  </>
+                                             ) : (
+                                                  <>
+                                                       <span>Send Meet Emails Now</span>
+                                                  </>
+                                             )}
+                                        </button>
+                                   </div>
+                              </form>
                          </div>
                     </div>
                )}
