@@ -16,6 +16,7 @@ import ContactData from "./pages/ContactData"
 import NavbarManager from "./pages/NavbarManager"
 import LoginSettings from "./pages/LoginSettings"
 import UsersManager from "./pages/UsersManager"
+import WhatsAppLeads from "./pages/WhatsAppLeads"
 
 import AdminLayout from "./components/AdminLayout"
 
@@ -33,6 +34,7 @@ const App = () => {
       <Routes>
         <Route path='/login' element={<Login />} />
         <Route path='/' element={protectedPage(<Home />)} />
+        <Route path='/whatsapp-leads' element={protectedPage(<WhatsAppLeads />)} />
         <Route path='/users' element={protectedPage(<UsersManager />)} />
         <Route path='/blogs' element={protectedPage(<Blogs />)} />
         <Route path='/courses' element={protectedPage(<Courses />)} />

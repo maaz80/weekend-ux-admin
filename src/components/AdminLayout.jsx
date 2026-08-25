@@ -16,11 +16,13 @@ import {
      HiX,
      HiOutlineMenu,
      HiOutlineLockClosed,
-     HiOutlineUserGroup
+     HiOutlineUserGroup,
+     HiOutlineChatAlt2
 } from "react-icons/hi";
 
 const navigationItems = [
      { name: "Overview", path: "/", icon: HiOutlineHome },
+     { name: "WhatsApp Leads", path: "/whatsapp-leads", icon: HiOutlineChatAlt2 },
      { name: "User Access", path: "/users", icon: HiOutlineUserGroup },
      { name: "Courses", path: "/courses", icon: HiOutlineAcademicCap },
      { name: "Blogs", path: "/blogs", icon: HiOutlineBookOpen },
