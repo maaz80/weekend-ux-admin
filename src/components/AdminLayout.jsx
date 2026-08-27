@@ -17,11 +17,13 @@ import {
      HiOutlineMenu,
      HiOutlineLockClosed,
      HiOutlineUserGroup,
-     HiOutlineChatAlt2
+     HiOutlineChatAlt2,
+     HiOutlineVideoCamera
 } from "react-icons/hi";
 
 const navigationItems = [
      { name: "Overview", path: "/", icon: HiOutlineHome },
+     { name: "🔴 Live Zoom Classes", path: "/live-meetings", icon: HiOutlineVideoCamera },
      { name: "WhatsApp Leads", path: "/whatsapp-leads", icon: HiOutlineChatAlt2 },
      { name: "User Access", path: "/users", icon: HiOutlineUserGroup },
      { name: "Courses", path: "/courses", icon: HiOutlineAcademicCap },

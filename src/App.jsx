@@ -17,6 +17,7 @@ import NavbarManager from "./pages/NavbarManager"
 import LoginSettings from "./pages/LoginSettings"
 import UsersManager from "./pages/UsersManager"
 import WhatsAppLeads from "./pages/WhatsAppLeads"
+import LiveMeetings from "./pages/LiveMeetings"
 
 import AdminLayout from "./components/AdminLayout"
 
@@ -34,6 +35,7 @@ const App = () => {
       <Routes>
         <Route path='/login' element={<Login />} />
         <Route path='/' element={protectedPage(<Home />)} />
+        <Route path='/live-meetings' element={protectedPage(<LiveMeetings />)} />
         <Route path='/whatsapp-leads' element={protectedPage(<WhatsAppLeads />)} />
         <Route path='/users' element={protectedPage(<UsersManager />)} />
         <Route path='/blogs' element={protectedPage(<Blogs />)} />

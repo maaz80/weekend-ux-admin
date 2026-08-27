@@ -81,20 +81,70 @@ export default function Courses() {
       const [videos, setVideos] = useState([]);
       const [showVideoModal, setShowVideoModal] = useState(false);
 
-      // Google Meet Modal & Dispatch States
+      // Zoom Live Class Modal & Dispatch States
       const [showMeetModal, setShowMeetModal] = useState(false);
       const [selectedCourseForMeet, setSelectedCourseForMeet] = useState("ALL");
       const [meetUrl, setMeetUrl] = useState("");
-      const [meetTitle, setMeetTitle] = useState("Live Interactive UI/UX Class & Mentorship");
+      const [startUrl, setStartUrl] = useState("");
+      const [zoomMeetingId, setZoomMeetingId] = useState("");
+      const [zoomPasscode, setZoomPasscode] = useState("");
+      const [meetTitle, setMeetTitle] = useState("Live Interactive UI/UX Zoom Class");
       const [meetScheduledAt, setMeetScheduledAt] = useState("Today at 7:00 PM");
       const [meetInstructions, setMeetInstructions] = useState("");
       const [meetSaveToCourse, setMeetSaveToCourse] = useState(true);
       const [sendingMeetEmail, setSendingMeetEmail] = useState(false);
+      const [generatingZoomApi, setGeneratingZoomApi] = useState(false);
+
+      const handleMeetUrlChange = (url) => {
+           setMeetUrl(url);
+           if (url) {
+                const idMatch = url.match(/\/(?:j|wc\/join)\/(\d+)/);
+                if (idMatch && idMatch[1]) {
+                     setZoomMeetingId(idMatch[1]);
+                }
+                const pwdMatch = url.match(/[?&]pwd=([^&]+)/);
+                if (pwdMatch && pwdMatch[1]) {
+                     setZoomPasscode(pwdMatch[1]);
+                }
+           }
+      };
+
+      const handleAutoGenerateZoomLink = async () => {
+           setGeneratingZoomApi(true);
+           try {
+                const res = await fetch(`${API_URL}/admin/create-zoom-meeting`, {
+                     method: "POST",
+                     headers: { "Content-Type": "application/json" },
+                     body: JSON.stringify({
+                          topic: meetTitle
+                     })
+                });
+                const data = await res.json();
+                if (data.success && data.meetUrl) {
+                     setMeetUrl(data.meetUrl);
+                     if (data.startUrl) setStartUrl(data.startUrl);
+                     setZoomMeetingId(data.zoomMeetingId || "");
+                     setZoomPasscode(data.passcode || "");
+                     showToast("⚡ Real Zoom meeting generated via Zoom API!", "success");
+                } else if (data.needCredentials) {
+                     showToast("ℹ️ Configure ZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET in backend .env for 1-click API generation, or paste real link below.", "info");
+                } else {
+                     showToast(data.error || "Failed to generate Zoom meeting.", "error");
+                }
+           } catch (err) {
+                showToast("Failed to connect to Zoom API. Paste your real Zoom URL below.", "error");
+           } finally {
+                setGeneratingZoomApi(false);
+           }
+      };
 
       const generateInstantMeetUrl = () => {
-           const chars = "abcdefghijklmnopqrstuvwxyz";
-           const seg = (len) => Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-           const url = `https://meet.google.com/wux-${seg(4)}-${seg(3)}`;
+           const meetingId = Math.floor(10000000000 + Math.random() * 90000000000).toString();
+           const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+           const pwd = Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+           const url = `https://zoom.us/j/${meetingId}?pwd=${pwd}`;
+           setZoomMeetingId(meetingId);
+           setZoomPasscode(pwd);
            setMeetUrl(url);
            return url;
       };
@@ -102,20 +152,22 @@ export default function Courses() {
       const handleCourseSelectionChange = (courseVal) => {
            setSelectedCourseForMeet(courseVal);
            if (courseVal === "ALL") {
-                setMeetTitle("Live Interactive UI/UX Class & Mentorship");
+                setMeetTitle("Live Interactive UI/UX Zoom Class");
            } else {
                 const found = courses.find(c => (c._id && c._id.toString() === courseVal) || (c.slug === courseVal));
                 if (found && found.title) {
-                     setMeetTitle(`Live Session: ${found.title}`);
+                     setMeetTitle(`Live Zoom Session: ${found.title}`);
                 } else {
-                     setMeetTitle("Live Interactive Session");
+                     setMeetTitle("Live Interactive Zoom Session");
                 }
            }
       };
 
       const openMeetModal = (courseIdOrSlug = "ALL") => {
            handleCourseSelectionChange(courseIdOrSlug);
-           generateInstantMeetUrl();
+           setMeetUrl("");
+           setZoomMeetingId("");
+           setZoomPasscode("");
            setMeetInstructions("");
            setShowMeetModal(true);
       };
@@ -123,7 +175,7 @@ export default function Courses() {
       const handleSendMeetLink = async (e) => {
            e.preventDefault();
            if (!meetUrl) {
-                showToast("Please enter a Google Meet link.", "error");
+                showToast("Please enter a valid Zoom meeting link.", "error");
                 return;
            }
 
@@ -142,6 +194,8 @@ export default function Courses() {
                           courseSlug: targetCourseObj?.slug || "",
                           courseTitle: targetCourseObj?.title || "All Courses",
                           meetUrl,
+                          zoomMeetingId,
+                          passcode: zoomPasscode,
                           title: meetTitle,
                           scheduledAt: meetScheduledAt,
                           instructions: meetInstructions,
@@ -151,17 +205,19 @@ export default function Courses() {
 
                 const data = await res.json();
                 if (res.ok && data.success) {
-                     showToast(data.message || `Meet link successfully emailed to ${data.sentCount} students!`, "success");
+                     showToast(data.message || `Zoom link emailed to ${data.sentCount} enrolled students!`, "success");
                      setShowMeetModal(false);
                      setMeetUrl("");
+                     setZoomMeetingId("");
+                     setZoomPasscode("");
                      setMeetInstructions("");
                      setMeetScheduledAt("Today at 7:00 PM");
                      fetchCourses();
                 } else {
-                     showToast(data.error || "Failed to send meet emails.", "error");
+                     showToast(data.error || "Failed to send Zoom meeting emails.", "error");
                 }
            } catch (err) {
-                console.error("Error sending meet emails:", err);
+                console.error("Error sending Zoom emails:", err);
                 showToast("Server error occurred.", "error");
            } finally {
                 setSendingMeetEmail(false);
@@ -765,10 +821,10 @@ export default function Courses() {
                     <div className="flex flex-wrap items-center gap-3">
                          <button
                               onClick={() => openMeetModal("ALL")}
-                              className="flex items-center gap-2 bg-orange-500 hover:bg-[#e6a300] text-black text-sm font-extrabold px-5 py-2.5 rounded-xl shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer shrink-0"
+                              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-extrabold px-5 py-2.5 rounded-xl shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer shrink-0"
                          >
-                              <span className="w-2.5 h-2.5 rounded-full bg-black animate-ping" />
-                              <span>🔴 Live Meet Link</span>
+                              <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping" />
+                              <span>🔵 Zoom Live Class</span>
                          </button>
 
                          <button
@@ -2024,15 +2080,15 @@ export default function Courses() {
                     </div>
                )}
 
-               {/* GOOGLE MEET DISPATCH MODAL */}
+               {/* ZOOM LIVE SESSION DISPATCH MODAL */}
                {showMeetModal && (
                     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
                          <div className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-gray-100 overflow-hidden my-auto">
                               {/* Header */}
-                              <div className="flex items-center justify-between px-6 py-4 bg-[#171717] text-white border-b-4 border-[#FFB500]">
+                              <div className="flex items-center justify-between px-6 py-4 bg-[#0B5CFF] text-white border-b-4 border-blue-900">
                                    <div className="flex items-center gap-2">
-                                        <div className="w-2.5 h-2.5 rounded-full bg-[#FFB500] animate-ping" />
-                                        <h3 className="font-bold text-base text-white">🔴 Dispatch Google Meet to Enrolled Students</h3>
+                                        <div className="w-2.5 h-2.5 rounded-full bg-white animate-ping" />
+                                        <h3 className="font-bold text-base text-white">🔵 Dispatch Zoom Live Meeting to Enrolled Students</h3>
                                    </div>
                                    <button
                                         type="button"
@@ -2063,22 +2119,23 @@ export default function Courses() {
 
                                    <div>
                                         <div className="flex items-center justify-between mb-1.5">
-                                             <label className={labelClass} style={{ marginBottom: 0 }}>Google Meet Link *</label>
+                                             <label className={labelClass} style={{ marginBottom: 0 }}>Zoom Meeting Link / URL *</label>
                                              <div className="flex items-center gap-2">
                                                   <button
                                                        type="button"
-                                                       onClick={generateInstantMeetUrl}
-                                                       className="text-xs font-bold text-amber-600 hover:text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 cursor-pointer"
+                                                       onClick={handleAutoGenerateZoomLink}
+                                                       disabled={generatingZoomApi}
+                                                       className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md border border-blue-200 cursor-pointer flex items-center gap-1 transition"
                                                   >
-                                                       ⚡ Auto-Generate Link
+                                                       {generatingZoomApi ? "⏳ Generating Zoom..." : "⚡ Auto-Generate Real Link"}
                                                   </button>
                                                   <a
-                                                       href={meetUrl || "https://meet.google.com/new"}
+                                                       href="https://zoom.us/meeting/schedule"
                                                        target="_blank"
                                                        rel="noopener noreferrer"
-                                                       className="text-xs font-semibold text-gray-400 hover:text-gray-600 underline"
+                                                       className="text-xs font-bold text-zinc-600 hover:text-zinc-800 bg-zinc-100 px-2 py-1 rounded-md border border-zinc-200 cursor-pointer flex items-center gap-1 no-underline"
                                                   >
-                                                       Open ↗
+                                                       🎥 Open Zoom App ↗
                                                   </a>
                                              </div>
                                         </div>
@@ -2086,10 +2143,53 @@ export default function Courses() {
                                              type="url"
                                              required
                                              value={meetUrl}
-                                             onChange={(e) => setMeetUrl(e.target.value)}
-                                             placeholder="e.g. https://meet.google.com/wux-abcd-efg"
+                                             onChange={(e) => handleMeetUrlChange(e.target.value)}
+                                             placeholder="Paste real Zoom link, e.g. https://us04web.zoom.us/j/81234567890?pwd=abcde"
                                              className={inputClass}
                                         />
+                                        {startUrl ? (
+                                             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between text-xs mt-2">
+                                                  <div>
+                                                       <span className="font-bold text-emerald-900 block">👑 Admin / Host Meeting Join Link</span>
+                                                       <span className="text-emerald-700 font-medium text-[11px]">Click here to start & host class with full Admin powers</span>
+                                                  </div>
+                                                  <a
+                                                       href={startUrl}
+                                                       target="_blank"
+                                                       rel="noopener noreferrer"
+                                                       className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shrink-0 no-underline shadow-sm"
+                                                  >
+                                                       Start Class as Host ↗
+                                                  </a>
+                                             </div>
+                                        ) : (
+                                             <p className="text-[11px] font-semibold text-amber-600 mt-1">
+                                                  ⚠️ Click "Auto-Generate Real Link" or paste a real Zoom link. (Fake Math IDs return Zoom 3001).
+                                             </p>
+                                        )}
+                                   </div>
+
+                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                             <label className={labelClass}>Zoom Meeting ID (Optional)</label>
+                                             <input
+                                                  type="text"
+                                                  value={zoomMeetingId}
+                                                  onChange={(e) => setZoomMeetingId(e.target.value)}
+                                                  placeholder="e.g. 987 6543 210"
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                        <div>
+                                             <label className={labelClass}>Passcode (Optional)</label>
+                                             <input
+                                                  type="text"
+                                                  value={zoomPasscode}
+                                                  onChange={(e) => setZoomPasscode(e.target.value)}
+                                                  placeholder="e.g. wux123"
+                                                  className={inputClass}
+                                             />
+                                        </div>
                                    </div>
 
                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -2121,7 +2221,7 @@ export default function Courses() {
                                              rows="2"
                                              value={meetInstructions}
                                              onChange={(e) => setMeetInstructions(e.target.value)}
-                                             placeholder="e.g. Keep your mics muted on join. Bring your Figma projects for review!"
+                                             placeholder="e.g. Please join with your registered email. Have Figma open for practical review."
                                              className={inputClass}
                                         />
                                    </div>
@@ -2132,10 +2232,10 @@ export default function Courses() {
                                              id="saveToCourse"
                                              checked={meetSaveToCourse}
                                              onChange={(e) => setMeetSaveToCourse(e.target.checked)}
-                                             className="w-4 h-4 text-amber-600 rounded focus:ring-amber-500 cursor-pointer"
+                                             className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
                                         />
                                         <label htmlFor="saveToCourse" className="text-xs font-semibold text-gray-700 cursor-pointer select-none">
-                                             Display 🔴 "Join Live Meet" button on Student Dashboard
+                                             Display 🔵 "Join Zoom Meeting" button on Student Dashboard
                                         </label>
                                    </div>
 
@@ -2151,16 +2251,16 @@ export default function Courses() {
                                         <button
                                              type="submit"
                                              disabled={sendingMeetEmail}
-                                             className="px-6 py-2.5 bg-[#FFB400] hover:bg-[#e6a300] text-black font-extrabold text-xs rounded-xl shadow-md transition cursor-pointer flex items-center gap-2"
+                                             className="px-6 py-2.5 bg-[#0B5CFF] hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl shadow-md transition cursor-pointer flex items-center gap-2"
                                         >
                                              {sendingMeetEmail ? (
                                                   <>
                                                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                                       <span>Sending Emails...</span>
+                                                       <span>Sending Zoom Emails...</span>
                                                   </>
                                              ) : (
                                                   <>
-                                                       <span>Send Meet Emails Now</span>
+                                                       <span>✉️ Dispatch Zoom Invite</span>
                                                   </>
                                              )}
                                         </button>
