@@ -35,6 +35,10 @@ export default function Courses() {
       const [alt, setAlt] = useState("");
       const [startDate, setStartDate] = useState("");
       const [category, setCategory] = useState("");
+      const [duration, setDuration] = useState("");
+      const [mode, setMode] = useState("");
+      const [batchSize, setBatchSize] = useState("");
+      const [socialProof, setSocialProof] = useState([]);
       const [overview, setOverview] = useState("");
       const [slug, setSlug] = useState("");
       const [seoTitle, setSeoTitle] = useState("");
@@ -76,6 +80,51 @@ export default function Courses() {
       const [careerDomainsTitle, setCareerDomainsTitle] = useState("");
       const [careerDomainsDescription, setCareerDomainsDescription] = useState("");
       const [careerDomainsItems, setCareerDomainsItems] = useState([]);
+
+      // Skills You Will Learn Section States
+      const [skillsYouWillLearnTitle, setSkillsYouWillLearnTitle] = useState("");
+      const [skillsYouWillLearnItems, setSkillsYouWillLearnItems] = useState([]);
+
+      // Meet The Trainers Section States
+      const [trainersTitle, setTrainersTitle] = useState("");
+      const [trainersSubtitle, setTrainersSubtitle] = useState("");
+      const [trainersItems, setTrainersItems] = useState([]);
+
+      // Job Roles After Course Section States
+      const [jobRolesTag, setJobRolesTag] = useState("");
+      const [jobRolesTitle, setJobRolesTitle] = useState("");
+      const [jobRolesDescription, setJobRolesDescription] = useState("");
+      const [jobRolesItems, setJobRolesItems] = useState([]);
+
+      // Hiring Partners Section States
+      const [hiringPartnersTitle, setHiringPartnersTitle] = useState("");
+      const [hiringPartnersSubtitle, setHiringPartnersSubtitle] = useState("");
+      const [hiringPartnersItems, setHiringPartnersItems] = useState([]);
+
+      // Choose Your Learning Section States
+      const [chooseLearningTitle, setChooseLearningTitle] = useState("");
+      const [chooseLearningSubtitle, setChooseLearningSubtitle] = useState("");
+      const [chooseEmiBannerTitle, setChooseEmiBannerTitle] = useState("");
+      const [chooseEmiBannerSubtitle, setChooseEmiBannerSubtitle] = useState("");
+      const [chooseEmiPoints, setChooseEmiPoints] = useState([]);
+      const [chooseScholarshipDiscount, setChooseScholarshipDiscount] = useState("");
+      const [chooseScholarshipMeritTitle, setChooseScholarshipMeritTitle] = useState("");
+      const [chooseScholarshipMeritSubtitle, setChooseScholarshipMeritSubtitle] = useState("");
+      const [chooseScholarshipPoints, setChooseScholarshipPoints] = useState([]);
+      const [chooseBatchItems, setChooseBatchItems] = useState([]);
+
+      // Why Choose Us Section States
+      const [whyChooseUsTitle, setWhyChooseUsTitle] = useState("");
+      const [whyChooseUsSubtitle, setWhyChooseUsSubtitle] = useState("");
+      const [whyChooseUsItems, setWhyChooseUsItems] = useState([]);
+
+      // Ready To Start Journey CTA Section States
+      const [readyToStartTitle, setReadyToStartTitle] = useState("");
+      const [readyToStartSubtitle, setReadyToStartSubtitle] = useState("");
+      const [readyToStartBtn1Text, setReadyToStartBtn1Text] = useState("");
+      const [readyToStartBtn1Link, setReadyToStartBtn1Link] = useState("");
+      const [readyToStartBtn2Text, setReadyToStartBtn2Text] = useState("");
+      const [readyToStartBtn2Link, setReadyToStartBtn2Link] = useState("");
 
       // Course Videos Section States
       const [videos, setVideos] = useState([]);
@@ -429,6 +478,10 @@ export default function Courses() {
            setAlt("");
            setStartDate("");
            setCategory("");
+           setDuration("");
+           setMode("");
+           setBatchSize("");
+           setSocialProof([]);
            setOverview("");
            setSlug("");
            setSeoTitle("");
@@ -442,6 +495,37 @@ export default function Courses() {
            setBrochureSubtext("");
            setBrochurePhones("");
            setBrochureLink("");
+           setSkillsYouWillLearnTitle("");
+           setSkillsYouWillLearnItems([]);
+           setTrainersTitle("");
+           setTrainersSubtitle("");
+           setTrainersItems([]);
+           setJobRolesTag("");
+           setJobRolesTitle("");
+           setJobRolesDescription("");
+           setJobRolesItems([]);
+            setHiringPartnersTitle("");
+            setHiringPartnersSubtitle("");
+            setHiringPartnersItems([]);
+            setChooseLearningTitle("");
+            setChooseLearningSubtitle("");
+            setChooseEmiBannerTitle("");
+            setChooseEmiBannerSubtitle("");
+            setChooseEmiPoints([]);
+            setChooseScholarshipDiscount("");
+            setChooseScholarshipMeritTitle("");
+            setChooseScholarshipMeritSubtitle("");
+            setChooseScholarshipPoints([]);
+            setChooseBatchItems([]);
+             setWhyChooseUsTitle("");
+             setWhyChooseUsSubtitle("");
+             setWhyChooseUsItems([]);
+             setReadyToStartTitle("");
+             setReadyToStartSubtitle("");
+             setReadyToStartBtn1Text("");
+             setReadyToStartBtn1Link("");
+             setReadyToStartBtn2Text("");
+             setReadyToStartBtn2Link("");
            setShortTermTitle("");
            setShortTermDescription("");
            setShortTermItems([]);
@@ -480,6 +564,10 @@ export default function Courses() {
            setAlt(course.alt || "");
            setStartDate(course.startdate || "");
            setCategory(course.category || "");
+           setDuration(course.duration || course.courselength || "");
+           setMode(course.mode || "");
+           setBatchSize(course.batchSize || course.batchsize || "");
+           setSocialProof(Array.isArray(course.socialProof) && course.socialProof.length > 0 ? course.socialProof.map(s => ({ value: s.value || "", name: s.name || "" })) : []);
            setOverview(course.overview || "");
            setSlug(course.slug || "");
            setSeoTitle(course.seotitle || "");
@@ -492,6 +580,37 @@ export default function Courses() {
            setBrochureSubtext(course.brochureSubtext || "");
            setBrochurePhones(course.brochurePhones || "");
            setBrochureLink(course.brochureLink || "");
+           setSkillsYouWillLearnTitle(course.skillsYouWillLearn?.title || "");
+           setSkillsYouWillLearnItems(Array.isArray(course.skillsYouWillLearn?.skills) ? course.skillsYouWillLearn.skills : []);
+           setTrainersTitle(course.trainers?.title || "");
+           setTrainersSubtitle(course.trainers?.subtitle || "");
+           setTrainersItems(Array.isArray(course.trainers?.items) ? course.trainers.items : []);
+           setJobRolesTag(course.jobRoles?.tag || "");
+           setJobRolesTitle(course.jobRoles?.title || "");
+           setJobRolesDescription(course.jobRoles?.description || "");
+           setJobRolesItems(Array.isArray(course.jobRoles?.items) ? course.jobRoles.items : []);
+            setHiringPartnersTitle(course.hiringPartners?.title || "");
+            setHiringPartnersSubtitle(course.hiringPartners?.subtitle || "");
+            setHiringPartnersItems(Array.isArray(course.hiringPartners?.items) ? course.hiringPartners.items : []);
+            setChooseLearningTitle(course.chooseLearning?.title || "");
+            setChooseLearningSubtitle(course.chooseLearning?.subtitle || "");
+            setChooseEmiBannerTitle(course.chooseLearning?.emi?.bannerTitle || "");
+            setChooseEmiBannerSubtitle(course.chooseLearning?.emi?.bannerSubtitle || "");
+            setChooseEmiPoints(Array.isArray(course.chooseLearning?.emi?.points) ? course.chooseLearning.emi.points : []);
+            setChooseScholarshipDiscount(course.chooseLearning?.scholarship?.discountAmount || "");
+            setChooseScholarshipMeritTitle(course.chooseLearning?.scholarship?.meritTitle || "");
+            setChooseScholarshipMeritSubtitle(course.chooseLearning?.scholarship?.meritSubtitle || "");
+            setChooseScholarshipPoints(Array.isArray(course.chooseLearning?.scholarship?.points) ? course.chooseLearning.scholarship.points : []);
+            setChooseBatchItems(Array.isArray(course.chooseLearning?.batches?.items) ? course.chooseLearning.batches.items : []);
+             setWhyChooseUsTitle(course.whyChooseUs?.title || "");
+             setWhyChooseUsSubtitle(course.whyChooseUs?.subtitle || "");
+             setWhyChooseUsItems(Array.isArray(course.whyChooseUs?.items) ? course.whyChooseUs.items : []);
+             setReadyToStartTitle(course.readyToStartJourney?.title || "");
+             setReadyToStartSubtitle(course.readyToStartJourney?.subtitle || "");
+             setReadyToStartBtn1Text(course.readyToStartJourney?.button1Text || "");
+             setReadyToStartBtn1Link(course.readyToStartJourney?.button1Link || "");
+             setReadyToStartBtn2Text(course.readyToStartJourney?.button2Text || "");
+             setReadyToStartBtn2Link(course.readyToStartJourney?.button2Link || "");
            setShortTermTitle(course.shortTerm?.title || "");
            setShortTermDescription(course.shortTerm?.description || "");
            setShortTermItems(course.shortTerm?.items || []);
@@ -632,6 +751,90 @@ export default function Courses() {
              setCareerDomainsItems(prev => prev.map((item, idx) => idx === itemIdx ? { ...item, [key]: value } : item));
         };
 
+        const addSocialProofItem = () => {
+             setSocialProof(prev => [...prev, { value: "", name: "" }]);
+        };
+
+        const removeSocialProofItem = (itemIdx) => {
+             setSocialProof(prev => prev.filter((_, idx) => idx !== itemIdx));
+        };
+
+        const updateSocialProofItemField = (itemIdx, key, value) => {
+             setSocialProof(prev => prev.map((item, idx) => idx === itemIdx ? { ...item, [key]: value } : item));
+        };
+
+        const addSkillItem = () => {
+             setSkillsYouWillLearnItems(prev => [...prev, ""]);
+        };
+
+        const removeSkillItem = (sIdx) => {
+             setSkillsYouWillLearnItems(prev => prev.filter((_, idx) => idx !== sIdx));
+        };
+
+        const updateSkillItemField = (sIdx, value) => {
+             setSkillsYouWillLearnItems(prev => prev.map((item, idx) => idx === sIdx ? value : item));
+        };
+
+        const addTrainerItem = () => {
+             setTrainersItems(prev => [...prev, { name: "", role: "", bio: "", rating: "4.9/5", students: "400+ Students", image: "", linkedin: "" }]);
+        };
+
+        const removeTrainerItem = (tIdx) => {
+             setTrainersItems(prev => prev.filter((_, idx) => idx !== tIdx));
+        };
+
+        const updateTrainerItemField = (tIdx, key, value) => {
+             setTrainersItems(prev => prev.map((item, idx) => idx === tIdx ? { ...item, [key]: value } : item));
+        };
+
+        const addWhyChooseUsItem = () => {
+             setWhyChooseUsItems(prev => [...prev, { title: "", description: "", iconName: "graduationCap", color: "blue" }]);
+        };
+
+        const removeWhyChooseUsItem = (idx) => {
+             setWhyChooseUsItems(prev => prev.filter((_, i) => i !== idx));
+        };
+
+        const updateWhyChooseUsItemField = (idx, key, value) => {
+             setWhyChooseUsItems(prev => prev.map((item, i) => i === idx ? { ...item, [key]: value } : item));
+        };
+
+        const addJobRoleItem = () => {
+             setJobRolesItems(prev => [...prev, { step: `0${prev.length + 1}`, iconName: "briefcase", title: "", description: "", keyFocusTitle: "KEY FOCUS AREAS", keyFocus: "" }]);
+        };
+
+        const removeJobRoleItem = (rIdx) => {
+             setJobRolesItems(prev => prev.filter((_, idx) => idx !== rIdx));
+        };
+
+        const updateJobRoleItemField = (rIdx, key, value) => {
+             setJobRolesItems(prev => prev.map((item, idx) => idx === rIdx ? { ...item, [key]: value } : item));
+        };
+
+        const addHiringPartnerItem = () => {
+             setHiringPartnersItems(prev => [...prev, { image: "" }]);
+        };
+
+        const removeHiringPartnerItem = (pIdx) => {
+             setHiringPartnersItems(prev => prev.filter((_, idx) => idx !== pIdx));
+        };
+
+        const updateHiringPartnerItemField = (pIdx, key, value) => {
+             setHiringPartnersItems(prev => prev.map((item, idx) => idx === pIdx ? { ...item, [key]: value } : item));
+        };
+
+        const addEmiPoint = () => setChooseEmiPoints(prev => [...prev, ""]);
+        const removeEmiPoint = (pIdx) => setChooseEmiPoints(prev => prev.filter((_, idx) => idx !== pIdx));
+        const updateEmiPointField = (pIdx, val) => setChooseEmiPoints(prev => prev.map((item, idx) => idx === pIdx ? val : item));
+
+        const addScholarshipPoint = () => setChooseScholarshipPoints(prev => [...prev, ""]);
+        const removeScholarshipPoint = (pIdx) => setChooseScholarshipPoints(prev => prev.filter((_, idx) => idx !== pIdx));
+        const updateScholarshipPointField = (pIdx, val) => setChooseScholarshipPoints(prev => prev.map((item, idx) => idx === pIdx ? val : item));
+
+        const addBatchItem = () => setChooseBatchItems(prev => [...prev, { dayDate: `0${prev.length + 1}`, month: "JUN", title: "", time: "", status: "Upcoming" }]);
+        const removeBatchItem = (bIdx) => setChooseBatchItems(prev => prev.filter((_, idx) => idx !== bIdx));
+        const updateBatchItemField = (bIdx, key, value) => setChooseBatchItems(prev => prev.map((item, idx) => idx === bIdx ? { ...item, [key]: value } : item));
+
        const saveCourse = async () => {
             setUploading(true);
             try {
@@ -641,6 +844,13 @@ export default function Courses() {
                       alt: alt || title,
                       startdate: startDate,
                       category,
+                      duration,
+                      mode,
+                      batchSize,
+                      socialProof: socialProof.map(item => ({
+                           value: item.value || "",
+                           name: item.name || ""
+                      })),
                       overview,
                       slug,
                       seotitle: seoTitle || title,
@@ -654,6 +864,94 @@ export default function Courses() {
                       brochureSubtext,
                       brochurePhones,
                       brochureLink,
+                      skillsYouWillLearn: {
+                           title: skillsYouWillLearnTitle || "Skills you will learn",
+                           skills: skillsYouWillLearnItems.filter(s => s && String(s).trim())
+                      },
+                      trainers: {
+                           title: trainersTitle || "Meet The Trainers",
+                           subtitle: trainersSubtitle || "Get 1-on-1 mentorship and practical insights from active design leads and engineers at top companies.",
+                           items: trainersItems.map(item => ({
+                                name: item.name || "",
+                                role: item.role || "",
+                                bio: item.bio || "",
+                                rating: item.rating || "",
+                                students: item.students || "",
+                                image: (item.image && item.image instanceof File) ? "" : (item.image || ""),
+                                linkedin: item.linkedin || ""
+                           }))
+                      },
+                      jobRoles: {
+                           tag: jobRolesTag || "JOB ROLES",
+                           title: jobRolesTitle || `Job Roles After ${title || "Course"}`,
+                           description: jobRolesDescription || "",
+                           items: jobRolesItems.map((item, idx) => ({
+                                step: item.step || `0${idx + 1}`,
+                                iconName: item.iconName || "briefcase",
+                                title: item.title || "",
+                                description: item.description || "",
+                                keyFocusTitle: item.keyFocusTitle || "KEY FOCUS AREAS",
+                                keyFocus: item.keyFocus || ""
+                           }))
+                      },
+                      hiringPartners: {
+                           title: hiringPartnersTitle || "Our Hiring Partners",
+                           subtitle: hiringPartnersSubtitle || "Trusted by top companies across India",
+                           items: hiringPartnersItems.map(item => ({
+                                image: (item.image && item.image instanceof File) ? "" : (item.image || "")
+                           }))
+                      },
+                      chooseLearning: {
+                           title: chooseLearningTitle || "Choose Your Learning",
+                           subtitle: chooseLearningSubtitle || "Explore our flexible execution paths mapped to different career commitments, learning schedules, and experience levels.",
+                           emi: {
+                                title: "EMI OPTION",
+                                subtitle: "Pay in easy installments",
+                                bannerTitle: chooseEmiBannerTitle || "No Cost EMI available",
+                                bannerSubtitle: chooseEmiBannerSubtitle || "Starting from ₹1,667/month",
+                                points: chooseEmiPoints.filter(p => p && p.trim())
+                           },
+                           scholarship: {
+                                title: "SCHOLARSHIP",
+                                subtitle: "Learn more, pay less",
+                                discountAmount: chooseScholarshipDiscount || "30%",
+                                discountLabel: "GET UP TO",
+                                discountText: "OFF",
+                                discountSubtext: "on course fees",
+                                meritTitle: chooseScholarshipMeritTitle || "Merit Scholarship",
+                                meritSubtitle: chooseScholarshipMeritSubtitle || "For eligible candidates",
+                                points: chooseScholarshipPoints.filter(p => p && p.trim())
+                           },
+                           batches: {
+                                title: "COMING BATCHES",
+                                subtitle: "Join a batch that suits you",
+                                items: chooseBatchItems.map((b, idx) => ({
+                                     dayDate: b.dayDate || `0${idx + 1}`,
+                                     month: b.month || "JUN",
+                                     title: b.title || "",
+                                     time: b.time || "",
+                                     status: b.status || "Upcoming"
+                                }))
+                           }
+                      },
+                      whyChooseUs: {
+                           title: whyChooseUsTitle || "Why Choose Us?",
+                           subtitle: whyChooseUsSubtitle || "Real stories from learners who achieved career growth with our SAP courses.",
+                           items: whyChooseUsItems.map(item => ({
+                                title: item.title || "",
+                                description: item.description || "",
+                                iconName: item.iconName || "graduationCap",
+                                color: item.color || "blue"
+                           }))
+                      },
+                      readyToStartJourney: {
+                           title: readyToStartTitle || "Ready to start your journey?",
+                           subtitle: readyToStartSubtitle || "Embark on your path to success with expert training and a world of opportunities awaiting you.",
+                           button1Text: readyToStartBtn1Text || "Contact us",
+                           button1Link: readyToStartBtn1Link || "/contact-us",
+                           button2Text: readyToStartBtn2Text || "Get A Free Demo",
+                           button2Link: readyToStartBtn2Link || "/contact-us#demo"
+                      },
                       faq: {
                            title: faqTitle,
                            startheading: faqStartheading,
@@ -740,6 +1038,18 @@ export default function Courses() {
                 shortTermItems.forEach((item, itemIdx) => {
                      if (item.image && item.image instanceof File) {
                           formData.append(`course_${editIndex !== null ? editIndex : courses.length}_shortTerm_${itemIdx}`, item.image);
+                     }
+                });
+
+                trainersItems.forEach((item, itemIdx) => {
+                     if (item.image && item.image instanceof File) {
+                          formData.append(`course_${editIndex !== null ? editIndex : courses.length}_trainer_${itemIdx}`, item.image);
+                     }
+                });
+
+                hiringPartnersItems.forEach((item, itemIdx) => {
+                     if (item.image && item.image instanceof File) {
+                          formData.append(`course_${editIndex !== null ? editIndex : courses.length}_hiringPartner_${itemIdx}`, item.image);
                      }
                 });
 
@@ -1067,7 +1377,6 @@ export default function Courses() {
                                         </div>
                                    </div>
                                </div>
-
                                {/* 4. Global Student Portfolios (Case Studies) Config */}
                                <div className="bg-white rounded-2xl p-6 shadow-md shadow-gray-200/50 space-y-4">
                                     <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3 font-sans">4. Global Student Portfolios (Case Studies) Section</h2>
@@ -1366,6 +1675,36 @@ export default function Courses() {
                                         </div>
                                    </div>
 
+                                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>Duration</label>
+                                             <input
+                                                  value={duration}
+                                                  onChange={(e) => setDuration(e.target.value)}
+                                                  placeholder="e.g. 6 Months / 24 Weeks"
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>Training Mode</label>
+                                             <input
+                                                  value={mode}
+                                                  onChange={(e) => setMode(e.target.value)}
+                                                  placeholder="e.g. Online / Offline"
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>Batch Size</label>
+                                             <input
+                                                  value={batchSize}
+                                                  onChange={(e) => setBatchSize(e.target.value)}
+                                                  placeholder="e.g. 10-12 Students"
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                   </div>
+
                                    <div className="space-y-1.5">
                                         <label className={labelClass}>Course Overview / Summary</label>
                                         <textarea
@@ -1375,6 +1714,68 @@ export default function Courses() {
                                              rows={3}
                                              className={inputClass}
                                         />
+                                   </div>
+
+                                   {/* Course Social Proof Bar Config */}
+                                   <div className="space-y-4 bg-gray-50/70 p-4 sm:p-5 rounded-2xl border border-gray-200 text-left">
+                                        <div className="flex items-center justify-between border-b border-gray-200/80 pb-3">
+                                             <div>
+                                                  <p className="text-xs font-bold text-gray-900 uppercase tracking-wider font-sans flex items-center gap-2">
+                                                       <span className="text-amber-500 text-sm">⭐</span> Course Social Proof Bar (Hero Stats)
+                                                  </p>
+                                                  <p className="text-[11px] text-gray-500 mt-0.5">
+                                                       Add stat cards displayed right below the course hero section (e.g. Rating, Alumni, Placement, Partners).
+                                                  </p>
+                                             </div>
+                                             <button
+                                                  type="button"
+                                                  onClick={addSocialProofItem}
+                                                  className="inline-flex items-center gap-1 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1.5 rounded-lg border border-amber-200 transition-colors cursor-pointer shrink-0"
+                                             >
+                                                  + Add Stat Card
+                                             </button>
+                                        </div>
+
+                                        <div className="space-y-3 pt-1">
+                                             {socialProof.map((item, itemIdx) => (
+                                                  <div key={itemIdx} className="bg-white p-4 rounded-xl border border-gray-200 space-y-3 relative group">
+                                                       <button
+                                                            type="button"
+                                                            onClick={() => removeSocialProofItem(itemIdx)}
+                                                            className="absolute top-2.5 right-2.5 text-gray-400 hover:text-red-500 text-xs font-bold transition-colors cursor-pointer"
+                                                       >
+                                                            ✕ Remove
+                                                       </button>
+
+                                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pr-12 sm:pr-0">
+                                                            <div className="space-y-1">
+                                                                 <label className="text-[11px] font-bold text-gray-500">Value / Stat</label>
+                                                                 <input
+                                                                      value={item.value || ""}
+                                                                      onChange={(e) => updateSocialProofItemField(itemIdx, "value", e.target.value)}
+                                                                      placeholder="e.g. 4.9 / 5 or 10,000+"
+                                                                      className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-amber-500 focus:outline-none text-xs"
+                                                                 />
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                 <label className="text-[11px] font-bold text-gray-500">Name / Label</label>
+                                                                 <input
+                                                                      value={item.name || ""}
+                                                                      onChange={(e) => updateSocialProofItemField(itemIdx, "name", e.target.value)}
+                                                                      placeholder="e.g. Google Rating or Alumni"
+                                                                      className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-amber-500 focus:outline-none text-xs"
+                                                                 />
+                                                            </div>
+                                                       </div>
+                                                  </div>
+                                             ))}
+
+                                             {socialProof.length === 0 && (
+                                                  <p className="text-xs text-gray-400 text-center py-4 bg-white rounded-xl border border-dashed border-gray-200">
+                                                       No custom stats added yet. Default stats (Rating, Alumni, Placement, Partners) will be shown. Click "+ Add Stat Card" above to customize.
+                                                  </p>
+                                             )}
+                                        </div>
                                    </div>
 
                                    {/* Cover Image */}
@@ -1487,6 +1888,752 @@ export default function Courses() {
                                              />
                                         </div>
                                    </div>
+
+                                   {/* Skills You Will Learn Config */}
+                                   <div className="space-y-4 bg-blue-50/50 p-4 sm:p-5 rounded-2xl border border-blue-200/70 text-left mt-4">
+                                        <div className="flex items-center justify-between border-b border-blue-200/60 pb-3">
+                                             <div>
+                                                  <p className="text-xs font-bold text-gray-900 uppercase tracking-wider font-sans flex items-center gap-2">
+                                                       <span className="text-blue-500 text-sm">💡</span> Skills You Will Learn Section
+                                                  </p>
+                                                  <p className="text-[11px] text-gray-500 mt-0.5">
+                                                       Add skill tag pills displayed right below the Brochure CTA section on the course page.
+                                                  </p>
+                                             </div>
+                                             <button
+                                                  type="button"
+                                                  onClick={addSkillItem}
+                                                  className="inline-flex items-center gap-1 bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-bold px-3 py-1.5 rounded-lg border border-blue-300 transition-colors cursor-pointer shrink-0"
+                                             >
+                                                  + Add Skill Tag
+                                             </button>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                             <div className="space-y-1">
+                                                  <label className={labelClass}>Section Title</label>
+                                                  <input
+                                                       value={skillsYouWillLearnTitle}
+                                                       onChange={(e) => setSkillsYouWillLearnTitle(e.target.value)}
+                                                       placeholder="e.g. Skills you will learn"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+
+                                             <div className="space-y-2 pt-1">
+                                                  <label className={labelClass}>Skill Tags / Pills</label>
+                                                  <div className="flex flex-wrap gap-2">
+                                                       {skillsYouWillLearnItems.map((skill, sIdx) => (
+                                                            <div key={sIdx} className="flex items-center gap-1 bg-white border border-gray-300 rounded-lg p-1">
+                                                                 <input
+                                                                      value={skill}
+                                                                      onChange={(e) => updateSkillItemField(sIdx, e.target.value)}
+                                                                      placeholder="e.g. AGENTIC AI SYSTEMS"
+                                                                      className="h-7 px-2 border-none focus:outline-none text-xs w-48 uppercase font-semibold"
+                                                                 />
+                                                                 <button
+                                                                      type="button"
+                                                                      onClick={() => removeSkillItem(sIdx)}
+                                                                      className="text-gray-400 hover:text-red-500 px-1 text-xs font-bold"
+                                                                 >
+                                                                      ✕
+                                                                 </button>
+                                                            </div>
+                                                       ))}
+                                                  </div>
+                                                  {skillsYouWillLearnItems.length === 0 && (
+                                                       <p className="text-xs text-gray-400 text-center py-3 bg-white rounded-xl border border-dashed border-gray-200">
+                                                            No custom skills added yet. Default skills will be displayed. Click "+ Add Skill Tag" above to customize.
+                                                       </p>
+                                                  )}
+                                             </div>
+                                        </div>
+                                   </div>
+
+                                   {/* Meet The Trainers Config */}
+                                   <div className="space-y-4 bg-amber-50/50 p-4 sm:p-5 rounded-2xl border border-amber-200/70 text-left mt-4">
+                                        <div className="flex items-center justify-between border-b border-amber-200/60 pb-3">
+                                             <div>
+                                                  <p className="text-xs font-bold text-gray-900 uppercase tracking-wider font-sans flex items-center gap-2">
+                                                       <span className="text-amber-500 text-sm">👨‍🏫</span> Meet The Trainers Section
+                                                  </p>
+                                                  <p className="text-[11px] text-gray-500 mt-0.5">
+                                                       Manage trainer profiles, roles, bios, ratings, photo image URLs, and LinkedIn links.
+                                                  </p>
+                                             </div>
+                                             <button
+                                                  type="button"
+                                                  onClick={addTrainerItem}
+                                                  className="inline-flex items-center gap-1 bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-lg border border-amber-300 transition-colors cursor-pointer shrink-0"
+                                             >
+                                                  + Add Trainer Card
+                                             </button>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                  <div className="space-y-1">
+                                                       <label className={labelClass}>Section Title</label>
+                                                       <input
+                                                            value={trainersTitle}
+                                                            onChange={(e) => setTrainersTitle(e.target.value)}
+                                                            placeholder="e.g. Meet The Trainers"
+                                                            className={inputClass}
+                                                       />
+                                                  </div>
+                                                  <div className="space-y-1">
+                                                       <label className={labelClass}>Section Subtitle</label>
+                                                       <input
+                                                            value={trainersSubtitle}
+                                                            onChange={(e) => setTrainersSubtitle(e.target.value)}
+                                                            placeholder="e.g. Get 1-on-1 mentorship from active leads..."
+                                                            className={inputClass}
+                                                       />
+                                                  </div>
+                                             </div>
+
+                                             <div className="space-y-3 pt-2">
+                                                  {trainersItems.map((trainer, tIdx) => (
+                                                       <div key={tIdx} className="bg-white p-4 rounded-xl border border-gray-200 space-y-3 relative group">
+                                                            <button
+                                                                 type="button"
+                                                                 onClick={() => removeTrainerItem(tIdx)}
+                                                                 className="absolute top-2.5 right-2.5 text-gray-400 hover:text-red-500 text-xs font-bold transition-colors cursor-pointer"
+                                                            >
+                                                                 ✕ Remove
+                                                            </button>
+
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pr-12 sm:pr-0">
+                                                                 <div className="space-y-1 sm:col-span-3">
+                                                                      <label className="text-[11px] font-bold text-gray-500">Trainer Photo Image</label>
+                                                                      <ImageUploader
+                                                                           setImage={(file) => updateTrainerItemField(tIdx, "image", file)}
+                                                                           initialImage={trainer.image || null}
+                                                                      />
+                                                                 </div>
+                                                                 <div className="space-y-1">
+                                                                      <label className="text-[11px] font-bold text-gray-500">Trainer Name</label>
+                                                                      <input
+                                                                           value={trainer.name || ""}
+                                                                           onChange={(e) => updateTrainerItemField(tIdx, "name", e.target.value)}
+                                                                           placeholder="e.g. Mr. Manoj Pandey"
+                                                                           className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-amber-500 focus:outline-none text-xs"
+                                                                      />
+                                                                 </div>
+                                                                 <div className="space-y-1">
+                                                                      <label className="text-[11px] font-bold text-gray-500">Role / Company Tag</label>
+                                                                      <input
+                                                                           value={trainer.role || ""}
+                                                                           onChange={(e) => updateTrainerItemField(tIdx, "role", e.target.value)}
+                                                                           placeholder="e.g. SENIOR ENGINEER @ GOOGLE"
+                                                                           className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-amber-500 focus:outline-none text-xs uppercase"
+                                                                      />
+                                                                 </div>
+                                                                 <div className="space-y-1 sm:col-span-2">
+                                                                      <label className="text-[11px] font-bold text-gray-500">Bio / Credentials</label>
+                                                                      <input
+                                                                           value={trainer.bio || ""}
+                                                                           onChange={(e) => updateTrainerItemField(tIdx, "bio", e.target.value)}
+                                                                           placeholder="UI/UX & Design Systems lead with 10+ years experience..."
+                                                                           className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-amber-500 focus:outline-none text-xs"
+                                                                      />
+                                                                 </div>
+                                                                 <div className="space-y-1">
+                                                                      <label className="text-[11px] font-bold text-gray-500">Rating & Students</label>
+                                                                      <div className="grid grid-cols-2 gap-1.5">
+                                                                           <input
+                                                                                value={trainer.rating || ""}
+                                                                                onChange={(e) => updateTrainerItemField(tIdx, "rating", e.target.value)}
+                                                                                placeholder="4.9/5"
+                                                                                className="w-full h-9 px-2 border border-gray-300 rounded-lg focus:border-amber-500 focus:outline-none text-xs"
+                                                                           />
+                                                                           <input
+                                                                                value={trainer.students || ""}
+                                                                                onChange={(e) => updateTrainerItemField(tIdx, "students", e.target.value)}
+                                                                                placeholder="400+ Students"
+                                                                                className="w-full h-9 px-2 border border-gray-300 rounded-lg focus:border-amber-500 focus:outline-none text-xs"
+                                                                           />
+                                                                      </div>
+                                                                 </div>
+                                                                 <div className="space-y-1 sm:col-span-3">
+                                                                      <label className="text-[11px] font-bold text-gray-500">LinkedIn Profile Link</label>
+                                                                      <input
+                                                                           value={trainer.linkedin || ""}
+                                                                           onChange={(e) => updateTrainerItemField(tIdx, "linkedin", e.target.value)}
+                                                                           placeholder="https://linkedin.com/in/username"
+                                                                           className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-amber-500 focus:outline-none text-xs"
+                                                                      />
+                                                                 </div>
+                                                            </div>
+                                                       </div>
+                                                  ))}
+                                                  {trainersItems.length === 0 && (
+                                                       <p className="text-xs text-gray-400 text-center py-3 bg-white rounded-xl border border-dashed border-gray-200">
+                                                            No custom trainer cards added yet. Default trainers (Google, Microsoft, Amazon leads) will be displayed. Click "+ Add Trainer Card" above to customize.
+                                                       </p>
+                                                  )}
+                                             </div>
+                                        </div>
+                                   </div>
+
+                                   {/* Job Roles After Course Section Config */}
+                                   <div className="space-y-4 bg-indigo-50/50 p-4 sm:p-5 rounded-2xl border border-indigo-200/70 text-left mt-4">
+                                        <div className="flex items-center justify-between border-b border-indigo-200/60 pb-3">
+                                             <div>
+                                                  <p className="text-xs font-bold text-gray-900 uppercase tracking-wider font-sans flex items-center gap-2">
+                                                       <span className="text-indigo-500 text-sm">💼</span> Job Roles After Course Section
+                                                  </p>
+                                                  <p className="text-[11px] text-gray-500 mt-0.5">
+                                                       Manage job roles, descriptions, icons, step numbers, and key focus areas.
+                                                  </p>
+                                             </div>
+                                             <button
+                                                  type="button"
+                                                  onClick={addJobRoleItem}
+                                                  className="inline-flex items-center gap-1 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 text-xs font-bold px-3 py-1.5 rounded-lg border border-indigo-300 transition-colors cursor-pointer shrink-0"
+                                             >
+                                                  + Add Job Role
+                                             </button>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                  <div className="space-y-1">
+                                                       <label className={labelClass}>Tag Badge</label>
+                                                       <input
+                                                            value={jobRolesTag}
+                                                            onChange={(e) => setJobRolesTag(e.target.value)}
+                                                            placeholder="e.g. JOB ROLES"
+                                                            className={inputClass}
+                                                       />
+                                                  </div>
+                                                  <div className="space-y-1 sm:col-span-2">
+                                                       <label className={labelClass}>Section Title</label>
+                                                       <input
+                                                            value={jobRolesTitle}
+                                                            onChange={(e) => setJobRolesTitle(e.target.value)}
+                                                            placeholder="e.g. Job Roles After UI/UX Design Course"
+                                                            className={inputClass}
+                                                       />
+                                                  </div>
+                                             </div>
+
+                                             <div className="space-y-1">
+                                                  <label className={labelClass}>Section Subtitle / Description</label>
+                                                  <textarea
+                                                       value={jobRolesDescription}
+                                                       onChange={(e) => setJobRolesDescription(e.target.value)}
+                                                       placeholder="Unlock exciting career opportunities with in-demand roles..."
+                                                       rows={2}
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+
+                                             <div className="space-y-3 pt-2">
+                                                  {jobRolesItems.map((role, rIdx) => (
+                                                       <div key={rIdx} className="bg-white p-4 rounded-xl border border-gray-200 space-y-3 relative group">
+                                                            <button
+                                                                 type="button"
+                                                                 onClick={() => removeJobRoleItem(rIdx)}
+                                                                 className="absolute top-2.5 right-2.5 text-gray-400 hover:text-red-500 text-xs font-bold transition-colors cursor-pointer"
+                                                            >
+                                                                 ✕ Remove
+                                                            </button>
+
+                                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pr-12 sm:pr-0">
+                                                                 <div className="space-y-1">
+                                                                      <label className="text-[11px] font-bold text-gray-500">Step Number</label>
+                                                                      <input
+                                                                           value={role.step || `0${rIdx + 1}`}
+                                                                           onChange={(e) => updateJobRoleItemField(rIdx, "step", e.target.value)}
+                                                                           placeholder="e.g. 01"
+                                                                           className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-xs"
+                                                                      />
+                                                                 </div>
+                                                                 <div className="space-y-1">
+                                                                      <label className="text-[11px] font-bold text-gray-500">Icon Type</label>
+                                                                      <select
+                                                                           value={role.iconName || "briefcase"}
+                                                                           onChange={(e) => updateJobRoleItemField(rIdx, "iconName", e.target.value)}
+                                                                           className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-xs bg-white"
+                                                                      >
+                                                                           <option value="briefcase">Briefcase (Job)</option>
+                                                                           <option value="chart">Bar Chart (Analytics)</option>
+                                                                           <option value="user">User Check (Researcher)</option>
+                                                                           <option value="clock">Clock (Time)</option>
+                                                                           <option value="layers">Layers (Systems)</option>
+                                                                           <option value="award">Award (Specialist)</option>
+                                                                      </select>
+                                                                 </div>
+                                                                 <div className="space-y-1 sm:col-span-3">
+                                                                      <label className="text-[11px] font-bold text-gray-500">Role Title</label>
+                                                                      <input
+                                                                           value={role.title || ""}
+                                                                           onChange={(e) => updateJobRoleItemField(rIdx, "title", e.target.value)}
+                                                                           placeholder="e.g. UI/UX Designer"
+                                                                           className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-xs font-semibold"
+                                                                      />
+                                                                 </div>
+                                                                 <div className="space-y-1 sm:col-span-3">
+                                                                      <label className="text-[11px] font-bold text-gray-500">Role Description</label>
+                                                                      <textarea
+                                                                           value={role.description || ""}
+                                                                           onChange={(e) => updateJobRoleItemField(rIdx, "description", e.target.value)}
+                                                                           placeholder="Describe what this role entails..."
+                                                                           rows={2}
+                                                                           className="w-full p-2.5 border border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-xs"
+                                                                      />
+                                                                 </div>
+                                                                 <div className="space-y-1">
+                                                                      <label className="text-[11px] font-bold text-gray-500">Key Focus Label</label>
+                                                                      <input
+                                                                           value={role.keyFocusTitle || "KEY FOCUS AREAS"}
+                                                                           onChange={(e) => updateJobRoleItemField(rIdx, "keyFocusTitle", e.target.value)}
+                                                                           placeholder="e.g. KEY FOCUS AREAS"
+                                                                           className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-xs font-semibold uppercase"
+                                                                      />
+                                                                 </div>
+                                                                 <div className="space-y-1 sm:col-span-2">
+                                                                      <label className="text-[11px] font-bold text-gray-500">Key Focus Areas Text</label>
+                                                                      <input
+                                                                           value={role.keyFocus || ""}
+                                                                           onChange={(e) => updateJobRoleItemField(rIdx, "keyFocus", e.target.value)}
+                                                                           placeholder="e.g. Wireframing, High-Fidelity Prototyping, Design Systems"
+                                                                           className="w-full h-9 px-3 border border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-xs"
+                                                                      />
+                                                                 </div>
+                                                            </div>
+                                                       </div>
+                                                  ))}
+                                                  {jobRolesItems.length === 0 && (
+                                                       <p className="text-xs text-gray-400 text-center py-3 bg-white rounded-xl border border-dashed border-gray-200">
+                                                            No custom job roles added yet. Default roles (UI/UX Designer, Product Designer, UX Researcher) will be displayed. Click "+ Add Job Role" above to customize.
+                                                       </p>
+                                                  )}
+                                             </div>
+                                        </div>
+                                   </div>
+
+                                   {/* Hiring Partners Section Config */}
+                                   <div className="space-y-4 bg-emerald-50/50 p-4 sm:p-5 rounded-2xl border border-emerald-200/70 text-left mt-4">
+                                        <div className="flex items-center justify-between border-b border-emerald-200/60 pb-3">
+                                             <div>
+                                                  <p className="text-xs font-bold text-gray-900 uppercase tracking-wider font-sans flex items-center gap-2">
+                                                       <span className="text-emerald-600 text-sm">🤝</span> Our Hiring Partners Section
+                                                  </p>
+                                                  <p className="text-[11px] text-gray-500 mt-0.5">
+                                                       Manage hiring partner logos (Google, Microsoft, Amazon, Infosys, TCS, Accenture, etc.).
+                                                  </p>
+                                             </div>
+                                             <button
+                                                  type="button"
+                                                  onClick={addHiringPartnerItem}
+                                                  className="inline-flex items-center gap-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-300 transition-colors cursor-pointer shrink-0"
+                                             >
+                                                  + Add Partner Logo
+                                             </button>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                  <div className="space-y-1">
+                                                       <label className={labelClass}>Section Title</label>
+                                                       <input
+                                                            value={hiringPartnersTitle}
+                                                            onChange={(e) => setHiringPartnersTitle(e.target.value)}
+                                                            placeholder="e.g. Our Hiring Partners"
+                                                            className={inputClass}
+                                                       />
+                                                  </div>
+                                                  <div className="space-y-1">
+                                                       <label className={labelClass}>Section Subtitle</label>
+                                                       <input
+                                                            value={hiringPartnersSubtitle}
+                                                            onChange={(e) => setHiringPartnersSubtitle(e.target.value)}
+                                                            placeholder="e.g. Trusted by top companies across India"
+                                                            className={inputClass}
+                                                       />
+                                                  </div>
+                                             </div>
+
+                                             <div className="space-y-3 pt-2">
+                                                  {hiringPartnersItems.map((partner, pIdx) => (
+                                                       <div key={pIdx} className="bg-white p-4 rounded-xl border border-gray-200 space-y-3 relative group">
+                                                            <button
+                                                                 type="button"
+                                                                 onClick={() => removeHiringPartnerItem(pIdx)}
+                                                                 className="absolute top-2.5 right-2.5 text-gray-400 hover:text-red-500 text-xs font-bold transition-colors cursor-pointer"
+                                                            >
+                                                                 ✕ Remove
+                                                            </button>
+
+                                                            <div className="grid grid-cols-1 gap-3 pr-12 sm:pr-0">
+                                                                 <div className="space-y-1">
+                                                                      <label className="text-[11px] font-bold text-gray-500">Partner Logo Image</label>
+                                                                      <ImageUploader
+                                                                           setImage={(file) => updateHiringPartnerItemField(pIdx, "image", file)}
+                                                                           initialImage={partner.image || null}
+                                                                      />
+                                                                 </div>
+                                                            </div>
+                                                       </div>
+                                                  ))}
+                                                  {hiringPartnersItems.length === 0 && (
+                                                       <p className="text-xs text-gray-400 text-center py-3 bg-white rounded-xl border border-dashed border-gray-200">
+                                                            No custom partner logos added yet. Default partner logos (Google, Microsoft, Amazon, Infosys, TCS, Accenture, Capgemini, Wipro, HCL, Shapoorji Pallonji) will be displayed. Click "+ Add Partner Logo" above to customize.
+                                                       </p>
+                                                  )}
+                                             </div>
+                                        </div>
+                                   </div>
+
+                                   {/* Choose Your Learning Section Config */}
+                                   <div className="space-y-4 bg-sky-50/50 p-4 sm:p-5 rounded-2xl border border-sky-200/70 text-left mt-4">
+                                        <div className="border-b border-sky-200/60 pb-3">
+                                             <p className="text-xs font-bold text-gray-900 uppercase tracking-wider font-sans flex items-center gap-2">
+                                                  <span className="text-sky-600 text-sm">🎓</span> Choose Your Learning Section
+                                             </p>
+                                             <p className="text-[11px] text-gray-500 mt-0.5">
+                                                  Manage EMI Options, Scholarship offers, and Upcoming Batches schedules.
+                                             </p>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                  <div className="space-y-1">
+                                                       <label className={labelClass}>Section Title</label>
+                                                       <input
+                                                            value={chooseLearningTitle}
+                                                            onChange={(e) => setChooseLearningTitle(e.target.value)}
+                                                            placeholder="e.g. Choose Your Learning"
+                                                            className={inputClass}
+                                                       />
+                                                  </div>
+                                                  <div className="space-y-1">
+                                                       <label className={labelClass}>Section Subtitle</label>
+                                                       <input
+                                                            value={chooseLearningSubtitle}
+                                                            onChange={(e) => setChooseLearningSubtitle(e.target.value)}
+                                                            placeholder="e.g. Explore our flexible execution paths..."
+                                                            className={inputClass}
+                                                       />
+                                                  </div>
+                                             </div>
+
+                                             {/* EMI Option Settings */}
+                                             <div className="bg-white p-4 rounded-xl border border-gray-200 space-y-3">
+                                                  <p className="text-xs font-bold text-blue-700 uppercase tracking-wider">Card 1: EMI Option Box</p>
+                                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                       <div className="space-y-1">
+                                                            <label className="text-[11px] font-bold text-gray-500">EMI Banner Title</label>
+                                                            <input
+                                                                 value={chooseEmiBannerTitle}
+                                                                 onChange={(e) => setChooseEmiBannerTitle(e.target.value)}
+                                                                 placeholder="e.g. No Cost EMI available"
+                                                                 className="w-full h-9 px-3 border border-gray-300 rounded-lg text-xs"
+                                                            />
+                                                       </div>
+                                                       <div className="space-y-1">
+                                                            <label className="text-[11px] font-bold text-gray-500">EMI Subtext / Price</label>
+                                                            <input
+                                                                 value={chooseEmiBannerSubtitle}
+                                                                 onChange={(e) => setChooseEmiBannerSubtitle(e.target.value)}
+                                                                 placeholder="e.g. Starting from ₹1,667/month"
+                                                                 className="w-full h-9 px-3 border border-gray-300 rounded-lg text-xs"
+                                                            />
+                                                       </div>
+                                                  </div>
+                                             </div>
+
+                                             {/* Scholarship Settings */}
+                                             <div className="bg-white p-4 rounded-xl border border-gray-200 space-y-3">
+                                                  <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Card 2: Scholarship Offer Box</p>
+                                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                       <div className="space-y-1">
+                                                            <label className="text-[11px] font-bold text-gray-500">Discount Amount</label>
+                                                            <input
+                                                                 value={chooseScholarshipDiscount}
+                                                                 onChange={(e) => setChooseScholarshipDiscount(e.target.value)}
+                                                                 placeholder="e.g. 30%"
+                                                                 className="w-full h-9 px-3 border border-gray-300 rounded-lg text-xs font-bold"
+                                                            />
+                                                       </div>
+                                                       <div className="space-y-1">
+                                                            <label className="text-[11px] font-bold text-gray-500">Merit Scholarship Title</label>
+                                                            <input
+                                                                 value={chooseScholarshipMeritTitle}
+                                                                 onChange={(e) => setChooseScholarshipMeritTitle(e.target.value)}
+                                                                 placeholder="e.g. Merit Scholarship"
+                                                                 className="w-full h-9 px-3 border border-gray-300 rounded-lg text-xs"
+                                                            />
+                                                       </div>
+                                                       <div className="space-y-1">
+                                                            <label className="text-[11px] font-bold text-gray-500">Merit Subtext</label>
+                                                            <input
+                                                                 value={chooseScholarshipMeritSubtitle}
+                                                                 onChange={(e) => setChooseScholarshipMeritSubtitle(e.target.value)}
+                                                                 placeholder="e.g. For eligible candidates"
+                                                                 className="w-full h-9 px-3 border border-gray-300 rounded-lg text-xs"
+                                                            />
+                                                       </div>
+                                                  </div>
+                                             </div>
+
+                                             {/* Upcoming Batches List Settings */}
+                                             <div className="bg-white p-4 rounded-xl border border-gray-200 space-y-3">
+                                                  <div className="flex items-center justify-between">
+                                                       <p className="text-xs font-bold text-purple-700 uppercase tracking-wider">Card 3: Upcoming Batches Schedule</p>
+                                                       <button
+                                                            type="button"
+                                                            onClick={addBatchItem}
+                                                            className="bg-purple-100 hover:bg-purple-200 text-purple-800 text-xs font-bold px-2.5 py-1 rounded-lg border border-purple-300 cursor-pointer"
+                                                       >
+                                                            + Add Batch Row
+                                                       </button>
+                                                  </div>
+
+                                                  <div className="space-y-2">
+                                                       {chooseBatchItems.map((batch, bIdx) => (
+                                                            <div key={bIdx} className="grid grid-cols-1 sm:grid-cols-5 gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-200 relative">
+                                                                 <input
+                                                                      value={batch.dayDate || ""}
+                                                                      onChange={(e) => updateBatchItemField(bIdx, "dayDate", e.target.value)}
+                                                                      placeholder="01"
+                                                                      className="h-8 px-2 border border-gray-300 rounded text-xs font-bold text-center"
+                                                                 />
+                                                                 <input
+                                                                      value={batch.month || ""}
+                                                                      onChange={(e) => updateBatchItemField(bIdx, "month", e.target.value)}
+                                                                      placeholder="JUN"
+                                                                      className="h-8 px-2 border border-gray-300 rounded text-xs uppercase font-bold text-center"
+                                                                 />
+                                                                 <input
+                                                                      value={batch.title || ""}
+                                                                      onChange={(e) => updateBatchItemField(bIdx, "title", e.target.value)}
+                                                                      placeholder="Weekend Batch"
+                                                                      className="h-8 px-2 border border-gray-300 rounded text-xs font-semibold sm:col-span-2"
+                                                                 />
+                                                                 <div className="flex items-center gap-1">
+                                                                      <input
+                                                                           value={batch.time || ""}
+                                                                           onChange={(e) => updateBatchItemField(bIdx, "time", e.target.value)}
+                                                                           placeholder="Sat - Sun • 10:00 AM"
+                                                                           className="h-8 px-2 border border-gray-300 rounded text-xs flex-1"
+                                                                      />
+                                                                      <button
+                                                                           type="button"
+                                                                           onClick={() => removeBatchItem(bIdx)}
+                                                                           className="text-red-500 font-bold px-1 text-xs cursor-pointer"
+                                                                      >
+                                                                           ✕
+                                                                      </button>
+                                                                 </div>
+                                                            </div>
+                                                       ))}
+                                                       {chooseBatchItems.length === 0 && (
+                                                            <p className="text-xs text-gray-400 text-center py-2 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                                                 No custom batch rows added yet. Default batches (01 JUN, 08 JUN, 15 JUN) will be displayed. Click "+ Add Batch Row" to customize.
+                                                            </p>
+                                                       )}
+                                                  </div>
+                                             </div>
+
+                                        </div>
+                                   </div>
+
+                                    {/* Why Choose Us Section Config */}
+                                    <div className="space-y-4 bg-indigo-50/50 p-4 sm:p-5 rounded-2xl border border-indigo-200/70 text-left mt-4">
+                                         <div className="border-b border-indigo-200/60 pb-3 flex items-center justify-between">
+                                              <div>
+                                                   <p className="text-xs font-bold text-gray-900 uppercase tracking-wider font-sans flex items-center gap-2">
+                                                        <span className="text-indigo-600 text-sm">⭐</span> Why Choose Us Section
+                                                   </p>
+                                                   <p className="text-[11px] text-gray-500 mt-0.5">
+                                                        Manage the 6 reason cards displayed below the Testimonials section.
+                                                   </p>
+                                              </div>
+                                              <button
+                                                   type="button"
+                                                   onClick={addWhyChooseUsItem}
+                                                   className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                                              >
+                                                   + Add Reason Card
+                                              </button>
+                                         </div>
+
+                                         <div className="space-y-4">
+                                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                   <div className="space-y-1">
+                                                        <label className={labelClass}>Section Title</label>
+                                                        <input
+                                                             value={whyChooseUsTitle}
+                                                             onChange={(e) => setWhyChooseUsTitle(e.target.value)}
+                                                             placeholder="e.g. Why Choose Us?"
+                                                             className={inputClass}
+                                                        />
+                                                   </div>
+                                                   <div className="space-y-1">
+                                                        <label className={labelClass}>Section Subtitle</label>
+                                                        <input
+                                                             value={whyChooseUsSubtitle}
+                                                             onChange={(e) => setWhyChooseUsSubtitle(e.target.value)}
+                                                             placeholder="e.g. Real stories from learners who achieved career growth..."
+                                                             className={inputClass}
+                                                        />
+                                                   </div>
+                                              </div>
+
+                                              {/* Reason Cards List */}
+                                              <div className="space-y-3">
+                                                   {whyChooseUsItems.map((item, idx) => (
+                                                        <div key={idx} className="bg-white p-3.5 rounded-xl border border-gray-200 space-y-2.5 relative text-left">
+                                                             <div className="flex items-center justify-between">
+                                                                  <span className="text-xs font-bold text-indigo-700">Card #{idx + 1}</span>
+                                                                  <button
+                                                                       type="button"
+                                                                       onClick={() => removeWhyChooseUsItem(idx)}
+                                                                       className="text-red-500 hover:text-red-700 font-bold text-xs cursor-pointer"
+                                                                  >
+                                                                       Remove
+                                                                  </button>
+                                                             </div>
+
+                                                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                                                                  <div className="space-y-1">
+                                                                       <label className="text-[11px] font-bold text-gray-500">Card Title</label>
+                                                                       <input
+                                                                            value={item.title || ""}
+                                                                            onChange={(e) => updateWhyChooseUsItemField(idx, "title", e.target.value)}
+                                                                            placeholder="Qualified Candidates Pool"
+                                                                            className="w-full h-8 px-2.5 border border-gray-300 rounded text-xs font-semibold"
+                                                                       />
+                                                                  </div>
+                                                                  <div className="space-y-1">
+                                                                       <label className="text-[11px] font-bold text-gray-500">Icon Color Theme</label>
+                                                                       <select
+                                                                            value={item.color || "blue"}
+                                                                            onChange={(e) => updateWhyChooseUsItemField(idx, "color", e.target.value)}
+                                                                            className="w-full h-8 px-2 border border-gray-300 rounded text-xs font-medium"
+                                                                       >
+                                                                            <option value="blue">Blue (#1D61E7)</option>
+                                                                            <option value="orange">Orange (#F97316)</option>
+                                                                            <option value="coral">Coral / Red (#EF4444)</option>
+                                                                       </select>
+                                                                  </div>
+                                                                  <div className="space-y-1">
+                                                                       <label className="text-[11px] font-bold text-gray-500">Icon Name</label>
+                                                                       <select
+                                                                            value={item.iconName || "graduationCap"}
+                                                                            onChange={(e) => updateWhyChooseUsItemField(idx, "iconName", e.target.value)}
+                                                                            className="w-full h-8 px-2 border border-gray-300 rounded text-xs font-medium"
+                                                                       >
+                                                                            <option value="graduationCap">Graduation Cap</option>
+                                                                            <option value="badgeDollarSign">Dollar / Pricing</option>
+                                                                            <option value="userCog">Dedicated Manager</option>
+                                                                            <option value="zap">Faster / Zap</option>
+                                                                            <option value="layers">Technologies / Layers</option>
+                                                                            <option value="calendarCheck">Year-Round / Calendar</option>
+                                                                            <option value="award">Award / Merit</option>
+                                                                            <option value="shieldCheck">Shield / Trust</option>
+                                                                            <option value="heartHandshake">Handshake / Support</option>
+                                                                       </select>
+                                                                  </div>
+                                                             </div>
+
+                                                             <div className="space-y-1">
+                                                                  <label className="text-[11px] font-bold text-gray-500">Card Description</label>
+                                                                  <input
+                                                                       value={item.description || ""}
+                                                                       onChange={(e) => updateWhyChooseUsItemField(idx, "description", e.target.value)}
+                                                                       placeholder="Access a diverse range of ready-to-hire professionals"
+                                                                       className="w-full h-8 px-2.5 border border-gray-300 rounded text-xs"
+                                                                  />
+                                                             </div>
+                                                        </div>
+                                                   ))}
+
+                                                   {whyChooseUsItems.length === 0 && (
+                                                        <p className="text-xs text-gray-400 text-center py-2.5 bg-white rounded-xl border border-dashed border-gray-200">
+                                                             No custom reason cards added yet. Default 6 cards (Qualified Candidates Pool, No Cost Hiring, Dedicated Manager, Faster Hiring, Expertise in 150+ Tech, Year-Round Hiring) will be displayed. Click "+ Add Reason Card" to customize.
+                                                        </p>
+                                                   )}
+                                              </div>
+
+                                         </div>
+                                    </div>
+
+                                    {/* Ready To Start Journey CTA Section Config */}
+                                    <div className="space-y-4 bg-blue-50/50 p-4 sm:p-5 rounded-2xl border border-blue-200/70 text-left mt-4">
+                                         <div className="border-b border-blue-200/60 pb-3">
+                                              <p className="text-xs font-bold text-gray-900 uppercase tracking-wider font-sans flex items-center gap-2">
+                                                   <span className="text-blue-600 text-sm">🚀</span> Ready To Start Journey CTA Banner
+                                              </p>
+                                              <p className="text-[11px] text-gray-500 mt-0.5">
+                                                   Manage heading, subtitle, and CTA button links for the banner below Why Choose Us.
+                                              </p>
+                                         </div>
+
+                                         <div className="space-y-4">
+                                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                   <div className="space-y-1">
+                                                        <label className={labelClass}>Banner Title</label>
+                                                        <input
+                                                             value={readyToStartTitle}
+                                                             onChange={(e) => setReadyToStartTitle(e.target.value)}
+                                                             placeholder="e.g. Ready to start your journey?"
+                                                             className={inputClass}
+                                                        />
+                                                   </div>
+                                                   <div className="space-y-1">
+                                                        <label className={labelClass}>Banner Subtitle</label>
+                                                        <input
+                                                             value={readyToStartSubtitle}
+                                                             onChange={(e) => setReadyToStartSubtitle(e.target.value)}
+                                                             placeholder="e.g. Embark on your path to success..."
+                                                             className={inputClass}
+                                                        />
+                                                   </div>
+                                              </div>
+
+                                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                   <div className="space-y-1 bg-white p-3 rounded-xl border border-gray-200">
+                                                        <p className="text-[11px] font-bold text-blue-700 uppercase">Button 1 (Primary - Solid White)</p>
+                                                        <div className="grid grid-cols-2 gap-2 mt-2">
+                                                             <input
+                                                                  value={readyToStartBtn1Text}
+                                                                  onChange={(e) => setReadyToStartBtn1Text(e.target.value)}
+                                                                  placeholder="Contact us"
+                                                                  className="h-8 px-2.5 border border-gray-300 rounded text-xs"
+                                                             />
+                                                             <input
+                                                                  value={readyToStartBtn1Link}
+                                                                  onChange={(e) => setReadyToStartBtn1Link(e.target.value)}
+                                                                  placeholder="/contact-us"
+                                                                  className="h-8 px-2.5 border border-gray-300 rounded text-xs"
+                                                             />
+                                                        </div>
+                                                   </div>
+
+                                                   <div className="space-y-1 bg-white p-3 rounded-xl border border-gray-200">
+                                                        <p className="text-[11px] font-bold text-blue-700 uppercase">Button 2 (Secondary - Outlined)</p>
+                                                        <div className="grid grid-cols-2 gap-2 mt-2">
+                                                             <input
+                                                                  value={readyToStartBtn2Text}
+                                                                  onChange={(e) => setReadyToStartBtn2Text(e.target.value)}
+                                                                  placeholder="Get A Free Demo"
+                                                                  className="h-8 px-2.5 border border-gray-300 rounded text-xs"
+                                                             />
+                                                             <input
+                                                                  value={readyToStartBtn2Link}
+                                                                  onChange={(e) => setReadyToStartBtn2Link(e.target.value)}
+                                                                  placeholder="/contact-us#demo"
+                                                                  className="h-8 px-2.5 border border-gray-300 rounded text-xs"
+                                                             />
+                                                        </div>
+                                                   </div>
+                                              </div>
+                                         </div>
+                                    </div>
 
                                    {/* SEO Configurations */}
                                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2 pt-2">SEO Configurations</p>
