@@ -38,6 +38,7 @@ export default function Courses() {
       const [duration, setDuration] = useState("");
       const [mode, setMode] = useState("");
       const [batchSize, setBatchSize] = useState("");
+      const [price, setPrice] = useState("");
       const [socialProof, setSocialProof] = useState([]);
       const [overview, setOverview] = useState("");
       const [slug, setSlug] = useState("");
@@ -481,6 +482,7 @@ export default function Courses() {
            setDuration("");
            setMode("");
            setBatchSize("");
+           setPrice("");
            setSocialProof([]);
            setOverview("");
            setSlug("");
@@ -567,6 +569,7 @@ export default function Courses() {
            setDuration(course.duration || course.courselength || "");
            setMode(course.mode || "");
            setBatchSize(course.batchSize || course.batchsize || "");
+           setPrice(course.price !== undefined && course.price !== null ? course.price : (course.fee !== undefined && course.fee !== null ? course.fee : ""));
            setSocialProof(Array.isArray(course.socialProof) && course.socialProof.length > 0 ? course.socialProof.map(s => ({ value: s.value || "", name: s.name || "" })) : []);
            setOverview(course.overview || "");
            setSlug(course.slug || "");
@@ -847,6 +850,8 @@ export default function Courses() {
                       duration,
                       mode,
                       batchSize,
+                      price: price !== "" ? Number(price) : 0,
+                      fee: price !== "" ? Number(price) : 0,
                       socialProof: socialProof.map(item => ({
                            value: item.value || "",
                            name: item.name || ""
@@ -1201,9 +1206,14 @@ export default function Courses() {
 
                                              <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                                                   <div className="space-y-2">
-                                                       <h2 className="font-bold text-gray-900 text-base leading-snug line-clamp-2" title={course.title}>
-                                                            {course.title}
-                                                       </h2>
+                                                       <div className="flex items-start justify-between gap-2">
+                                                            <h2 className="font-bold text-gray-900 text-base leading-snug line-clamp-2" title={course.title}>
+                                                                 {course.title}
+                                                            </h2>
+                                                            <span className="shrink-0 text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
+                                                                 {(course.price || course.fee) ? `₹${Number(course.price || course.fee).toLocaleString("en-IN")}` : "Fee TBD"}
+                                                            </span>
+                                                       </div>
                                                        <p className="text-xs text-gray-400 line-clamp-3 leading-normal">
                                                             {course.overview}
                                                        </p>
@@ -1675,7 +1685,7 @@ export default function Courses() {
                                         </div>
                                    </div>
 
-                                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                                         <div className="space-y-1.5">
                                              <label className={labelClass}>Duration</label>
                                              <input
@@ -1700,6 +1710,16 @@ export default function Courses() {
                                                   value={batchSize}
                                                   onChange={(e) => setBatchSize(e.target.value)}
                                                   placeholder="e.g. 10-12 Students"
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>Course Fee (₹)</label>
+                                             <input
+                                                  type="number"
+                                                  value={price}
+                                                  onChange={(e) => setPrice(e.target.value)}
+                                                  placeholder="e.g. 25000"
                                                   className={inputClass}
                                              />
                                         </div>

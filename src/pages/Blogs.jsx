@@ -766,7 +766,7 @@ export default function Blogs() {
                                         </div>
 
                                         {/* Author Template Dropdown Auto-Fill */}
-                                        <div className="bg-gradient-to-r from-orange-50/80 to-amber-50/50 p-4 rounded-xl border border-orange-200/80 shadow-xs space-y-2">
+                                        <div className="bg-linear-to-r from-orange-50/80 to-amber-50/50 p-4 rounded-xl border border-orange-200/80 shadow-xs space-y-2">
                                              <div className="flex items-center justify-between">
                                                   <label className="text-xs font-bold text-orange-900 uppercase tracking-wider flex items-center gap-1.5">
                                                        <HiOutlineSparkles className="w-4 h-4 text-orange-500" />
@@ -1203,7 +1203,7 @@ export default function Blogs() {
                                                   </div>
 
                                                   <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
-                                                       <div className="truncate max-w-[180px]">
+                                                       <div className="truncate max-w-45">
                                                             <span className="font-medium text-gray-600">{tpl.name}</span>
                                                        </div>
                                                        {(tpl.twitter || tpl.linkedin) && (

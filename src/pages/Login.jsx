@@ -11,29 +11,29 @@ export default function Login() {
      const [password, setPassword] = useState("");
      const [loading, setLoading] = useState(false);
      const [error, setError] = useState("");
-     const [logoUrl, setLogoUrl] = useState("/logo.jpeg");
+     const [logoUrl, setLogoUrl] = useState("/apple-touch-icon.png");
 
-     useEffect(() => {
-          const fetchLogo = async () => {
-               try {
-                    const res = await fetch(`${API}/navbar`);
-                    if (res.ok) {
-                         const data = await res.json();
-                         if (data?.logo?.image) {
-                              setLogoUrl(data.logo.image);
-                              const link = document.querySelector("link[rel~='icon']") || document.createElement('link');
-                              link.type = 'image/x-icon';
-                              link.rel = 'shortcut icon';
-                              link.href = data.logo.image;
-                              document.getElementsByTagName('head')[0].appendChild(link);
-                         }
-                    }
-               } catch (e) {
-                    console.error("Failed to fetch brand logo", e);
-               }
-          };
-          fetchLogo();
-     }, []);
+     // useEffect(() => {
+     //      const fetchLogo = async () => {
+     //           try {
+     //                const res = await fetch(`${API}/navbar`);
+     //                if (res.ok) {
+     //                     const data = await res.json();
+     //                     if (data?.logo?.image) {
+     //                          setLogoUrl(data.logo.image);
+     //                          const link = document.querySelector("link[rel~='icon']") || document.createElement('link');
+     //                          link.type = 'image/x-icon';
+     //                          link.rel = 'shortcut icon';
+     //                          link.href = data.logo.image;
+     //                          document.getElementsByTagName('head')[0].appendChild(link);
+     //                     }
+     //                }
+     //           } catch (e) {
+     //                console.error("Failed to fetch brand logo", e);
+     //           }
+     //      };
+     //      fetchLogo();
+     // }, []);
 
      if (isAdminLoggedIn()) {
           return <Navigate to="/" replace />;
@@ -78,7 +78,7 @@ export default function Login() {
                <div className="w-full max-w-md z-10 space-y-8">
                     {/* Brand / Logo */}
                     <div className="flex flex-col items-center justify-center text-center space-y-3">
-                         <img src={logoUrl || "/logo.jpeg"} alt="Weekend UX Logo" className="h-12 w-auto max-w-50 object-contain drop-shadow-sm" />
+                         <img src={logoUrl || "/logo.jpeg"} alt="Weekend UX Logo" className="h-16 w-auto max-w-50 object-cover " />
                          <div>
                               <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
                                    Weekend UX Admin
@@ -146,7 +146,7 @@ export default function Login() {
                               <button
                                    type="submit"
                                    disabled={loading}
-                                   className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white py-3 rounded-xl font-semibold shadow-lg shadow-orange-500/10 hover:-translate-y-0.5 disabled:translate-y-0 transition-all duration-200 cursor-pointer disabled:cursor-not-allowed text-sm"
+                                   className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-neutral-900 py-3 rounded-xl font-semibold shadow-lg shadow-orange-500/10 hover:-translate-y-0.5 disabled:translate-y-0 transition-all duration-200 cursor-pointer disabled:cursor-not-allowed text-sm"
                               >
                                    {loading ? (
                                         <>
