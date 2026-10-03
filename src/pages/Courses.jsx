@@ -4,7 +4,8 @@ import Breadcrumb from "../components/BreadCrumb.jsx";
 import ImageUploader from "../components/ImageUploader.jsx";
 import Editor from "../components/Editor.jsx";
 import { useToast } from "../context/ToastContext";
-import { HiOutlinePlus, HiOutlineTrash } from "react-icons/hi";
+import { HiOutlinePlus, HiOutlineTrash, HiOutlineMail } from "react-icons/hi";
+import EmailTagInput from "../components/EmailTagInput.jsx";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
 
@@ -142,6 +143,9 @@ export default function Courses() {
       const [meetScheduledAt, setMeetScheduledAt] = useState("Today at 7:00 PM");
       const [meetInstructions, setMeetInstructions] = useState("");
       const [meetSaveToCourse, setMeetSaveToCourse] = useState(true);
+      const [trainerEmails, setTrainerEmails] = useState([]);
+      const [counselorEmails, setCounselorEmails] = useState([]);
+      const [extraStudentEmails, setExtraStudentEmails] = useState([]);
       const [sendingMeetEmail, setSendingMeetEmail] = useState(false);
       const [generatingZoomApi, setGeneratingZoomApi] = useState(false);
 
@@ -216,9 +220,13 @@ export default function Courses() {
       const openMeetModal = (courseIdOrSlug = "ALL") => {
            handleCourseSelectionChange(courseIdOrSlug);
            setMeetUrl("");
+           setStartUrl("");
            setZoomMeetingId("");
            setZoomPasscode("");
            setMeetInstructions("");
+           setTrainerEmails([]);
+           setCounselorEmails([]);
+           setExtraStudentEmails([]);
            setShowMeetModal(true);
       };
 
@@ -244,23 +252,31 @@ export default function Courses() {
                           courseSlug: targetCourseObj?.slug || "",
                           courseTitle: targetCourseObj?.title || "All Courses",
                           meetUrl,
+                          startUrl,
                           zoomMeetingId,
                           passcode: zoomPasscode,
                           title: meetTitle,
                           scheduledAt: meetScheduledAt,
                           instructions: meetInstructions,
-                          saveToCourse: meetSaveToCourse
+                          saveToCourse: meetSaveToCourse,
+                          trainerEmails,
+                          counselorEmails,
+                          extraStudentEmails
                      })
                 });
 
                 const data = await res.json();
                 if (res.ok && data.success) {
-                     showToast(data.message || `Zoom link emailed to ${data.sentCount} enrolled students!`, "success");
+                     showToast(data.message || `Zoom link emailed successfully!`, "success");
                      setShowMeetModal(false);
                      setMeetUrl("");
+                     setStartUrl("");
                      setZoomMeetingId("");
                      setZoomPasscode("");
                      setMeetInstructions("");
+                     setTrainerEmails([]);
+                     setCounselorEmails([]);
+                     setExtraStudentEmails([]);
                      setMeetScheduledAt("Today at 7:00 PM");
                      fetchCourses();
                 } else {
@@ -3252,10 +3268,10 @@ export default function Courses() {
                     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
                          <div className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-gray-100 overflow-hidden my-auto">
                               {/* Header */}
-                              <div className="flex items-center justify-between px-6 py-4 bg-[#0B5CFF] text-white border-b-4 border-blue-900">
+                              <div className="flex items-center justify-between px-6 py-4 bg-zinc-950 text-white border-b-4 border-official">
                                    <div className="flex items-center gap-2">
-                                        <div className="w-2.5 h-2.5 rounded-full bg-white animate-ping" />
-                                        <h3 className="font-bold text-base text-white">🔵 Dispatch Zoom Live Meeting to Enrolled Students</h3>
+                                        <div className="w-2.5 h-2.5 rounded-full bg-official animate-ping" />
+                                        <h3 className="font-bold text-base text-white">⚡ Dispatch Zoom Live Meeting</h3>
                                    </div>
                                    <button
                                         type="button"
@@ -3393,6 +3409,54 @@ export default function Courses() {
                                         />
                                    </div>
 
+                                   {/* Additional Participants & Email Invites Section */}
+                                   <div className="space-y-4 pt-3 border-t border-gray-100">
+                                        <div className="flex items-center gap-2">
+                                             <HiOutlineMail className="w-4 h-4 text-blue-600" />
+                                             <div>
+                                                  <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
+                                                       Additional Meeting Recipients
+                                                  </h4>
+                                                  <p className="text-[11px] text-gray-500">
+                                                       Link will be emailed to all enrolled students of the selected course, plus any emails added below.
+                                                  </p>
+                                             </div>
+                                        </div>
+
+                                        {/* 1. Trainer Emails */}
+                                        <EmailTagInput
+                                             label="1. Trainer Email(s)"
+                                             emails={trainerEmails}
+                                             onChange={setTrainerEmails}
+                                             placeholder="e.g. trainer1@weekendux.in, mentor@weekendux.in"
+                                             color="purple"
+                                             badgeRole="Trainer"
+                                             helperText="Trainers receive full Zoom meeting join details."
+                                        />
+
+                                        {/* 2. Counselor Emails */}
+                                        <EmailTagInput
+                                             label="2. Counselor Email(s)"
+                                             emails={counselorEmails}
+                                             onChange={setCounselorEmails}
+                                             placeholder="e.g. counselor1@weekendux.in, admissions@weekendux.in"
+                                             color="teal"
+                                             badgeRole="Counselor"
+                                             helperText="Counselors receive the session link to monitor or coordinate."
+                                        />
+
+                                        {/* 3. Extra Students Emails */}
+                                        <EmailTagInput
+                                             label="3. Extra Student Email(s)"
+                                             emails={extraStudentEmails}
+                                             onChange={setExtraStudentEmails}
+                                             placeholder="e.g. guest.student@gmail.com, candidate2@gmail.com"
+                                             color="blue"
+                                             badgeRole="Student"
+                                             helperText="Any additional students or demo attendees who should receive the invite."
+                                        />
+                                   </div>
+
                                    <div className="flex items-center gap-3 pt-1">
                                         <input
                                              type="checkbox"
@@ -3418,16 +3482,17 @@ export default function Courses() {
                                         <button
                                              type="submit"
                                              disabled={sendingMeetEmail}
-                                             className="px-6 py-2.5 bg-[#0B5CFF] hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl shadow-md transition cursor-pointer flex items-center gap-2"
+                                             className="px-6 py-2.5 bg-official hover:bg-official/90 text-zinc-950 font-extrabold text-xs rounded-xl shadow-md transition cursor-pointer flex items-center gap-2 disabled:opacity-50"
                                         >
                                              {sendingMeetEmail ? (
                                                   <>
-                                                       <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                       <div className="w-3.5 h-3.5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
                                                        <span>Sending Zoom Emails...</span>
                                                   </>
                                              ) : (
                                                   <>
-                                                       <span>✉️ Dispatch Zoom Invite</span>
+                                                       <HiOutlineMail className="w-4 h-4 text-zinc-950" />
+                                                       <span>Dispatch Zoom Invites</span>
                                                   </>
                                              )}
                                         </button>

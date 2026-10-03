@@ -23,8 +23,8 @@ import {
 
 const navigationItems = [
      { name: "Overview", path: "/", icon: HiOutlineHome },
-     { name: "Live Zoom", path: "/live-meetings", icon: HiOutlineVideoCamera },
-     { name: "WhatsApp Leads", path: "/whatsapp-leads", icon: HiOutlineChatAlt2 },
+     // { name: "Live Zoom", path: "/live-meetings", icon: HiOutlineVideoCamera },
+     // { name: "WhatsApp Leads", path: "/whatsapp-leads", icon: HiOutlineChatAlt2 },
      { name: "User Access", path: "/users", icon: HiOutlineUserGroup },
      { name: "Courses", path: "/courses", icon: HiOutlineAcademicCap },
      { name: "Blogs", path: "/blogs", icon: HiOutlineBookOpen },

@@ -17,6 +17,8 @@ import {
      HiOutlineCloudDownload
 } from "react-icons/hi";
 import { useToast } from "../context/ToastContext";
+import EmailTagInput from "../components/EmailTagInput";
+import { getAdminToken } from "../utils/auth.js";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
 
@@ -40,6 +42,9 @@ export default function LiveMeetings() {
      const [meetScheduledAt, setMeetScheduledAt] = useState("Today at 7:00 PM");
      const [meetInstructions, setMeetInstructions] = useState("");
      const [meetSaveToCourse, setMeetSaveToCourse] = useState(true);
+     const [trainerEmails, setTrainerEmails] = useState([]);
+     const [counselorEmails, setCounselorEmails] = useState([]);
+     const [extraStudentEmails, setExtraStudentEmails] = useState([]);
      const [sendingMeetEmail, setSendingMeetEmail] = useState(false);
      const [generatingZoomApi, setGeneratingZoomApi] = useState(false);
 
@@ -129,6 +134,9 @@ export default function LiveMeetings() {
           setZoomMeetingId("");
           setZoomPasscode("");
           setMeetInstructions("");
+          setTrainerEmails([]);
+          setCounselorEmails([]);
+          setExtraStudentEmails([]);
           setShowMeetModal(true);
      };
 
@@ -143,20 +151,28 @@ export default function LiveMeetings() {
           try {
                const targetCourseObj = courses.find(c => (c._id && c._id.toString() === selectedCourseForMeet) || (c.slug === selectedCourseForMeet));
 
+               const adminToken = getAdminToken();
+               const headers = { "Content-Type": "application/json" };
+               if (adminToken) headers["Authorization"] = `Bearer ${adminToken}`;
+
                const res = await fetch(`${API_URL}/admin/send-meet-link`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers,
                     body: JSON.stringify({
                          courseId: selectedCourseForMeet,
                          courseSlug: targetCourseObj?.slug || "",
                          courseTitle: selectedCourseForMeet === "ALL" ? "All Courses" : (targetCourseObj?.title || "UI/UX Program"),
                          meetUrl,
+                         startUrl,
                          zoomMeetingId,
                          passcode: zoomPasscode,
                          title: meetTitle,
                          scheduledAt: meetScheduledAt,
                          instructions: meetInstructions,
-                         saveToCourse: meetSaveToCourse
+                         saveToCourse: meetSaveToCourse,
+                         trainerEmails,
+                         counselorEmails,
+                         extraStudentEmails
                     })
                });
 
@@ -164,6 +180,9 @@ export default function LiveMeetings() {
                if (res.ok && data.success) {
                     showToast(data.message || "Zoom link successfully sent!", "success");
                     setShowMeetModal(false);
+                    setTrainerEmails([]);
+                    setCounselorEmails([]);
+                    setExtraStudentEmails([]);
                     fetchCourses();
                } else {
                     showToast(data.error || "Failed to send Zoom meeting link.", "error");
@@ -551,6 +570,54 @@ export default function LiveMeetings() {
                                              onChange={(e) => setMeetInstructions(e.target.value)}
                                              placeholder="e.g. Please join 5 mins prior and keep Figma desktop open."
                                              className={inputClass}
+                                        />
+                                   </div>
+
+                                   {/* Additional Participants & Email Invites Section */}
+                                   <div className="space-y-4 pt-4 border-t border-gray-100">
+                                        <div className="flex items-center gap-2">
+                                             <HiOutlineMail className="w-4 h-4 text-official" />
+                                             <div>
+                                                  <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
+                                                       Additional Meeting Recipients
+                                                  </h4>
+                                                  <p className="text-[11px] text-gray-500">
+                                                       Link will be emailed to all enrolled students of the selected course, plus any emails added below.
+                                                  </p>
+                                             </div>
+                                        </div>
+
+                                        {/* 1. Trainer Emails */}
+                                        <EmailTagInput
+                                             label="1. Trainer Email(s)"
+                                             emails={trainerEmails}
+                                             onChange={setTrainerEmails}
+                                             placeholder="e.g. trainer1@weekendux.in, mentor@weekendux.in"
+                                             color="purple"
+                                             badgeRole="Trainer"
+                                             helperText="Trainers receive full Zoom meeting join details."
+                                        />
+
+                                        {/* 2. Counselor Emails */}
+                                        <EmailTagInput
+                                             label="2. Counselor Email(s)"
+                                             emails={counselorEmails}
+                                             onChange={setCounselorEmails}
+                                             placeholder="e.g. counselor1@weekendux.in, admissions@weekendux.in"
+                                             color="teal"
+                                             badgeRole="Counselor"
+                                             helperText="Counselors receive the session link to monitor or coordinate."
+                                        />
+
+                                        {/* 3. Extra Students Emails */}
+                                        <EmailTagInput
+                                             label="3. Extra Student Email(s)"
+                                             emails={extraStudentEmails}
+                                             onChange={setExtraStudentEmails}
+                                             placeholder="e.g. guest.student@gmail.com, candidate2@gmail.com"
+                                             color="blue"
+                                             badgeRole="Student"
+                                             helperText="Any additional students or demo attendees who should receive the invite."
                                         />
                                    </div>
 
