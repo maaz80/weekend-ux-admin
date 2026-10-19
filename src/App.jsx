@@ -15,9 +15,9 @@ import PolicyData from "./pages/PolicyData"
 import ContactData from "./pages/ContactData"
 import NavbarManager from "./pages/NavbarManager"
 import LoginSettings from "./pages/LoginSettings"
-import UsersManager from "./pages/UsersManager"
+// import UsersManager from "./pages/UsersManager"
 // import WhatsAppLeads from "./pages/WhatsAppLeads"
-// import LiveMeetings from "./pages/LiveMeetings"
+import LiveMeetings from "./pages/LiveMeetings"
 
 import AdminLayout from "./components/AdminLayout"
 
