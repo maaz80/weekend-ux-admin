@@ -1,7 +1,40 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
+import { TableKit } from "@tiptap/extension-table";
 import { useEffect, useRef, useState, useCallback } from "react";
+
+function ToolbarButton({ onClick, isActive, children, title, disabled = false }) {
+     return (
+          <button
+               type="button"
+               title={title}
+               disabled={disabled}
+               className={`
+        relative inline-flex items-center justify-center
+        min-w-8 h-8 px-3
+        text-[13px] font-medium tracking-wide
+        rounded-md border transition-all duration-150
+        select-none cursor-pointer
+        ${isActive
+                         ? "bg-gray-900 text-white border-gray-900 shadow-inner"
+                         : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300"
+                    }
+        disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-gray-600 disabled:hover:border-gray-200
+      `}
+               onMouseDown={(event) => {
+                    event.preventDefault();
+                    if (!disabled) onClick();
+               }}
+          >
+               {children}
+          </button>
+     );
+}
+
+function Divider() {
+     return <div className="w-px h-5 bg-gray-200 self-center mx-1" />;
+}
 
 export default function Editor({ value, onChange }) {
      const isInternalUpdate = useRef(false);
@@ -31,6 +64,15 @@ export default function Editor({ value, onChange }) {
                     orderedList: {
                          HTMLAttributes: {
                               class: "editor-ordered-list",
+                         },
+                    },
+               }),
+               TableKit.configure({
+                    table: {
+                         resizable: true,
+                         renderWrapper: true,
+                         HTMLAttributes: {
+                              class: "editor-table",
                          },
                     },
                }),
@@ -150,34 +192,6 @@ export default function Editor({ value, onChange }) {
 
      if (!editor) return null;
 
-     const ToolbarButton = ({ onClick, isActive, children, title }) => (
-          <button
-               type="button"
-               title={title}
-               className={`
-        relative inline-flex items-center justify-center
-        min-w-8 h-8 px-3
-        text-[13px] font-medium tracking-wide
-        rounded-md border transition-all duration-150
-        select-none cursor-pointer
-        ${isActive
-                         ? "bg-gray-900 text-white border-gray-900 shadow-inner"
-                         : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300"
-                    }
-      `}
-               onMouseDown={(e) => {
-                    e.preventDefault();
-                    onClick();
-               }}
-          >
-               {children}
-          </button>
-     );
-
-     const Divider = () => (
-          <div className="w-px h-5 bg-gray-200 self-center mx-1" />
-     );
-
      return (
           <div className="editor-root border border-gray-200 rounded-xl overflow-visible bg-white shadow-sm relative">
                {/* ── Toolbar ── */}
@@ -295,6 +309,62 @@ export default function Editor({ value, onChange }) {
                          onClick={openLinkModal}
                     >
                          <LinkIcon />
+                    </ToolbarButton>
+
+                    <Divider />
+
+                    {/* Tables */}
+                    <ToolbarButton
+                         title="Insert 3 x 3 table"
+                         isActive={false}
+                         onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+                    >
+                         Table
+                    </ToolbarButton>
+
+                    <ToolbarButton
+                         title="Add row after current row"
+                         isActive={false}
+                         disabled={!editor.isActive("table") || !editor.can().addRowAfter()}
+                         onClick={() => editor.chain().focus().addRowAfter().run()}
+                    >
+                         + Row
+                    </ToolbarButton>
+
+                    <ToolbarButton
+                         title="Add column after current column"
+                         isActive={false}
+                         disabled={!editor.isActive("table") || !editor.can().addColumnAfter()}
+                         onClick={() => editor.chain().focus().addColumnAfter().run()}
+                    >
+                         + Col
+                    </ToolbarButton>
+
+                    <ToolbarButton
+                         title="Delete current row"
+                         isActive={false}
+                         disabled={!editor.isActive("table") || !editor.can().deleteRow()}
+                         onClick={() => editor.chain().focus().deleteRow().run()}
+                    >
+                         - Row
+                    </ToolbarButton>
+
+                    <ToolbarButton
+                         title="Delete current column"
+                         isActive={false}
+                         disabled={!editor.isActive("table") || !editor.can().deleteColumn()}
+                         onClick={() => editor.chain().focus().deleteColumn().run()}
+                    >
+                         - Col
+                    </ToolbarButton>
+
+                    <ToolbarButton
+                         title="Delete table"
+                         isActive={false}
+                         disabled={!editor.isActive("table") || !editor.can().deleteTable()}
+                         onClick={() => editor.chain().focus().deleteTable().run()}
+                    >
+                         Delete Table
                     </ToolbarButton>
 
                     <Divider />
@@ -433,6 +503,45 @@ export default function Editor({ value, onChange }) {
         .editor-content-wrapper .ProseMirror p {
           margin: 0 0 0.75em 0;
           padding: 0;
+        }
+
+        .editor-content-wrapper .tableWrapper {
+          width: 100%;
+          overflow-x: auto;
+          margin: 1em 0;
+        }
+
+        .editor-content-wrapper .ProseMirror table {
+          width: 100%;
+          border-collapse: collapse;
+          table-layout: fixed;
+        }
+
+        .editor-content-wrapper .ProseMirror th,
+        .editor-content-wrapper .ProseMirror td {
+          min-width: 100px;
+          border: 1px solid #d1d5db;
+          padding: 8px 10px;
+          vertical-align: top;
+        }
+
+        .editor-content-wrapper .ProseMirror th {
+          background: #f3f4f6;
+          font-weight: 700;
+          text-align: left;
+        }
+
+        .editor-content-wrapper .ProseMirror th p,
+        .editor-content-wrapper .ProseMirror td p {
+          margin: 0;
+        }
+
+        .editor-content-wrapper .ProseMirror .selectedCell:after {
+          background: rgba(249, 115, 22, 0.16);
+          content: "";
+          inset: 0;
+          pointer-events: none;
+          position: absolute;
         }
 
         .editor-content-wrapper .ProseMirror > *:last-child {

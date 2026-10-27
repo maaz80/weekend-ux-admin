@@ -11,6 +11,9 @@ import FooterManager from "./pages/FooterManager"
 import Testimonials from "./pages/Testimonials"
 import HomeData from "./pages/HomeData"
 import AboutData from "./pages/AboutData"
+import CorporateTrainingData from "./pages/CorporateTrainingData"
+import HireFromUsData from "./pages/HireFromUsData"
+import FreeResourcesData from "./pages/FreeResourcesData"
 import PolicyData from "./pages/PolicyData"
 import ContactData from "./pages/ContactData"
 import NavbarManager from "./pages/NavbarManager"
@@ -47,6 +50,9 @@ const App = () => {
         <Route path='/testimonials' element={protectedPage(<Testimonials />)} />
         <Route path='/home-data' element={protectedPage(<HomeData />)} />
         <Route path='/about-data' element={protectedPage(<AboutData />)} />
+        <Route path='/corporate-training' element={protectedPage(<CorporateTrainingData />)} />
+        <Route path='/hire-from-us-content' element={protectedPage(<HireFromUsData />)} />
+        <Route path='/free-resources-content' element={protectedPage(<FreeResourcesData />)} />
         <Route path='/policy-settings' element={protectedPage(<PolicyData />)} />
         <Route path='/contact-settings' element={protectedPage(<ContactData />)} />
         <Route path='/navbar-settings' element={protectedPage(<NavbarManager />)} />

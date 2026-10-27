@@ -12,6 +12,9 @@ const PAGES = [
      { id: 'category-blogs', title: 'Blogs', slug: '/category/blogs' },
      { id: 'courses', title: 'Courses', slug: '/courses' },
      { id: 'about-us', title: 'About Us', slug: '/about-us' },
+     { id: 'corporate-training', title: 'Corporate Training', slug: '/corporate-training' },
+     { id: 'free-resources', title: 'Free Resources', slug: '/free-resources' },
+     { id: 'hire-from-us', title: 'Hire From Us', slug: '/hire-from-us' },
      // { id: 'location', title: 'Location', slug: '/location' },
      { id: 'not-found', title: '404 Page', slug: '*' },
 ];

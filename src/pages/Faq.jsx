@@ -13,11 +13,104 @@ const PAGES = [
      { title: 'Blogs', slug: 'category-blogs' },
      { title: 'Courses', slug: 'courses' },
      { title: 'About Us', slug: 'about-us' },
+     { title: 'Corporate Training', slug: 'corporate-training' },
+     { title: 'Free Resources', slug: 'free-resources' },
+     { title: 'Hire From Us', slug: 'hire-from-us' },
 ];
 
 const defaultFaq = {
      title: 'FAQ',
      faq: [],
+};
+
+const corporateTrainingFaqDefaults = {
+     title: 'Corporate Training FAQs',
+     startheading: 'Corporate',
+     midheading: 'Training',
+     endheading: 'FAQs',
+     description: 'Answers to common questions about corporate training with Weekend UX.',
+     faq: [
+          {
+               ques: 'What does Weekend UX corporate training cover?',
+               ans: 'Our corporate training covers practical UI/UX, product design, Figma, AI tools, and other digital skills. The topics can be aligned with your team’s goals and learning needs.',
+          },
+          {
+               ques: 'Can the training be customized for our organization?',
+               ans: 'Yes. The learning journey can be tailored around your organization’s priorities, current team skills, and the capabilities you want to build.',
+          },
+          {
+               ques: 'Who can take part in the training?',
+               ans: 'Training can be planned for teams with different roles and experience levels. Share your team profile and goals so the program can be scoped appropriately.',
+          },
+          {
+               ques: 'How is the training schedule decided?',
+               ans: 'The schedule and delivery plan are discussed with your organization based on team availability, learning objectives, and program scope.',
+          },
+          {
+               ques: 'How can we get started?',
+               ans: 'Use the Start Your Journey button on the Corporate Training page to contact our team. We can discuss your goals and recommend a suitable learning plan.',
+          },
+     ],
+};
+
+const hireFromUsFaqDefaults = {
+     title: 'Hire From Us FAQs',
+     startheading: 'Hiring',
+     midheading: 'Candidates',
+     endheading: 'FAQs',
+     description: 'Learn more about hiring job-ready design candidates through Weekend UX.',
+     faq: [
+          {
+               ques: 'What types of candidates can I hire through Weekend UX?',
+               ans: 'You can connect with job-ready designers across beginner, intermediate, senior, and expert skill pools. Use the enquiry form to share the role and experience you need.',
+          },
+          {
+               ques: 'Is there a fee to hire candidates?',
+               ans: "Weekend UX's hiring service is offered at no cost to employers.",
+          },
+          {
+               ques: 'How do I get started with hiring?',
+               ans: 'Submit your details through the enquiry form on this page. The Weekend UX team can follow up to understand your hiring needs and guide you on suitable candidates.',
+          },
+          {
+               ques: 'What design roles can I hire for?',
+               ans: 'Candidate roles include UI/UX, UI, UX, industrial, graphic, and web design. Contact the team if you are hiring for another design role.',
+          },
+          {
+               ques: 'Can I search candidates directly on this page?',
+               ans: 'The candidate search section lets you explore suggested job roles. If you have a specific hiring requirement, use the enquiry form to connect with the team.',
+          },
+     ],
+};
+
+const freeResourcesFaqDefaults = {
+     title: 'Free Resources FAQs',
+     startheading: 'Free',
+     midheading: 'Resources',
+     endheading: 'FAQs',
+     description: 'Answers to common questions about the free courses and tutorials available from Weekend UX.',
+     faq: [
+          {
+               ques: 'What free resources are available on the Free Resources page?',
+               ans: 'The page features selected Weekend UX courses and design tutorials to help you explore practical learning content.',
+          },
+          {
+               ques: 'Are the featured courses free to access?',
+               ans: 'The Free Resources page highlights selected learning resources. Course details explain the format and any enrollment requirements.',
+          },
+          {
+               ques: 'Who are these resources for?',
+               ans: 'They are useful for aspiring and practicing designers who want to build UI/UX skills and explore design topics.',
+          },
+          {
+               ques: 'How do I view a featured course?',
+               ans: 'Select a course card to open its course page, where you can find more information about the curriculum and learning format.',
+          },
+          {
+               ques: 'Where can I find more design tutorials?',
+               ans: 'Browse the Popular Tutorials section on this page and select a tutorial to continue exploring.',
+          },
+     ],
 };
 
 const emptyFaq = {
@@ -144,23 +237,35 @@ export default function FaqManager() {
                setLoading(true);
                const response = await fetch(`${API_URL}/pages/${slug}/faq`);
                const data = await response.json();
+               const pageDefaults = slug === 'corporate-training'
+                    ? corporateTrainingFaqDefaults
+                    : slug === 'hire-from-us'
+                         ? hireFromUsFaqDefaults
+                         : slug === 'free-resources'
+                              ? freeResourcesFaqDefaults
+                         : defaultFaq;
+               const hasFaqItems = Array.isArray(data?.faq) && data.faq.length > 0;
                setFormData({
-                    title: data?.title || 'FAQ',
-                    startheading: data?.startheading || '',
-                    midheading: data?.midheading || '',
-                    endheading: data?.endheading || '',
-                    description: data?.description || '',
-                    faq: data?.faq || [],
+                    title: hasFaqItems
+                         ? (data?.title || pageDefaults.title || 'FAQ')
+                         : (pageDefaults.title || data?.title || 'FAQ'),
+                    startheading: data?.startheading || pageDefaults.startheading || '',
+                    midheading: data?.midheading || pageDefaults.midheading || '',
+                    endheading: data?.endheading || pageDefaults.endheading || '',
+                    description: data?.description || pageDefaults.description || '',
+                    faq: hasFaqItems ? data.faq : (pageDefaults.faq || []),
                });
           } catch (error) {
                console.error(error);
+               const pageDefaults = slug === 'corporate-training'
+                    ? corporateTrainingFaqDefaults
+                    : slug === 'hire-from-us'
+                         ? hireFromUsFaqDefaults
+                         : slug === 'free-resources'
+                              ? freeResourcesFaqDefaults
+                         : defaultFaq;
                setFormData({
-                    title: 'FAQ',
-                    startheading: '',
-                    midheading: '',
-                    endheading: '',
-                    description: '',
-                    faq: []
+                    ...pageDefaults,
                });
           } finally {
                setLoading(false);
