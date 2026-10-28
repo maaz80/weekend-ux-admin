@@ -3,6 +3,7 @@ import Breadcrumb from "../components/BreadCrumb";
 import { HiOutlineUpload, HiOutlineTrash, HiOutlinePlus, HiOutlinePhotograph, HiOutlineSave, HiOutlinePencil } from "react-icons/hi";
 import { getAdminToken } from "../utils/auth";
 import { useToast } from "../context/ToastContext";
+import ImageUploader from "../components/ImageUploader.jsx";
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/api';
 
@@ -15,6 +16,7 @@ export default function Testimonials() {
 
      const [name, setName] = useState("");
      const [quote, setQuote] = useState("");
+     const [avatar, setAvatar] = useState(null);
      const [editingId, setEditingId] = useState(null);
 
      const getInitials = (nameStr) => {
@@ -47,6 +49,7 @@ export default function Testimonials() {
           setEditingId(null);
           setName("");
           setQuote("");
+          setAvatar(null);
           setShowModal(true);
      };
 
@@ -54,6 +57,7 @@ export default function Testimonials() {
           setEditingId(t._id);
           setName(t.name || "");
           setQuote(t.quote || "");
+          setAvatar(t.avatar || null);
           setShowModal(true);
      };
 
@@ -69,8 +73,11 @@ export default function Testimonials() {
                const formData = new FormData();
                formData.append("name", name);
                formData.append("quote", quote);
-
-               // No avatar upload required
+               if (avatar instanceof File) {
+                    formData.append("avatar", avatar);
+               } else if (editingId && avatar === null) {
+                    formData.append("removeAvatar", "true");
+               }
 
                let url = `${API}/testimonials`;
                let method = "POST";
@@ -171,8 +178,10 @@ export default function Testimonials() {
                                                   "{t.quote}"
                                              </p>
                                              <div className="flex items-center gap-3 pt-2">
-                                                  <div className="w-11 h-11 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm shrink-0 select-none">
-                                                       {getInitials(t.name)}
+                                                  <div className="w-11 h-11 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm shrink-0 select-none overflow-hidden">
+                                                       {t.avatar ? (
+                                                            <img src={t.avatar} alt={`${t.name} testimonial`} className="w-full h-full object-cover" />
+                                                       ) : getInitials(t.name)}
                                                   </div>
                                                   <div className="min-w-0">
                                                        <h3 className="font-bold text-gray-900 text-sm truncate">{t.name}</h3>
@@ -230,6 +239,14 @@ export default function Testimonials() {
                                                   required
                                              />
                                         </div>
+                                   </div>
+
+                                   <div className="space-y-1.5">
+                                        <label className={labelClass}>Profile Image</label>
+                                        <ImageUploader
+                                             setImage={setAvatar}
+                                             initialImage={avatar}
+                                        />
                                    </div>
 
                                    <div className="space-y-1.5">

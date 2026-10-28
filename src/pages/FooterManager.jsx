@@ -23,6 +23,12 @@ export default function FooterManager() {
      const [navigation, setNavigation] = useState([]);
      const [cardTitle, setCardTitle] = useState("");
      const [cardButtonName, setCardButtonName] = useState("");
+     const [locationContact, setLocationContact] = useState({
+          title: "",
+          address: "",
+          phone: "",
+          email: ""
+     });
      const [loadingSettings, setLoadingSettings] = useState(false);
 
      const fetchColumns = async () => {
@@ -48,6 +54,12 @@ export default function FooterManager() {
                     setNavigation(data.navigation || []);
                     setCardTitle(data.card?.title || "");
                     setCardButtonName(data.card?.buttonName || "");
+                    setLocationContact({
+                         title: data.locationContact?.title || "",
+                         address: data.locationContact?.address || "",
+                         phone: data.locationContact?.phone || "",
+                         email: data.locationContact?.email || ""
+                    });
                }
           } catch (err) {
                console.error("Failed to fetch global footer settings", err);
@@ -102,7 +114,8 @@ export default function FooterManager() {
                     card: {
                          title: cardTitle,
                          buttonName: cardButtonName
-                    }
+                    },
+                    locationContact
                };
                const res = await fetch(`${API_URL}/footer-columns/global`, {
                     method: "PUT",
@@ -390,6 +403,56 @@ export default function FooterManager() {
                                              onChange={(e) => setCopyright(e.target.value)}
                                              className={inputClass}
                                         />
+                                   </div>
+                              </div>
+
+                              {/* Footer Location Contact */}
+                              <div className="space-y-4">
+                                   <div className="border-b border-gray-100 pb-3">
+                                        <h2 className="text-lg font-bold text-gray-900">Footer Location Contact Details</h2>
+                                        <p className="text-xs text-gray-400 mt-1">Shown beside the location links in the footer. Leave fields blank to hide this block.</p>
+                                   </div>
+                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1.5">Title</label>
+                                             <input
+                                                  type="text"
+                                                  placeholder="e.g., Visit Us"
+                                                  value={locationContact.title}
+                                                  onChange={(e) => setLocationContact((prev) => ({ ...prev, title: e.target.value }))}
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                        <div>
+                                             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1.5">Address</label>
+                                             <textarea
+                                                  rows={3}
+                                                  placeholder="Enter your full address"
+                                                  value={locationContact.address}
+                                                  onChange={(e) => setLocationContact((prev) => ({ ...prev, address: e.target.value }))}
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                        <div>
+                                             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1.5">Phone Number</label>
+                                             <input
+                                                  type="text"
+                                                  placeholder="e.g., +91 9599272764"
+                                                  value={locationContact.phone}
+                                                  onChange={(e) => setLocationContact((prev) => ({ ...prev, phone: e.target.value }))}
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                        <div>
+                                             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1.5">Email</label>
+                                             <input
+                                                  type="email"
+                                                  placeholder="e.g., info@weekendux.in"
+                                                  value={locationContact.email}
+                                                  onChange={(e) => setLocationContact((prev) => ({ ...prev, email: e.target.value }))}
+                                                  className={inputClass}
+                                             />
+                                        </div>
                                    </div>
                               </div>
 

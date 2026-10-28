@@ -7,6 +7,7 @@ import { getAdminToken } from "../utils/auth";
 import { useToast } from "../context/ToastContext";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/api';
+const isImageFile = (value) => value && typeof value === "object" && typeof value.arrayBuffer === "function";
 
 const DEFAULT_AUTHOR_TEMPLATES = [
      {
@@ -75,6 +76,7 @@ export default function Blogs() {
      const [tplBio, setTplBio] = useState("");
      const [tplTwitter, setTplTwitter] = useState("");
      const [tplLinkedin, setTplLinkedin] = useState("");
+     const [tplAvatar, setTplAvatar] = useState(null);
 
      // Blog Page Configuration States
      const [heroStarttitle, setHeroStarttitle] = useState("");
@@ -124,25 +126,50 @@ export default function Blogs() {
      }, []);
 
      const persistAuthorTemplates = async (templatesToSave) => {
+          const previousTemplates = authorTemplates;
           setSavingTemplates(true);
           setAuthorTemplates(templatesToSave);
           try {
-               localStorage.setItem("admin_author_templates", JSON.stringify(templatesToSave));
+               const formData = new FormData();
+               const templatesPayload = templatesToSave.map((template, index) => {
+                    const { avatar, ...templateData } = template;
+                    if (isImageFile(avatar)) {
+                         formData.append(`templateAvatar_${index}`, avatar, avatar.name || "author-avatar");
+                         return { ...templateData, avatar: "" };
+                    }
+                    return { ...templateData, avatar: avatar || "" };
+               });
+               formData.append("data", JSON.stringify({ authorTemplates: templatesPayload }));
                const res = await fetch(`${API_URL}/blogs`, {
                     method: "PUT",
                     headers: {
-                         "Content-Type": "application/json",
                          "Authorization": `Bearer ${getAdminToken()}`
                     },
-                    body: JSON.stringify({
-                         authorTemplates: templatesToSave
-                    })
+                    body: formData
                });
                if (res.ok) {
+                    const result = await res.json();
+                    const savedTemplates = result.authorTemplates || templatesPayload;
+                    const uploadedTemplate = templatesToSave.find(({ avatar }) => isImageFile(avatar));
+                    const savedUploadedTemplate = uploadedTemplate &&
+                         savedTemplates.find(({ id }) => id === uploadedTemplate.id);
+                    if (uploadedTemplate && !savedUploadedTemplate?.avatar) {
+                         throw new Error("The server did not save the author image. Please try uploading it again.");
+                    }
+                    setAuthorTemplates(savedTemplates);
+                    localStorage.setItem("admin_author_templates", JSON.stringify(savedTemplates));
                     showToast("Author templates saved successfully!", "success");
+                    return true;
                }
+               const error = await res.json();
+               setAuthorTemplates(previousTemplates);
+               showToast(error.error || "Failed to save author templates.", "error");
+               return false;
           } catch (err) {
                console.error("Error saving author templates:", err);
+               setAuthorTemplates(previousTemplates);
+               showToast(err.message || "Failed to save author templates.", "error");
+               return false;
           } finally {
                setSavingTemplates(false);
           }
@@ -156,6 +183,7 @@ export default function Blogs() {
           setTplBio("");
           setTplTwitter("");
           setTplLinkedin("");
+          setTplAvatar(null);
           setShowTplForm(true);
      };
 
@@ -167,6 +195,7 @@ export default function Blogs() {
           setTplBio(tpl.bio || "");
           setTplTwitter(tpl.twitter || "");
           setTplLinkedin(tpl.linkedin || "");
+          setTplAvatar(tpl.avatar || null);
           setShowTplForm(true);
      };
 
@@ -183,7 +212,8 @@ export default function Blogs() {
                designation: tplDesignation.trim(),
                bio: tplBio.trim(),
                twitter: tplTwitter.trim(),
-               linkedin: tplLinkedin.trim()
+               linkedin: tplLinkedin.trim(),
+               avatar: tplAvatar
           };
 
           let updatedList;
@@ -192,8 +222,7 @@ export default function Blogs() {
           } else {
                updatedList = [...authorTemplates, newTplObj];
           }
-          await persistAuthorTemplates(updatedList);
-          setShowTplForm(false);
+          if (await persistAuthorTemplates(updatedList)) setShowTplForm(false);
      };
 
      const handleDeleteTpl = async (tplId) => {
@@ -215,6 +244,7 @@ export default function Blogs() {
                setAuthorName(found.name || '');
                setAuthorDesignation(found.designation || '');
                setAuthorBio(found.bio || '');
+               setAuthorAvatar(found.avatar || null);
                setAuthorTwitter(found.twitter || '');
                setAuthorLinkedin(found.linkedin || '');
                showToast(`Author details pre-filled from "${found.label || found.name}"`, "success");
@@ -324,7 +354,7 @@ export default function Blogs() {
           setAuthorName(blogAuthor.name || '');
           setAuthorDesignation(blogAuthor.designation || '');
           setAuthorBio(blogAuthor.bio || '');
-          setAuthorAvatar(null);
+          setAuthorAvatar(blogAuthor.avatar || null);
           setAuthorTwitter(blogAuthor.twitter || '');
           setAuthorLinkedin(blogAuthor.linkedin || '');
           setAuthorUpdatedDate(blogAuthor.updatedDate || '');
@@ -362,6 +392,7 @@ export default function Blogs() {
                name: authorName,
                designation: authorDesignation,
                bio: authorBio,
+               avatar: typeof authorAvatar === "string" ? authorAvatar : "",
                twitter: authorTwitter,
                linkedin: authorLinkedin,
                updatedDate: authorUpdatedDate
@@ -370,21 +401,35 @@ export default function Blogs() {
           formData.append('schemas', JSON.stringify(schemas));
 
           if (image) formData.append("image", image);
+          if (isImageFile(authorAvatar)) {
+               formData.append("authorAvatar", authorAvatar, authorAvatar.name || "author-avatar");
+          }
 
           try {
                let res;
                if (editItem) {
                     res = await fetch(`${API_URL}/blogs/${editItem.slug || editItem._id}`, {
                          method: "PUT",
+                         headers: {
+                              "Authorization": `Bearer ${getAdminToken()}`
+                         },
                          body: formData
                     });
                } else {
                     res = await fetch(`${API_URL}/blogs`, {
                          method: "POST",
+                         headers: {
+                              "Authorization": `Bearer ${getAdminToken()}`
+                         },
                          body: formData
                     });
                }
                if (res.ok) {
+                    const savedBlog = await res.json();
+                    if (authorAvatar && !savedBlog?.author?.avatar) {
+                         showToast("Blog saved, but author image was not returned by the server. Please try again.", "error");
+                         return;
+                    }
                     setShowModal(false);
                     fetchBlogs();
                } else {
@@ -788,7 +833,7 @@ export default function Blogs() {
                                                   onChange={(e) => handleApplyTemplate(e.target.value)}
                                                   className="w-full px-3.5 py-2.5 rounded-xl border border-orange-200 bg-white text-xs font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all cursor-pointer shadow-xs"
                                              >
-                                                  <option value="">-- Choose Author Template (Click to Auto-Fill 5 Fields) --</option>
+                                                  <option value="">-- Choose Author Template to Auto-Fill Author Details --</option>
                                                   {authorTemplates.map((tpl) => (
                                                        <option key={tpl.id} value={tpl.id}>
                                                             {tpl.label || tpl.name} ({tpl.designation || 'Author'})
@@ -843,6 +888,10 @@ export default function Blogs() {
                                                        rows={3}
                                                        className={inputClass}
                                                   />
+                                             </div>
+                                             <div className="space-y-1.5 sm:col-span-2">
+                                                  <label className={labelClass}>Author Image</label>
+                                                  <ImageUploader setImage={setAuthorAvatar} initialImage={authorAvatar} />
                                              </div>
                                         </div>
                                    </div>
@@ -988,7 +1037,7 @@ export default function Blogs() {
                                         {uploading ? (
                                              <>
                                                   <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                                  <span>Saving...</span>
+                                                  <span>{isImageFile(authorAvatar) ? "Uploading author image..." : "Saving..."}</span>
                                              </>
                                         ) : (
                                              <span>{editItem ? "Save Changes" : "Publish Blog"}</span>
@@ -1015,7 +1064,7 @@ export default function Blogs() {
                                              </h2>
                                         </div>
                                         <p className="text-xs text-gray-400 mt-1">
-                                             Manage saved author profiles to pre-fill all 5 author fields in any blog post instantly.
+                                             Manage saved author profiles, including profile images, to pre-fill blog author details.
                                         </p>
                                    </div>
                                    <button
@@ -1136,12 +1185,17 @@ export default function Blogs() {
                                                             className={inputClass}
                                                        />
                                                   </div>
+                                                  <div className="space-y-1.5 sm:col-span-2">
+                                                       <label className={labelClass}>Author Image</label>
+                                                       <ImageUploader setImage={setTplAvatar} initialImage={tplAvatar} />
+                                                  </div>
                                              </div>
 
                                              <div className="flex justify-end gap-2 pt-2">
                                                   <button
                                                        type="button"
                                                        onClick={() => setShowTplForm(false)}
+                                                       disabled={savingTemplates}
                                                        className="px-4 py-2 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer"
                                                   >
                                                        Cancel
@@ -1151,8 +1205,17 @@ export default function Blogs() {
                                                        disabled={savingTemplates}
                                                        className="px-5 py-2 text-xs font-bold text-white bg-orange-500 hover:bg-orange-600 rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5"
                                                   >
-                                                       <HiOutlineCheck className="w-4 h-4" />
-                                                       <span>{editingTemplateId ? "Update Template" : "Save Template"}</span>
+                                                       {savingTemplates ? (
+                                                            <>
+                                                                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" aria-hidden="true" />
+                                                                 <span>{isImageFile(tplAvatar) ? "Uploading image..." : "Saving..."}</span>
+                                                            </>
+                                                       ) : (
+                                                            <>
+                                                                 <HiOutlineCheck className="w-4 h-4" />
+                                                                 <span>{editingTemplateId ? "Update Template" : "Save Template"}</span>
+                                                            </>
+                                                       )}
                                                   </button>
                                              </div>
                                         </form>
@@ -1167,7 +1230,11 @@ export default function Blogs() {
                                              >
                                                   <div>
                                                        <div className="flex items-start justify-between gap-2">
-                                                            <div>
+                                                            <div className="flex items-start gap-3">
+                                                                 {tpl.avatar && typeof tpl.avatar === "string" && (
+                                                                      <img src={tpl.avatar} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
+                                                                 )}
+                                                                 <div>
                                                                  <h4 className="font-bold text-gray-900 text-sm">
                                                                       {tpl.label || tpl.name}
                                                                  </h4>
@@ -1176,6 +1243,7 @@ export default function Blogs() {
                                                                            {tpl.designation}
                                                                       </span>
                                                                  )}
+                                                                 </div>
                                                             </div>
                                                             <div className="flex items-center gap-1 opacity-90">
                                                                  <button

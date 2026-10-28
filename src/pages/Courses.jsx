@@ -46,6 +46,7 @@ export default function Courses() {
       const [seoTitle, setSeoTitle] = useState("");
       const [seoDescription, setSeoDescription] = useState("");
       const [image, setImage] = useState(null);
+      const [certificationImage, setCertificationImage] = useState(null);
       const [schemas, setSchemas] = useState([]);
 
       // New Promo & Brochure Custom Fields
@@ -505,6 +506,7 @@ export default function Courses() {
            setSeoTitle("");
            setSeoDescription("");
            setImage(null);
+           setCertificationImage(null);
            setPromoTitle("");
            setPromoDescription("");
            setPromoBenefits("");
@@ -591,6 +593,7 @@ export default function Courses() {
            setSlug(course.slug || "");
            setSeoTitle(course.seotitle || "");
            setSeoDescription(course.seodescription || "");
+           setCertificationImage(course.certificationImage || null);
            setPromoTitle(course.promoTitle || "");
            setPromoDescription(course.promoDescription || "");
            setPromoBenefits(course.promoBenefits || "");
@@ -877,6 +880,7 @@ export default function Courses() {
                       seotitle: seoTitle || title,
                       seodescription: seoDescription || overview,
                       image: editItem ? editItem.image : "",
+                      certificationImage: typeof certificationImage === "string" ? certificationImage : "",
                       promoTitle,
                       promoDescription,
                       promoBenefits,
@@ -1048,6 +1052,9 @@ export default function Courses() {
  
                 if (image) {
                      formData.append(`courseImage_${editIndex !== null ? editIndex : courses.length}`, image);
+                }
+                if (certificationImage instanceof File) {
+                     formData.append(`course_${editIndex !== null ? editIndex : courses.length}_certificationImage`, certificationImage);
                 }
 
                 caseStudiesItems.forEach((item, itemIdx) => {
@@ -1831,6 +1838,17 @@ export default function Courses() {
                                                   className={inputClass}
                                              />
                                         </div>
+                                   </div>
+
+                                   <div className="space-y-1.5">
+                                        <label className={labelClass}>Course Certification Image</label>
+                                        <ImageUploader
+                                             setImage={setCertificationImage}
+                                             initialImage={certificationImage}
+                                        />
+                                        <p className="text-[11px] text-gray-400 mt-1">
+                                             This image appears in the course certification section on the course details page.
+                                        </p>
                                    </div>
 
                                    {/* Course Videos Section Banner */}
