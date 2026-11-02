@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import PdfUploader from "../components/PdfUploader";
 import {
      HiOutlineAcademicCap,
      HiOutlineBookOpen,
@@ -185,6 +186,9 @@ export default function Home() {
                          })}
                     </div>
                </div>
+
+               {/* Lead Brochure PDF Uploader */}
+               <PdfUploader />
 
                {/* Quick Actions / Configuration Modules */}
                <div>
