@@ -26,7 +26,6 @@ import { getAdminToken } from "../utils/auth";
 const navigationItems = [
      { name: "Overview", path: "/", icon: HiOutlineHome },
      { name: "Live Zoom", path: "/live-meetings", icon: HiOutlineVideoCamera },
-     { name: "User Information", path: "/user-information", icon: HiOutlineUserGroup },
      // { name: "WhatsApp Leads", path: "/whatsapp-leads", icon: HiOutlineChatAlt2 },
      // { name: "User Access", path: "/users", icon: HiOutlineUserGroup },
      { name: "Courses", path: "/courses", icon: HiOutlineAcademicCap },
@@ -52,36 +51,8 @@ const API = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
 export default function AdminLayout({ children }) {
      const [sidebarOpen, setSidebarOpen] = useState(false);
      const [logoUrl, setLogoUrl] = useState("/logo.jpeg");
-     const [newUserInformationCount, setNewUserInformationCount] = useState(0);
      const location = useLocation();
      const navigate = useNavigate();
-
-     useEffect(() => {
-          let active = true;
-          const fetchNewUserInformationCount = async () => {
-               try {
-                    const response = await fetch(`${API}/admin/user-information/count`, {
-                         headers: { Authorization: `Bearer ${getAdminToken()}` },
-                    });
-                    if (!response.ok) {
-                         throw new Error(`Failed to load new user count (${response.status})`);
-                    }
-                    const data = await response.json();
-                    if (active) setNewUserInformationCount(data.newCount || 0);
-               } catch (error) {
-                    console.error("Failed to refresh new user information count:", error);
-               }
-          };
-
-          fetchNewUserInformationCount();
-          const intervalId = window.setInterval(fetchNewUserInformationCount, 30000);
-          window.addEventListener("refresh-user-profile-count", fetchNewUserInformationCount);
-          return () => {
-               active = false;
-               window.clearInterval(intervalId);
-               window.removeEventListener("refresh-user-profile-count", fetchNewUserInformationCount);
-          };
-     }, []);
 
      useEffect(() => {
           const fetchLogo = async () => {
@@ -166,11 +137,6 @@ export default function AdminLayout({ children }) {
                                         >
                                              <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-orange-500" : "text-gray-400 group-hover:text-gray-600"}`} />
                                              <span>{item.name}</span>
-                                             {item.path === "/user-information" && newUserInformationCount > 0 && (
-                                                  <span className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
-                                                       {newUserInformationCount > 99 ? "99+" : newUserInformationCount}
-                                                  </span>
-                                             )}
                                         </Link>
                                    );
                               })}
