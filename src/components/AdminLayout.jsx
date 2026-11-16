@@ -39,7 +39,7 @@ const navigationItems = [
      { name: "Hire From Us Content", path: "/hire-from-us-content", icon: HiOutlineBriefcase },
      { name: "Free Resources Content", path: "/free-resources-content", icon: HiOutlineBookOpen },
      { name: "SEO Settings", path: "/site-meta", icon: HiOutlineGlobeAlt },
-     { name: "Footer Links", path: "/footer", icon: HiOutlineLink },
+     { name: "General & Footer Settings", path: "/footer", icon: HiOutlineLink },
      { name: "Navbar Settings", path: "/navbar-settings", icon: HiOutlineMenu },
      { name: "Login Settings", path: "/login-settings", icon: HiOutlineLockClosed },
      { name: "Legal Settings", path: "/policy-settings", icon: HiOutlineLink },

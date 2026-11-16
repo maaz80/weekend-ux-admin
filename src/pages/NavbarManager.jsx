@@ -4,6 +4,36 @@ import Breadcrumb from "../components/BreadCrumb";
 import { getAdminToken } from "../utils/auth";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
+const DEFAULT_TOP_BAR = {
+     enabled: true,
+     phone: "+91 9599272764",
+     email: "info@weekendux.in",
+     socials: [
+          { icon: "SiFacebook", path: "https://www.facebook.com/weekendux/" },
+          { icon: "FaInstagram", path: "https://www.instagram.com/weekendux1/" },
+          { icon: "FaLinkedinIn", path: "https://www.linkedin.com/in/weekend-ux-7b03212a8/" },
+          { icon: "SiYoutube", path: "https://www.youtube.com/" },
+          { icon: "FaXTwitter", path: "https://x.com/" }
+     ]
+};
+const LEGACY_SOCIAL_ICON_NAMES = {
+     facebook: "SiFacebook",
+     instagram: "FaInstagram",
+     linkedin: "FaLinkedinIn",
+     youtube: "SiYoutube",
+     x: "FaXTwitter",
+     tiktok: "FaTiktok",
+     whatsapp: "FaWhatsapp",
+     pinterest: "FaPinterest",
+     telegram: "FaTelegram",
+     threads: "FaThreads"
+};
+const DEFAULT_MAIN_LINKS = [
+     { label: "Home", href: "/" },
+     { label: "About Us", href: "/about-us" },
+     { label: "Blogs", href: "/blog" },
+     { label: "Contact Us", href: "/contact-us" }
+];
 
 export default function NavbarManager() {
      const [loading, setLoading] = useState(true);
@@ -19,6 +49,8 @@ export default function NavbarManager() {
      const [searchPlaceholder, setSearchPlaceholder] = useState("Search courses...");
      const [dropdownName, setDropdownName] = useState("Courses");
      const [loginButtonName, setLoginButtonName] = useState("Sign In");
+     const [topBar, setTopBar] = useState(DEFAULT_TOP_BAR);
+     const [mainLinks, setMainLinks] = useState(DEFAULT_MAIN_LINKS);
 
      const displayToast = (message) => {
           setToast({ show: true, message });
@@ -40,6 +72,25 @@ export default function NavbarManager() {
                          setSearchPlaceholder(data.searchPlaceholder || "Search courses...");
                          setDropdownName(data.dropdownName || "Courses");
                          setLoginButtonName(data.loginButtonName || "Sign In");
+                         setMainLinks(Array.isArray(data.mainLinks)
+                              ? data.mainLinks.filter((link) => link && typeof link === "object").map((link) => ({
+                                   label: typeof link.label === "string" ? link.label : "",
+                                   href: typeof link.href === "string" ? link.href : ""
+                              }))
+                              : DEFAULT_MAIN_LINKS);
+                         const savedTopBarSocials = Array.isArray(data.topBar?.socials)
+                              ? data.topBar.socials.filter((social) => social && typeof social === "object").map((social) => ({
+                                   icon: typeof social.icon === "string" && social.icon.trim()
+                                        ? social.icon.trim()
+                                        : LEGACY_SOCIAL_ICON_NAMES[social.platform] || social.platform || "",
+                                   path: typeof social.path === "string" ? social.path : ""
+                              }))
+                              : DEFAULT_TOP_BAR.socials;
+                         setTopBar({
+                              ...DEFAULT_TOP_BAR,
+                              ...(data.topBar || {}),
+                              socials: savedTopBarSocials
+                         });
                     }
                }
           } catch (err) {
@@ -85,6 +136,33 @@ export default function NavbarManager() {
           setMoreDropdownItems(updated);
      };
 
+     const handleAddTopBarSocial = () => {
+          setTopBar((prev) => ({ ...prev, socials: [...prev.socials, { icon: "FaInstagram", path: "" }] }));
+     };
+
+     const handleUpdateTopBarSocial = (index, field, value) => {
+          setTopBar((prev) => ({
+               ...prev,
+               socials: prev.socials.map((social, i) => i === index ? { ...social, [field]: value } : social)
+          }));
+     };
+
+     const handleRemoveTopBarSocial = (index) => {
+          setTopBar((prev) => ({ ...prev, socials: prev.socials.filter((_, i) => i !== index) }));
+     };
+
+     const handleAddMainLink = () => {
+          setMainLinks((prev) => [...prev, { label: "", href: "" }]);
+     };
+
+     const handleUpdateMainLink = (index, field, value) => {
+          setMainLinks((prev) => prev.map((link, i) => i === index ? { ...link, [field]: value } : link));
+     };
+
+     const handleRemoveMainLink = (index) => {
+          setMainLinks((prev) => prev.filter((_, i) => i !== index));
+     };
+
      const handleSave = async (e) => {
           if (e) e.preventDefault();
           try {
@@ -96,6 +174,11 @@ export default function NavbarManager() {
                formData.append("dropdownName", dropdownName);
                formData.append("loginButtonName", loginButtonName);
                formData.append("logoAlt", logoAlt);
+               formData.append("mainLinks", JSON.stringify(mainLinks.filter((link) => link.label.trim() && link.href.trim())));
+               formData.append("topBar", JSON.stringify({
+                    ...topBar,
+                    socials: topBar.socials.filter((social) => social.icon.trim() && social.path.trim())
+               }));
 
                if (logoFile) {
                     formData.append("logoImage", logoFile);
@@ -227,6 +310,98 @@ export default function NavbarManager() {
                                    </div>
                               </div>
 
+                              {/* Top Bar Settings Card */}
+                              <div className="bg-white rounded-2xl p-6 shadow-md shadow-gray-200/50 space-y-5">
+                                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                                        <div>
+                                             <h2 className="text-base font-bold text-gray-900">Top Bar</h2>
+                                             <p className="text-xs text-gray-400 mt-0.5">Configure the contact details and social links above the main navigation.</p>
+                                        </div>
+                                        <label className="inline-flex items-center gap-2 text-xs font-semibold text-gray-600 cursor-pointer shrink-0">
+                                             <input
+                                                  type="checkbox"
+                                                  checked={topBar.enabled}
+                                                  onChange={(e) => setTopBar((prev) => ({ ...prev, enabled: e.target.checked }))}
+                                                  className="accent-orange-500 w-4 h-4"
+                                             />
+                                             Show Top Bar
+                                        </label>
+                                   </div>
+
+                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>Phone Number</label>
+                                             <input
+                                                  type="tel"
+                                                  value={topBar.phone}
+                                                  onChange={(e) => setTopBar((prev) => ({ ...prev, phone: e.target.value }))}
+                                                  className={inputClass}
+                                                  placeholder="e.g. +91 9599272764"
+                                             />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>Email Address</label>
+                                             <input
+                                                  type="email"
+                                                  value={topBar.email}
+                                                  onChange={(e) => setTopBar((prev) => ({ ...prev, email: e.target.value }))}
+                                                  className={inputClass}
+                                                  placeholder="e.g. info@example.com"
+                                             />
+                                        </div>
+                                   </div>
+
+                                   <div className="space-y-3">
+                                        <div className="flex items-center justify-between gap-3">
+                                             <div>
+                                                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Social Links</h3>
+                                                  <p className="text-[11px] text-gray-400 mt-1">Paste an icon component name from react-icons.github.io/react-icons.</p>
+                                             </div>
+                                             <button
+                                                  type="button"
+                                                  onClick={handleAddTopBarSocial}
+                                                  className="inline-flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 text-xs font-semibold px-3 py-1.5 rounded-lg border border-orange-200 transition-all cursor-pointer shrink-0"
+                                             >
+                                                  + Add Social Link
+                                             </button>
+                                        </div>
+                                        {topBar.socials.length === 0 ? (
+                                             <p className="text-sm text-gray-400 text-center py-4 border border-dashed border-gray-200 rounded-xl">No top bar social links configured.</p>
+                                        ) : (
+                                             <div className="space-y-2">
+                                                  {topBar.socials.map((social, index) => (
+                                                       <div key={index} className="flex flex-col sm:flex-row gap-2 sm:items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                                            <input
+                                                                 type="text"
+                                                                 value={social.icon}
+                                                                 onChange={(e) => handleUpdateTopBarSocial(index, "icon", e.target.value)}
+                                                                 className={`${inputClass} min-w-0 sm:max-w-56 sm:flex-none`}
+                                                                 placeholder="Icon name (e.g. FaInstagram)"
+                                                                 aria-label={`React Icons component name ${index + 1}`}
+                                                            />
+                                                            <input
+                                                                 type="url"
+                                                                 value={social.path}
+                                                                 onChange={(e) => handleUpdateTopBarSocial(index, "path", e.target.value)}
+                                                                 className={`${inputClass} min-w-0 flex-1`}
+                                                                 placeholder="https://..."
+                                                                 aria-label={`${social.icon || `Social link ${index + 1}`} URL`}
+                                                            />
+                                                            <button
+                                                                 type="button"
+                                                                 onClick={() => handleRemoveTopBarSocial(index)}
+                                                                 aria-label={`Remove social link ${index + 1}`}
+                                                                 className="w-10 h-10 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-500 transition-colors cursor-pointer shrink-0"
+                                                            >
+                                                                 ×
+                                                            </button>
+                                                       </div>
+                                                  ))}
+                                             </div>
+                                        )}
+                                   </div>
+                              </div>
+
                               {/* Navigation Controls Card */}
                               <div className="bg-white rounded-2xl p-6 shadow-md shadow-gray-200/50 space-y-4">
                                    <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3">Navigation Controls</h2>
@@ -268,12 +443,63 @@ export default function NavbarManager() {
                                    </div>
                               </div>
 
+                              {/* Main Navigation Links Card */}
+                              <div className="bg-white rounded-2xl p-6 shadow-md shadow-gray-200/50 space-y-4">
+                                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                                        <div>
+                                             <h2 className="text-base font-bold text-gray-900">Main Navigation Links</h2>
+                                             <p className="text-xs text-gray-400 mt-0.5">Manage links such as Home, About Us, Blogs, and Contact Us.</p>
+                                        </div>
+                                        <button
+                                             type="button"
+                                             onClick={handleAddMainLink}
+                                             className="inline-flex items-center justify-center bg-orange-50 hover:bg-orange-100 text-orange-600 text-xs font-semibold px-3 py-1.5 rounded-lg border border-orange-200 transition-all cursor-pointer shrink-0"
+                                        >
+                                             + Add Link
+                                        </button>
+                                   </div>
+                                   {mainLinks.length === 0 ? (
+                                        <p className="text-sm text-gray-400 text-center py-4 border border-dashed border-gray-200 rounded-xl">No main navigation links configured.</p>
+                                   ) : (
+                                        <div className="space-y-2">
+                                             {mainLinks.map((link, index) => (
+                                                  <div key={index} className="flex flex-col sm:flex-row gap-2 sm:items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                                       <input
+                                                            type="text"
+                                                            value={link.label}
+                                                            onChange={(e) => handleUpdateMainLink(index, "label", e.target.value)}
+                                                            className={`${inputClass} min-w-0 sm:max-w-56 sm:flex-none`}
+                                                            placeholder="Link label (e.g. About Us)"
+                                                            aria-label={`Navigation link ${index + 1} label`}
+                                                       />
+                                                       <input
+                                                            type="text"
+                                                            value={link.href}
+                                                            onChange={(e) => handleUpdateMainLink(index, "href", e.target.value)}
+                                                            className={`${inputClass} min-w-0 flex-1`}
+                                                            placeholder="Path (e.g. /about-us)"
+                                                            aria-label={`${link.label || `Navigation link ${index + 1}`} path`}
+                                                       />
+                                                       <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveMainLink(index)}
+                                                            aria-label={`Remove ${link.label || `navigation link ${index + 1}`}`}
+                                                            className="w-10 h-10 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-500 transition-colors cursor-pointer shrink-0"
+                                                       >
+                                                            ×
+                                                       </button>
+                                                  </div>
+                                             ))}
+                                        </div>
+                                   )}
+                              </div>
+
                               {/* More Menu Dropdown Items Card */}
                               <div className="bg-white rounded-2xl p-6 shadow-md shadow-gray-200/50 space-y-6">
                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-3 gap-3">
                                         <div>
                                              <h2 className="text-base font-bold text-gray-900">More Dropdown Mega-Menu</h2>
-                                             <p className="text-xs text-gray-400 mt-0.5">Configure up to 4 columns for the dropdown grid. Each column has a title and sub-links.</p>
+                                             <p className="text-xs text-gray-400 mt-0.5">Configure up to 4 columns. Use a site path for internal pages or a full URL to open an external page in a new tab.</p>
                                         </div>
                                         <button
                                              type="button"
@@ -359,7 +585,7 @@ export default function NavbarManager() {
                                                                                                value={item.link}
                                                                                                onChange={(e) => handleUpdateSubItem(catIdx, itemIdx, "link", e.target.value)}
                                                                                                className={inputClass}
-                                                                                               placeholder="Link URL (e.g. /chatgpt)"
+                                                                                               placeholder="Path (/coming-soon) or full URL (https://...)"
                                                                                                required
                                                                                           />
                                                                                      </div>

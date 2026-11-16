@@ -98,10 +98,10 @@ export default function Home() {
                desc: "Maintain page-wise global FAQs."
           },
           {
-               name: "Footer Manager",
+               name: "General & Footer Settings",
                icon: HiOutlineLink,
                path: "/footer",
-               desc: "Structure footer link lists and columns."
+               desc: "Update WhatsApp and scroll-to-top buttons, bottom bar, and footer content."
           },
           {
                name: "Home Page Content",

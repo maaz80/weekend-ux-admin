@@ -3,6 +3,24 @@ import Breadcrumb from "../components/BreadCrumb.jsx";
 import { useToast } from "../context/ToastContext";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
+const DEFAULT_FLOATING_WIDGETS = {
+     whatsapp: {
+          enabled: true,
+          phoneNumber: "919311500424",
+          defaultMessage: "Hi, I came from the website and want to enquire about Weekend UX courses.",
+          iconImage: ""
+     },
+     backToTop: { enabled: true, iconName: "BsChevronUp" }
+};
+const DEFAULT_QUICK_ACCESS_BAR = {
+     enabled: true,
+     showCall: true,
+     showLiveChat: true,
+     phoneNumber: "919599272764",
+     callDesktopLabel: "Call us at +91 95992 72764",
+     callMobileLabel: "Call Now",
+     liveChatLabel: "Live Chat"
+};
 
 export default function FooterManager() {
      const { showToast } = useToast();
@@ -21,11 +39,16 @@ export default function FooterManager() {
      const [copyright, setCopyright] = useState("");
      const [socials, setSocials] = useState([]);
      const [navigation, setNavigation] = useState([]);
+     const [navigationTitle, setNavigationTitle] = useState("Explore");
+     const [floatingWidgets, setFloatingWidgets] = useState(DEFAULT_FLOATING_WIDGETS);
+     const [quickAccessBar, setQuickAccessBar] = useState(DEFAULT_QUICK_ACCESS_BAR);
+     const [whatsappIconFile, setWhatsappIconFile] = useState(null);
+     const [whatsappIconPreview, setWhatsappIconPreview] = useState("");
      const [cardTitle, setCardTitle] = useState("");
      const [cardButtonName, setCardButtonName] = useState("");
      const [locationContact, setLocationContact] = useState({
           title: "",
-          address: "",
+          addresses: [],
           phone: "",
           email: ""
      });
@@ -52,11 +75,25 @@ export default function FooterManager() {
                     setCopyright(data.copyright || "");
                     setSocials(data.socials || []);
                     setNavigation(data.navigation || []);
+                    setNavigationTitle(data.navigationTitle || "Explore");
+                    setFloatingWidgets({
+                         whatsapp: { ...DEFAULT_FLOATING_WIDGETS.whatsapp, ...(data.floatingWidgets?.whatsapp || {}) },
+                         backToTop: { ...DEFAULT_FLOATING_WIDGETS.backToTop, ...(data.floatingWidgets?.backToTop || {}) }
+                    });
+                    setQuickAccessBar({ ...DEFAULT_QUICK_ACCESS_BAR, ...(data.quickAccessBar || {}) });
+                    setWhatsappIconFile(null);
+                    setWhatsappIconPreview("");
                     setCardTitle(data.card?.title || "");
                     setCardButtonName(data.card?.buttonName || "");
+                    const savedAddresses = Array.isArray(data.locationContact?.addresses)
+                         ? data.locationContact.addresses.filter((address) => typeof address === "string")
+                         : [];
+                    const addresses = savedAddresses.length > 0
+                         ? savedAddresses
+                         : (data.locationContact?.address?.trim() ? [data.locationContact.address] : []);
                     setLocationContact({
                          title: data.locationContact?.title || "",
-                         address: data.locationContact?.address || "",
+                         addresses,
                          phone: data.locationContact?.phone || "",
                          email: data.locationContact?.email || ""
                     });
@@ -72,6 +109,11 @@ export default function FooterManager() {
           fetchColumns();
           fetchSettings();
      }, []);
+
+     useEffect(() => {
+          if (!whatsappIconPreview) return undefined;
+          return () => URL.revokeObjectURL(whatsappIconPreview);
+     }, [whatsappIconPreview]);
 
      const addSocialRow = () => {
           setSocials([...socials, { icon: "", path: "" }]);
@@ -101,6 +143,35 @@ export default function FooterManager() {
           setNavigation(navigation.filter((_, i) => i !== index));
      };
 
+     const updateFloatingWidget = (widget, key, value) => {
+          setFloatingWidgets((prev) => ({
+               ...prev,
+               [widget]: { ...prev[widget], [key]: value }
+          }));
+     };
+
+     const updateQuickAccessBar = (key, value) => {
+          setQuickAccessBar((prev) => ({ ...prev, [key]: value }));
+     };
+
+     const addLocationAddress = () => {
+          setLocationContact((prev) => ({ ...prev, addresses: [...prev.addresses, ""] }));
+     };
+
+     const updateLocationAddress = (index, value) => {
+          setLocationContact((prev) => ({
+               ...prev,
+               addresses: prev.addresses.map((address, i) => i === index ? value : address)
+          }));
+     };
+
+     const removeLocationAddress = (index) => {
+          setLocationContact((prev) => ({
+               ...prev,
+               addresses: prev.addresses.filter((_, i) => i !== index)
+          }));
+     };
+
      const saveSettings = async (e) => {
           e.preventDefault();
           setSaving(true);
@@ -111,18 +182,27 @@ export default function FooterManager() {
                     copyright,
                     socials: socials.filter(s => s.icon && s.path),
                     navigation: navigation.filter(n => n.itemname && n.itempath),
+                    navigationTitle,
+                    floatingWidgets,
+                    quickAccessBar,
                     card: {
                          title: cardTitle,
                          buttonName: cardButtonName
                     },
-                    locationContact
+                    locationContact: {
+                         ...locationContact,
+                         addresses: locationContact.addresses.map((address) => address.trim()).filter(Boolean),
+                         // Keep the first address in the legacy field for older frontend deployments.
+                         address: locationContact.addresses.find((address) => address.trim())?.trim() || ""
+                    }
                };
+               const formData = new FormData();
+               formData.append("settings", JSON.stringify(payload));
+               if (whatsappIconFile) formData.append("whatsappIcon", whatsappIconFile);
+
                const res = await fetch(`${API_URL}/footer-columns/global`, {
                     method: "PUT",
-                    headers: {
-                         "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload)
+                    body: formData
                });
                if (res.ok) {
                     showToast("Global footer settings saved successfully!", "success");
@@ -406,6 +486,190 @@ export default function FooterManager() {
                                    </div>
                               </div>
 
+                              {/* General Site Settings */}
+                              <div className="space-y-5 rounded-2xl border border-gray-100 bg-gray-50/70 p-5 lg:p-6">
+                                   <div className="border-b border-gray-200 pb-3">
+                                        <h2 className="text-lg font-bold text-gray-900">General</h2>
+                                        <p className="mt-1 text-xs text-gray-500">Manage floating WhatsApp and scroll-to-top buttons shown on the website.</p>
+                                   </div>
+
+                                   <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                                        <section className="space-y-4 rounded-xl border border-gray-100 bg-white p-4">
+                                             <div className="flex items-center justify-between gap-3">
+                                                  <h3 className="font-semibold text-gray-900">WhatsApp Floating Button</h3>
+                                                  <label className="inline-flex items-center gap-2 text-xs font-medium text-gray-600">
+                                                       <input
+                                                            type="checkbox"
+                                                            checked={floatingWidgets.whatsapp.enabled}
+                                                            onChange={(e) => updateFloatingWidget("whatsapp", "enabled", e.target.checked)}
+                                                            className="accent-orange-500"
+                                                       />
+                                                       Enabled
+                                                  </label>
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className="block text-xs font-semibold text-gray-500">WhatsApp Number</label>
+                                                  <input
+                                                       type="tel"
+                                                       value={floatingWidgets.whatsapp.phoneNumber}
+                                                       onChange={(e) => updateFloatingWidget("whatsapp", "phoneNumber", e.target.value)}
+                                                       className={inputClass}
+                                                       placeholder="e.g. 919311500424"
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className="block text-xs font-semibold text-gray-500">Prefilled Message</label>
+                                                  <textarea
+                                                       rows={3}
+                                                       value={floatingWidgets.whatsapp.defaultMessage}
+                                                       onChange={(e) => updateFloatingWidget("whatsapp", "defaultMessage", e.target.value)}
+                                                       className={inputClass}
+                                                       placeholder="Message shown when someone opens WhatsApp"
+                                                  />
+                                             </div>
+                                             <div className="space-y-2">
+                                                  <label className="block text-xs font-semibold text-gray-500">WhatsApp Icon Image</label>
+                                                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                                                       <img
+                                                            src={whatsappIconPreview || floatingWidgets.whatsapp.iconImage || "/images/whatsapp-icon.webp"}
+                                                            alt="WhatsApp icon preview"
+                                                            className="h-14 w-14 rounded-full border border-gray-200 bg-white object-contain p-1"
+                                                       />
+                                                       <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            onChange={(e) => {
+                                                                 const file = e.target.files?.[0] || null;
+                                                                 setWhatsappIconFile(file);
+                                                                 setWhatsappIconPreview(file ? URL.createObjectURL(file) : "");
+                                                            }}
+                                                            className="block w-full text-xs text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-orange-50 file:px-3 file:py-2 file:font-semibold file:text-orange-600 hover:file:bg-orange-100"
+                                                       />
+                                                  </div>
+                                                  <label className="inline-flex items-center gap-2 text-xs text-gray-500">
+                                                       <input
+                                                            type="checkbox"
+                                                            checked={!floatingWidgets.whatsapp.iconImage && !whatsappIconFile}
+                                                            onChange={(e) => {
+                                                                 if (e.target.checked) {
+                                                                      setWhatsappIconFile(null);
+                                                                      setWhatsappIconPreview("");
+                                                                      updateFloatingWidget("whatsapp", "iconImage", "");
+                                                                 }
+                                                            }}
+                                                            className="accent-orange-500"
+                                                       />
+                                                       Use the default WhatsApp icon
+                                                  </label>
+                                             </div>
+                                        </section>
+
+                                        <section className="space-y-4 rounded-xl border border-gray-100 bg-white p-4">
+                                             <div className="flex items-center justify-between gap-3">
+                                                  <h3 className="font-semibold text-gray-900">Scroll to Top Button</h3>
+                                                  <label className="inline-flex items-center gap-2 text-xs font-medium text-gray-600">
+                                                       <input
+                                                            type="checkbox"
+                                                            checked={floatingWidgets.backToTop.enabled}
+                                                            onChange={(e) => updateFloatingWidget("backToTop", "enabled", e.target.checked)}
+                                                            className="accent-orange-500"
+                                                       />
+                                                       Enabled
+                                                  </label>
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className="block text-xs font-semibold text-gray-500">React Icons Component Name</label>
+                                                  <input
+                                                       type="text"
+                                                       value={floatingWidgets.backToTop.iconName}
+                                                       onChange={(e) => updateFloatingWidget("backToTop", "iconName", e.target.value)}
+                                                       className={inputClass}
+                                                       placeholder="e.g. BsChevronUp"
+                                                  />
+                                                  <p className="text-[11px] text-gray-400">Paste an exact component name from react-icons.github.io/react-icons.</p>
+                                             </div>
+                                        </section>
+                                   </div>
+
+                                   <section className="space-y-4 rounded-xl border border-gray-100 bg-white p-4">
+                                        <div className="flex flex-col gap-3 border-b border-gray-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
+                                             <div>
+                                                  <h3 className="font-semibold text-gray-900">Bottom Quick Access Bar</h3>
+                                                  <p className="mt-1 text-xs text-gray-400">Change the fixed Call and Live Chat bar at the bottom of the website.</p>
+                                             </div>
+                                             <label className="inline-flex items-center gap-2 text-xs font-medium text-gray-600">
+                                                  <input
+                                                       type="checkbox"
+                                                       checked={quickAccessBar.enabled}
+                                                       onChange={(e) => updateQuickAccessBar("enabled", e.target.checked)}
+                                                       className="accent-orange-500"
+                                                  />
+                                                  Show Bar
+                                             </label>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                             <label className="inline-flex items-center gap-2 text-xs text-gray-600">
+                                                  <input
+                                                       type="checkbox"
+                                                       checked={quickAccessBar.showCall}
+                                                       onChange={(e) => updateQuickAccessBar("showCall", e.target.checked)}
+                                                       className="accent-orange-500"
+                                                  />
+                                                  Show Call Button
+                                             </label>
+                                             <label className="inline-flex items-center gap-2 text-xs text-gray-600">
+                                                  <input
+                                                       type="checkbox"
+                                                       checked={quickAccessBar.showLiveChat}
+                                                       onChange={(e) => updateQuickAccessBar("showLiveChat", e.target.checked)}
+                                                       className="accent-orange-500"
+                                                  />
+                                                  Show Live Chat Button
+                                             </label>
+                                             <div className="space-y-1.5">
+                                                  <label className="block text-xs font-semibold text-gray-500">Call Number</label>
+                                                  <input
+                                                       type="tel"
+                                                       value={quickAccessBar.phoneNumber}
+                                                       onChange={(e) => updateQuickAccessBar("phoneNumber", e.target.value)}
+                                                       className={inputClass}
+                                                       placeholder="e.g. 919599272764"
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className="block text-xs font-semibold text-gray-500">Call Label (Desktop)</label>
+                                                  <input
+                                                       type="text"
+                                                       value={quickAccessBar.callDesktopLabel}
+                                                       onChange={(e) => updateQuickAccessBar("callDesktopLabel", e.target.value)}
+                                                       className={inputClass}
+                                                       placeholder="e.g. Call us at +91..."
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className="block text-xs font-semibold text-gray-500">Call Label (Mobile)</label>
+                                                  <input
+                                                       type="text"
+                                                       value={quickAccessBar.callMobileLabel}
+                                                       onChange={(e) => updateQuickAccessBar("callMobileLabel", e.target.value)}
+                                                       className={inputClass}
+                                                       placeholder="e.g. Call Now"
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className="block text-xs font-semibold text-gray-500">Live Chat Label</label>
+                                                  <input
+                                                       type="text"
+                                                       value={quickAccessBar.liveChatLabel}
+                                                       onChange={(e) => updateQuickAccessBar("liveChatLabel", e.target.value)}
+                                                       className={inputClass}
+                                                       placeholder="e.g. Live Chat"
+                                                  />
+                                             </div>
+                                        </div>
+                                   </section>
+                              </div>
+
                               {/* Footer Location Contact */}
                               <div className="space-y-4">
                                    <div className="border-b border-gray-100 pb-3">
@@ -423,15 +687,40 @@ export default function FooterManager() {
                                                   className={inputClass}
                                              />
                                         </div>
-                                        <div>
-                                             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1.5">Address</label>
-                                             <textarea
-                                                  rows={3}
-                                                  placeholder="Enter your full address"
-                                                  value={locationContact.address}
-                                                  onChange={(e) => setLocationContact((prev) => ({ ...prev, address: e.target.value }))}
-                                                  className={inputClass}
-                                             />
+                                        <div className="md:col-span-2 space-y-3">
+                                             <div className="flex items-center justify-between gap-3">
+                                                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-widest">Addresses</label>
+                                                  <button
+                                                       type="button"
+                                                       onClick={addLocationAddress}
+                                                       className="text-xs font-semibold text-orange-500 hover:text-orange-600 bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-lg transition-colors cursor-pointer shrink-0"
+                                                  >
+                                                       + Add Address
+                                                  </button>
+                                             </div>
+                                             {locationContact.addresses.length === 0 ? (
+                                                  <p className="text-xs text-gray-400">No addresses configured. Click “+ Add Address” to add one.</p>
+                                             ) : (
+                                                  locationContact.addresses.map((address, idx) => (
+                                                       <div key={idx} className="flex items-start gap-2">
+                                                            <textarea
+                                                                 rows={3}
+                                                                 placeholder="Enter your full address"
+                                                                 value={address}
+                                                                 onChange={(e) => updateLocationAddress(idx, e.target.value)}
+                                                                 className={inputClass}
+                                                            />
+                                                            <button
+                                                                 type="button"
+                                                                 onClick={() => removeLocationAddress(idx)}
+                                                                 aria-label={`Remove address ${idx + 1}`}
+                                                                 className="w-9 h-9 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-500 transition-colors cursor-pointer shrink-0"
+                                                            >
+                                                                 ×
+                                                            </button>
+                                                       </div>
+                                                  ))
+                                             )}
                                         </div>
                                         <div>
                                              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1.5">Phone Number</label>
@@ -471,7 +760,7 @@ export default function FooterManager() {
                                              + Add Social
                                         </button>
                                    </div>
-                                   
+
                                    <div className="space-y-3">
                                         {socials.length === 0 ? (
                                              <p className="text-xs text-gray-400 text-center py-6">No social links configured. Click "+ Add Social" to add one.</p>
@@ -525,6 +814,17 @@ export default function FooterManager() {
                                         </button>
                                    </div>
                                    
+                                   <div className="space-y-1.5 rounded-xl border border-gray-100 bg-gray-50 p-4">
+                                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-widest">Bottom Bar Heading</label>
+                                        <input
+                                             type="text"
+                                             value={navigationTitle}
+                                             onChange={(e) => setNavigationTitle(e.target.value)}
+                                             className={inputClass}
+                                             placeholder="e.g. Explore"
+                                        />
+                                   </div>
+
                                    <div className="space-y-3">
                                         {navigation.length === 0 ? (
                                              <p className="text-xs text-gray-400 text-center py-6">No bottom navigation links configured. Click "+ Add Item" to add one.</p>
