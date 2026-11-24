@@ -107,7 +107,7 @@ export default function Home() {
                name: "Home Page Content",
                icon: HiOutlineDatabase,
                path: "/home-data",
-               desc: "Change highlights, community points and hero sections."
+               desc: "Change highlights and hero carousel sections."
           },
           {
                name: "About Page Content",

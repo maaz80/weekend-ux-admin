@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HiOutlinePlus, HiOutlineSave, HiOutlineTrash } from "react-icons/hi";
+import { HiOutlinePlus, HiOutlineSave, HiOutlineTrash, HiOutlinePhotograph } from "react-icons/hi";
 import Breadcrumb from "../components/BreadCrumb";
 import { useToast } from "../context/ToastContext";
 import { getAdminToken } from "../utils/auth.js";
@@ -8,10 +8,19 @@ const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
 
 const defaultContent = {
      hero: {
-          eyebrow: "Hire From Us",
-          heading: "Hire Job Ready Curated Candidates at Zero Cost",
-          buttonText: "Start Your Journey",
-          intro: "Weekend UX is a hands-on design school, in-person classes and structured recordings built for people who learn by doing, not watching.",
+          badge: "✓",
+          subheading: "HIRE FROM US",
+          eyebrow: "HIRE FROM US",
+          startheading: "HIRE JOB-READY",
+          midheading: "DESIGNERS AT ZERO COST",
+          endheading: "",
+          heading: "HIRE JOB-READY DESIGNERS AT ZERO COST",
+          description: "Curated, portfolio-ready candidates trained on real projects. Tell us the role and we'll shortlist for you.",
+          buttonText: "START YOUR JOURNEY",
+          buttonLink: "/contact-us",
+          image: "/images/hire-from-us-hero-graphic.png",
+          backgroundImage: "/images/hire-from-us-hero-graphic.png",
+          intro: "Curated, portfolio-ready candidates trained on real projects. Tell us the role and we'll shortlist for you.",
           benefits: ["Experience World Class Candidates", "Reduce your hiring time by 80%"]
      },
      candidateSearch: {
@@ -78,6 +87,7 @@ function TextField({ label, value, onChange, multiline = false }) {
 export default function HireFromUsData() {
      const { showToast } = useToast();
      const [content, setContent] = useState(defaultContent);
+     const [heroImageFile, setHeroImageFile] = useState(null);
      const [activeTab, setActiveTab] = useState("hero");
      const [loading, setLoading] = useState(true);
      const [saving, setSaving] = useState(false);
@@ -88,11 +98,24 @@ export default function HireFromUsData() {
                     const response = await fetch(`${API_URL}/hire-from-us`);
                     const data = await response.json();
                     if (!response.ok) throw new Error(data?.error || "Could not load Hire From Us content.");
+                    const rawHero = data.hero || {};
+                    const startH = rawHero.startheading || (rawHero.heading ? (rawHero.heading.includes("\n") ? rawHero.heading.split("\n")[0] : rawHero.heading.split(" ").slice(0, 2).join(" ")) : defaultContent.hero.startheading);
+                    const midH = rawHero.midheading || (rawHero.heading ? (rawHero.heading.includes("\n") ? rawHero.heading.split("\n").slice(1).join(" ") : rawHero.heading.split(" ").slice(2).join(" ")) : defaultContent.hero.midheading);
+
                     setContent({
                          hero: {
                               ...defaultContent.hero,
-                              ...data.hero,
-                              benefits: Array.isArray(data.hero?.benefits) ? data.hero.benefits : defaultContent.hero.benefits,
+                              ...rawHero,
+                              badge: rawHero.badge || defaultContent.hero.badge,
+                              subheading: rawHero.subheading || rawHero.eyebrow || defaultContent.hero.subheading,
+                              startheading: startH,
+                              midheading: midH,
+                              description: rawHero.description || rawHero.intro || defaultContent.hero.description,
+                              buttonText: rawHero.buttonText || defaultContent.hero.buttonText,
+                              buttonLink: rawHero.buttonLink || defaultContent.hero.buttonLink,
+                              image: rawHero.image || rawHero.backgroundImage || defaultContent.hero.image,
+                              backgroundImage: rawHero.backgroundImage || rawHero.image || defaultContent.hero.backgroundImage,
+                              benefits: Array.isArray(rawHero.benefits) ? rawHero.benefits : defaultContent.hero.benefits,
                          },
                          candidateSearch: {
                               ...defaultContent.candidateSearch,
@@ -200,7 +223,7 @@ export default function HireFromUsData() {
                hiringStats: {
                     ...previous.hiringStats,
                     experience: previous.hiringStats.experience.map((item, itemIndex) =>
-                         itemIndex === index ? { ...item, [field]: value } : item
+                         itemIndex === index ? { ...item, [field]: field === "value" ? (value === "" ? "" : Number(value)) : value } : item
                     ),
                },
           }));
@@ -261,21 +284,26 @@ export default function HireFromUsData() {
      const saveContent = async () => {
           try {
                setSaving(true);
-               const experienceTotal = content.hiringStats.experience.reduce((total, item) => total + Number(item.value), 0);
-               if (content.hiringStats.experience.some((item) => !Number.isFinite(Number(item.value)) || Number(item.value) < 0 || Number(item.value) > 100) ||
+               const experienceTotal = content.hiringStats.experience.reduce((total, item) => total + Number(item.value || 0), 0);
+               if (content.hiringStats.experience.some((item) => isNaN(Number(item.value)) || Number(item.value) < 0 || Number(item.value) > 100) ||
                     experienceTotal > 100) {
                     throw new Error("Hiring Stats percentages must be between 0 and 100 and total no more than 100%.");
+               }
+               const formData = new FormData();
+               formData.append("data", JSON.stringify(content));
+               if (heroImageFile) {
+                    formData.append("heroImage", heroImageFile);
                }
                const response = await fetch(`${API_URL}/hire-from-us`, {
                     method: "PUT",
                     headers: {
-                         "Content-Type": "application/json",
                          Authorization: `Bearer ${getAdminToken()}`,
                     },
-                    body: JSON.stringify(content),
+                    body: formData,
                });
                const data = await response.json();
                if (!response.ok) throw new Error(data?.error || "Could not save Hire From Us content.");
+               setHeroImageFile(null);
                showToast("Hire From Us content saved successfully!", "success");
           } catch (error) {
                console.error("Error saving Hire From Us content:", error);
@@ -322,34 +350,107 @@ export default function HireFromUsData() {
                                    <section className="space-y-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-7">
                                         <div>
                                              <h2 className="text-lg font-bold text-gray-900">Hire From Us Hero</h2>
-                                             <p className="mt-1 text-sm text-gray-500">Edit hero and intro copy. The enquiry form remains unchanged.</p>
+                                             <p className="mt-1 text-sm text-gray-500">Manage the hero copy, badge, typography, call-to-action and graphic illustration.</p>
+                                        </div>
+                                        <div className="grid gap-4 md:grid-cols-3">
+                                             <div>
+                                                  <TextField
+                                                       label="Circle Badge"
+                                                       value={content.hero.badge ?? "✓"}
+                                                       onChange={(value) => updateSection("hero", "badge", value)}
+                                                       placeholder="e.g. ✓"
+                                                  />
+                                             </div>
+                                             <div className="md:col-span-2">
+                                                  <TextField
+                                                       label="Subheading (White 17px)"
+                                                       value={content.hero.subheading ?? content.hero.eyebrow ?? "HIRE FROM US"}
+                                                       onChange={(value) => {
+                                                            updateSection("hero", "subheading", value);
+                                                            updateSection("hero", "eyebrow", value);
+                                                       }}
+                                                       placeholder="e.g. HIRE FROM US"
+                                                  />
+                                             </div>
+                                        </div>
+                                        <div>
+                                             <TextField
+                                                  label="Start Title (Oswald 76px Bold)"
+                                                  value={content.hero.startheading ?? ""}
+                                                  onChange={(value) => updateSection("hero", "startheading", value)}
+                                                  placeholder="e.g. HIRE JOB-READY"
+                                             />
+                                        </div>
+                                        <div>
+                                             <TextField
+                                                  label="Mid Title (Highlighted Yellow)"
+                                                  value={content.hero.midheading ?? ""}
+                                                  onChange={(value) => updateSection("hero", "midheading", value)}
+                                                  placeholder="e.g. DESIGNERS AT ZERO COST"
+                                             />
+                                        </div>
+                                        <div>
+                                             <TextField
+                                                  label="End Title (optional)"
+                                                  value={content.hero.endheading ?? ""}
+                                                  onChange={(value) => updateSection("hero", "endheading", value)}
+                                                  placeholder="e.g. (optional)"
+                                             />
+                                        </div>
+                                        <div>
+                                             <TextField
+                                                  label="Paragraph Description (Barlow 20px Regular)"
+                                                  value={content.hero.description ?? content.hero.intro ?? ""}
+                                                  onChange={(value) => {
+                                                       updateSection("hero", "description", value);
+                                                       updateSection("hero", "intro", value);
+                                                  }}
+                                                  placeholder="e.g. Curated, portfolio-ready candidates trained on real projects. Tell us the role and we'll shortlist for you."
+                                                  multiline
+                                             />
                                         </div>
                                         <div className="grid gap-4 md:grid-cols-2">
-                                             <TextField label="Eyebrow" value={content.hero.eyebrow} onChange={(value) => updateSection("hero", "eyebrow", value)} />
-                                             <TextField label="Hero button text" value={content.hero.buttonText} onChange={(value) => updateSection("hero", "buttonText", value)} />
-                                             <div className="md:col-span-2">
-                                                  <TextField label="Hero heading" value={content.hero.heading} onChange={(value) => updateSection("hero", "heading", value)} multiline />
-                                             </div>
+                                             <TextField
+                                                  label="Button Text"
+                                                  value={content.hero.buttonText ?? ""}
+                                                  onChange={(value) => updateSection("hero", "buttonText", value)}
+                                                  placeholder="e.g. START YOUR JOURNEY"
+                                             />
+                                             <TextField
+                                                  label="Button Link"
+                                                  value={content.hero.buttonLink ?? "/contact-us"}
+                                                  onChange={(value) => updateSection("hero", "buttonLink", value)}
+                                                  placeholder="e.g. /contact-us"
+                                             />
                                         </div>
-
-                                        <div className="space-y-4">
-                                             <TextField label="Intro paragraph below hero" value={content.hero.intro} onChange={(value) => updateSection("hero", "intro", value)} multiline />
-                                             <div className="flex items-center justify-between gap-3">
-                                                  <h3 className="font-semibold text-gray-800">Intro Highlights</h3>
-                                                  <button type="button" onClick={() => addArrayValue("hero", "benefits")} className="inline-flex items-center gap-1.5 rounded-lg border border-orange-200 px-3 py-2 text-sm font-semibold text-orange-600 transition hover:bg-orange-50">
-                                                       <HiOutlinePlus className="h-4 w-4" /> Add Highlight
-                                                  </button>
+                                        <div className="space-y-2 pt-2 border-t border-gray-100">
+                                             <div className="flex items-center justify-between">
+                                                  <span className="block text-xs font-bold uppercase tracking-wider text-gray-500">Slide Graphic / Image (Right Side)</span>
+                                                  <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Illustration / Graphic</span>
                                              </div>
-                                             {content.hero.benefits.map((benefit, index) => (
-                                                  <div key={index} className="flex items-start gap-3">
-                                                       <div className="flex-1">
-                                                            <TextField label={`Highlight ${index + 1}`} value={benefit} onChange={(value) => updateArrayValue("hero", "benefits", index, value)} />
-                                                       </div>
-                                                       <button type="button" aria-label={`Remove highlight ${index + 1}`} onClick={() => removeArrayValue("hero", "benefits", index)} className="mt-6 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-red-100 text-red-500 transition hover:bg-red-50">
-                                                            <HiOutlineTrash className="h-5 w-5" />
-                                                       </button>
+                                             <div className="flex items-center gap-4 mt-2">
+                                                  <div className="h-20 w-32 rounded-lg bg-gray-900 border border-gray-200 flex items-center justify-center p-2 overflow-hidden shrink-0">
+                                                       {heroImageFile ? (
+                                                            <img src={URL.createObjectURL(heroImageFile)} alt="Hero Preview" className="h-full w-full object-contain" />
+                                                       ) : (content.hero.image || content.hero.backgroundImage) ? (
+                                                            <img src={content.hero.image || content.hero.backgroundImage} alt="Hero Current" className="h-full w-full object-contain" />
+                                                       ) : (
+                                                            <HiOutlinePhotograph className="w-6 h-6 text-gray-400" />
+                                                       )}
                                                   </div>
-                                             ))}
+                                                  <div className="flex-1">
+                                                       <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            onChange={(e) => {
+                                                                 const file = e.target.files[0];
+                                                                 if (file) setHeroImageFile(file);
+                                                            }}
+                                                            className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 cursor-pointer"
+                                                       />
+                                                       <p className="text-[11px] text-gray-400 mt-1">Upload the right-side graphic / illustration (e.g. Candidate resume cards + Shortlisted stamp).</p>
+                                                  </div>
+                                             </div>
                                         </div>
                                    </section>
                               )}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HiOutlineSave } from "react-icons/hi";
+import { HiOutlineSave, HiOutlinePhotograph } from "react-icons/hi";
 import Breadcrumb from "../components/BreadCrumb";
 import ImageUploader from "../components/ImageUploader";
 import { useToast } from "../context/ToastContext";
@@ -9,9 +9,18 @@ const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
 
 const defaultContent = {
      hero: {
-          subheading: "Free Resources",
-          heading: "Explore Free UI/UX Design Resources",
-          buttonText: "Explore Resources",
+          badge: "✓",
+          subheading: "FREE RESOURCES",
+          eyebrow: "FREE RESOURCES",
+          startheading: "FREE UI/UX",
+          midheading: "DESIGN RESOURCES",
+          endheading: "",
+          heading: "FREE UI/UX DESIGN RESOURCES",
+          description: "Templates, checklists and practice files from our mentors, built for people who learn by doing.",
+          buttonText: "EXPLORE RESOURCES",
+          buttonLink: "#featured-resources",
+          image: "/images/free-resources-hero-graphic.png",
+          backgroundImage: "/images/free-resources-hero-graphic.png",
      },
      featuredResources: {
           eyebrow: "Featured",
@@ -52,6 +61,7 @@ function TextField({ label, value, onChange, multiline = false }) {
 export default function FreeResourcesData() {
      const { showToast } = useToast();
      const [content, setContent] = useState(defaultContent);
+     const [heroImageFile, setHeroImageFile] = useState(null);
      const [courses, setCourses] = useState([]);
      const [tutorialImages, setTutorialImages] = useState([]);
      const [activeTab, setActiveTab] = useState("hero");
@@ -72,8 +82,24 @@ export default function FreeResourcesData() {
                     if (!contentResponse.ok) throw new Error(data?.error || "Could not load Free Resources content.");
                     if (!coursesResponse.ok) throw new Error(courseData?.error || "Could not load available courses.");
 
+                    const rawHero = data.hero || {};
+                    const startH = rawHero.startheading || (rawHero.heading ? (rawHero.heading.includes("\n") ? rawHero.heading.split("\n")[0] : rawHero.heading.split(" ").slice(0, 2).join(" ")) : defaultContent.hero.startheading);
+                    const midH = rawHero.midheading || (rawHero.heading ? (rawHero.heading.includes("\n") ? rawHero.heading.split("\n").slice(1).join(" ") : rawHero.heading.split(" ").slice(2).join(" ")) : defaultContent.hero.midheading);
+
                     setContent({
-                         hero: { ...defaultContent.hero, ...data.hero },
+                         hero: {
+                              ...defaultContent.hero,
+                              ...rawHero,
+                              badge: rawHero.badge || defaultContent.hero.badge,
+                              subheading: rawHero.subheading || rawHero.eyebrow || defaultContent.hero.subheading,
+                              startheading: startH,
+                              midheading: midH,
+                              description: rawHero.description || defaultContent.hero.description,
+                              buttonText: rawHero.buttonText || defaultContent.hero.buttonText,
+                              buttonLink: rawHero.buttonLink || defaultContent.hero.buttonLink,
+                              image: rawHero.image || rawHero.backgroundImage || defaultContent.hero.image,
+                              backgroundImage: rawHero.backgroundImage || rawHero.image || defaultContent.hero.backgroundImage,
+                         },
                          featuredResources: {
                               ...defaultContent.featuredResources,
                               ...data.featuredResources,
@@ -169,6 +195,9 @@ export default function FreeResourcesData() {
                setSaving(true);
                const formData = new FormData();
                formData.append("data", JSON.stringify(content));
+               if (heroImageFile) {
+                    formData.append("heroImage", heroImageFile);
+               }
                tutorialImages.forEach((image, index) => {
                     if (image instanceof File) formData.append(`tutorialImage_${index}`, image);
                });
@@ -181,6 +210,7 @@ export default function FreeResourcesData() {
                });
                const data = await response.json();
                if (!response.ok) throw new Error(data?.error || "Could not save Free Resources content.");
+               setHeroImageFile(null);
                showToast("Free Resources content saved successfully!", "success");
           } catch (error) {
                console.error("Error saving Free Resources content:", error);
@@ -233,13 +263,103 @@ export default function FreeResourcesData() {
                               <section className="space-y-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-7">
                                    <div>
                                         <h2 className="text-lg font-bold text-gray-900">Free Resources Hero</h2>
-                                        <p className="mt-1 text-sm text-gray-500">Edit the subheading, heading, and button label. The hero design and background remain fixed.</p>
+                                        <p className="mt-1 text-sm text-gray-500">Manage the hero copy, badge, typography, call-to-action and graphic illustration.</p>
+                                   </div>
+                                   <div className="grid gap-4 md:grid-cols-3">
+                                        <div>
+                                             <TextField
+                                                  label="Circle Badge"
+                                                  value={content.hero.badge ?? "✓"}
+                                                  onChange={(value) => updateSection("hero", "badge", value)}
+                                                  placeholder="e.g. ✓"
+                                             />
+                                        </div>
+                                        <div className="md:col-span-2">
+                                             <TextField
+                                                  label="Subheading (White 17px)"
+                                                  value={content.hero.subheading ?? content.hero.eyebrow ?? "FREE RESOURCES"}
+                                                  onChange={(value) => {
+                                                       updateSection("hero", "subheading", value);
+                                                       updateSection("hero", "eyebrow", value);
+                                                  }}
+                                                  placeholder="e.g. FREE RESOURCES"
+                                             />
+                                        </div>
+                                   </div>
+                                   <div>
+                                        <TextField
+                                             label="Start Title (Oswald 76px Bold)"
+                                             value={content.hero.startheading ?? ""}
+                                             onChange={(value) => updateSection("hero", "startheading", value)}
+                                             placeholder="e.g. FREE UI/UX"
+                                        />
+                                   </div>
+                                   <div>
+                                        <TextField
+                                             label="Mid Title (Highlighted Yellow)"
+                                             value={content.hero.midheading ?? ""}
+                                             onChange={(value) => updateSection("hero", "midheading", value)}
+                                             placeholder="e.g. DESIGN RESOURCES"
+                                        />
+                                   </div>
+                                   <div>
+                                        <TextField
+                                             label="End Title (optional)"
+                                             value={content.hero.endheading ?? ""}
+                                             onChange={(value) => updateSection("hero", "endheading", value)}
+                                             placeholder="e.g. (optional)"
+                                        />
+                                   </div>
+                                   <div>
+                                        <TextField
+                                             label="Paragraph Description (Barlow 20px Regular)"
+                                             value={content.hero.description ?? ""}
+                                             onChange={(value) => updateSection("hero", "description", value)}
+                                             placeholder="e.g. Templates, checklists and practice files from our mentors, built for people who learn by doing."
+                                             multiline
+                                        />
                                    </div>
                                    <div className="grid gap-4 md:grid-cols-2">
-                                        <TextField label="Subheading" value={content.hero.subheading} onChange={(value) => updateSection("hero", "subheading", value)} />
-                                        <TextField label="Button name" value={content.hero.buttonText} onChange={(value) => updateSection("hero", "buttonText", value)} />
-                                        <div className="md:col-span-2">
-                                             <TextField label="Heading" value={content.hero.heading} onChange={(value) => updateSection("hero", "heading", value)} multiline />
+                                        <TextField
+                                             label="Button Text"
+                                             value={content.hero.buttonText ?? ""}
+                                             onChange={(value) => updateSection("hero", "buttonText", value)}
+                                             placeholder="e.g. EXPLORE RESOURCES"
+                                        />
+                                        <TextField
+                                             label="Button Link"
+                                             value={content.hero.buttonLink ?? "#featured-resources"}
+                                             onChange={(value) => updateSection("hero", "buttonLink", value)}
+                                             placeholder="e.g. #featured-resources"
+                                        />
+                                   </div>
+                                   <div className="space-y-2 pt-2 border-t border-gray-100">
+                                        <div className="flex items-center justify-between">
+                                             <span className="block text-xs font-bold uppercase tracking-wider text-gray-500">Slide Graphic / Image (Right Side)</span>
+                                             <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Illustration / Graphic</span>
+                                        </div>
+                                        <div className="flex items-center gap-4 mt-2">
+                                             <div className="h-20 w-32 rounded-lg bg-gray-900 border border-gray-200 flex items-center justify-center p-2 overflow-hidden shrink-0">
+                                                  {heroImageFile ? (
+                                                       <img src={URL.createObjectURL(heroImageFile)} alt="Hero Preview" className="h-full w-full object-contain" />
+                                                  ) : (content.hero.image || content.hero.backgroundImage) ? (
+                                                       <img src={content.hero.image || content.hero.backgroundImage} alt="Hero Current" className="h-full w-full object-contain" />
+                                                  ) : (
+                                                       <HiOutlinePhotograph className="w-6 h-6 text-gray-400" />
+                                                  )}
+                                             </div>
+                                             <div className="flex-1">
+                                                  <input
+                                                       type="file"
+                                                       accept="image/*"
+                                                       onChange={(e) => {
+                                                            const file = e.target.files[0];
+                                                            if (file) setHeroImageFile(file);
+                                                       }}
+                                                       className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 cursor-pointer"
+                                                  />
+                                                  <p className="text-[11px] text-gray-400 mt-1">Upload the right-side graphic / illustration (e.g. Resource cards + Download button).</p>
+                                             </div>
                                         </div>
                                    </div>
                               </section>

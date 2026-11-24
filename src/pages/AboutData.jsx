@@ -13,9 +13,14 @@ export default function AboutData() {
      const [activeTab, setActiveTab] = useState("hero");
 
      // Hero State
-     const [heroTitle, setHeroTitle] = useState("");
-     const [heroHeading, setHeroHeading] = useState("");
+     const [heroBadge, setHeroBadge] = useState("✓");
+     const [heroSubheading, setHeroSubheading] = useState("");
+     const [heroStart, setHeroStart] = useState("");
+     const [heroMid, setHeroMid] = useState("");
+     const [heroEnd, setHeroEnd] = useState("");
+     const [heroDesc, setHeroDesc] = useState("");
      const [heroBtnName, setHeroBtnName] = useState("");
+     const [heroBtnLink, setHeroBtnLink] = useState("/courses");
      const [heroImage, setHeroImage] = useState("");
      const [heroImageFile, setHeroImageFile] = useState(null);
 
@@ -69,10 +74,15 @@ export default function AboutData() {
                     const data = await res.json();
                     if (data) {
                          const hero = data.hero && data.hero[0] ? data.hero[0] : {};
-                         setHeroTitle(hero.title || "");
-                         setHeroHeading(hero.heading || "");
-                         setHeroBtnName(hero.buttonName || "");
-                         setHeroImage(hero.bgImage || "");
+                         setHeroBadge(hero.badge || "✓");
+                         setHeroSubheading(hero.subheading || hero.title || "ABOUT WEEKEND UX");
+                         setHeroStart(hero.startheading || (hero.heading ? hero.heading.split(" ").slice(0, 2).join(" ") : "WHERE CREATIVE"));
+                         setHeroMid(hero.midheading || (hero.heading ? hero.heading.split(" ").slice(2).join(" ") : "MINDS GET PRACTICAL"));
+                         setHeroEnd(hero.endheading || "");
+                         setHeroDesc(hero.description || "A hands-on UI/UX design school built for people who learn by doing, not watching. Study on campus or online.");
+                         setHeroBtnName(hero.buttonName || "EXPLORE OUR COURSES");
+                         setHeroBtnLink(hero.buttonLink || "/courses");
+                         setHeroImage(hero.image || hero.bgImage || "");
 
                          const feat = data.features || {};
                          setFeaturesDesc(feat.description || "");
@@ -121,9 +131,17 @@ export default function AboutData() {
 
                const payload = {
                     hero: [{
-                         title: heroTitle,
-                         heading: heroHeading,
+                         badge: heroBadge,
+                         subheading: heroSubheading,
+                         title: heroSubheading,
+                         startheading: heroStart,
+                         midheading: heroMid,
+                         endheading: heroEnd,
+                         heading: `${heroStart} ${heroMid} ${heroEnd}`.trim(),
+                         description: heroDesc,
                          buttonName: heroBtnName,
+                         buttonLink: heroBtnLink,
+                         image: heroImage,
                          bgImage: heroImage
                     }],
                     features: {
@@ -366,35 +384,56 @@ export default function AboutData() {
                <div className="px-6 lg:px-10 max-w-7xl mx-auto">
                     {activeTab === "hero" && (
                          <div className="bg-white rounded-xl p-6 shadow-md shadow-gray-200/50 space-y-4 max-w-4xl">
-                              <h2 className="text-lg font-bold text-gray-800 border-b border-gray-100 pb-3">Hero Section</h2>
+                              <h2 className="text-lg font-bold text-gray-800 border-b border-gray-100 pb-3">About Hero Section</h2>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                   <div>
+                                        <label className={labelClass}>Circle Badge</label>
+                                        <input type="text" value={heroBadge} onChange={(e) => setHeroBadge(e.target.value)} className={inputClass} placeholder="e.g. ✓" maxLength={5} />
+                                   </div>
+                                   <div className="md:col-span-2">
+                                        <label className={labelClass}>Subheading (White 17px)</label>
+                                        <input type="text" value={heroSubheading} onChange={(e) => setHeroSubheading(e.target.value)} className={inputClass} placeholder="e.g. ABOUT WEEKEND UX" />
+                                   </div>
+                              </div>
+                              <div>
+                                   <label className={labelClass}>Start Title (Oswald 76px Bold)</label>
+                                   <input type="text" value={heroStart} onChange={(e) => setHeroStart(e.target.value)} className={inputClass} placeholder="e.g. WHERE CREATIVE" required />
+                              </div>
+                              <div>
+                                   <label className={labelClass}>Mid Title (Highlighted Yellow)</label>
+                                   <input type="text" value={heroMid} onChange={(e) => setHeroMid(e.target.value)} className={inputClass} placeholder="e.g. MINDS GET PRACTICAL" />
+                              </div>
+                              <div>
+                                   <label className={labelClass}>End Title</label>
+                                   <input type="text" value={heroEnd} onChange={(e) => setHeroEnd(e.target.value)} className={inputClass} placeholder="e.g. (optional)" />
+                              </div>
+                              <div>
+                                   <label className={labelClass}>Paragraph Description (Barlow 20px Regular)</label>
+                                   <textarea value={heroDesc} onChange={(e) => setHeroDesc(e.target.value)} rows={3} className={`${inputClass} resize-none`} placeholder="e.g. A hands-on UI/UX design school built for people who learn by doing, not watching. Study on campus or online." />
+                              </div>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                    <div>
-                                        <label className={labelClass}>Hero Title</label>
-                                        <input type="text" value={heroTitle} onChange={(e) => setHeroTitle(e.target.value)} className={inputClass} placeholder="e.g. We are Weekend UX" />
+                                        <label className={labelClass}>Button Text</label>
+                                        <input type="text" value={heroBtnName} onChange={(e) => setHeroBtnName(e.target.value)} className={inputClass} placeholder="e.g. EXPLORE OUR COURSES" />
                                    </div>
                                    <div>
-                                   
-                                        <label className={labelClass}>Hero Heading</label>
-                                        <input type="text" value={heroHeading} onChange={(e) => setHeroHeading(e.target.value)} className={inputClass} placeholder="e.g. Designing a Better World Together" />
-                                   </div>
-                                   <div>
-                                        <label className={labelClass}>Hero Button Label</label>
-                                        <input type="text" value={heroBtnName} onChange={(e) => setHeroBtnName(e.target.value)} className={inputClass} placeholder="e.g. Learn More" />
+                                        <label className={labelClass}>Button Link</label>
+                                        <input type="text" value={heroBtnLink} onChange={(e) => setHeroBtnLink(e.target.value)} className={inputClass} placeholder="e.g. /courses" />
                                    </div>
                               </div>
                               <div className="space-y-2">
                                    <div className="flex items-center justify-between">
-                                        <label className={labelClass}>Hero Background Image</label>
-                                        <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Recommended: 1600 x 900 px (16:9)</span>
+                                        <label className={labelClass}>Slide Image / Graphic (Right Side)</label>
+                                        <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Illustration / Graphic</span>
                                    </div>
                                    <div className="flex items-center gap-4 mt-2">
-                                        <div className="h-16 w-32 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center p-2 overflow-hidden shrink-0">
+                                        <div className="h-20 w-32 rounded-lg bg-gray-900 border border-gray-200 flex items-center justify-center p-2 overflow-hidden shrink-0">
                                              {heroImageFile ? (
-                                                  <img src={URL.createObjectURL(heroImageFile)} alt="Hero Preview" className="h-full w-full object-cover rounded-lg" />
+                                                  <img src={URL.createObjectURL(heroImageFile)} alt="Hero Preview" className="h-full w-full object-contain" />
                                              ) : heroImage ? (
-                                                  <img src={heroImage} alt="Hero Current" className="h-full w-full object-cover rounded-lg" />
+                                                  <img src={heroImage} alt="Hero Current" className="h-full w-full object-contain" />
                                              ) : (
-                                                  <HiOutlinePhotograph className="w-5 h-5 text-gray-400" />
+                                                  <HiOutlinePhotograph className="w-6 h-6 text-gray-400" />
                                              )}
                                         </div>
                                         <div className="flex-1">
@@ -407,7 +446,7 @@ export default function AboutData() {
                                                   }}
                                                   className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 cursor-pointer"
                                              />
-                                             <p className="text-[10px] text-gray-400 mt-1">Suggested size: 1600 x 900 px (16:9 aspect ratio, keep main subject centered).</p>
+                                             <p className="text-[11px] text-gray-400 mt-1">Upload the right-side graphic / illustration (e.g. Polaroid photo & sticky note composition).</p>
                                         </div>
                                    </div>
                               </div>

@@ -31,6 +31,14 @@ export default function Locations() {
      const [itemSlug, setItemSlug] = useState("");
      const [itemHeading, setItemHeading] = useState("");
      const [itemButtonName, setItemButtonName] = useState("");
+     const [itemBadge, setItemBadge] = useState("✓");
+     const [itemSubheading, setItemSubheading] = useState("");
+     const [itemStartHeading, setItemStartHeading] = useState("");
+     const [itemMidHeading, setItemMidHeading] = useState("");
+     const [itemEndHeading, setItemEndHeading] = useState("");
+     const [itemHeroButtonLink, setItemHeroButtonLink] = useState("");
+     const [itemHeroImage, setItemHeroImage] = useState("");
+     const [itemHeroImageFile, setItemHeroImageFile] = useState(null);
      const [itemContent, setItemContent] = useState("");
      const [itemImageurl, setItemImageurl] = useState("");
      const [itemImageFile, setItemImageFile] = useState(null);
@@ -135,12 +143,22 @@ export default function Locations() {
           setSelectedLocation(location._id);
           setActiveTab("hero");
 
-          setItemTitle(item?.hero?.[0]?.title || item?.title || "");
-          setItemSeoTitle(item?.hero?.[0]?.seotitle || "");
-          setItemSeoDescription(item?.hero?.[0]?.seodescription || "");
-          setItemSlug(item?.hero?.[0]?.slug || "");
-          setItemHeading(item?.hero?.[0]?.heading || "");
-          setItemButtonName(item?.hero?.[0]?.buttonName || "");
+          const hero0 = item?.hero?.[0] || {};
+          setItemTitle(hero0.title || item?.title || "");
+          setItemSeoTitle(hero0.seotitle || "");
+          setItemSeoDescription(hero0.seodescription || "");
+          setItemSlug(hero0.slug || item?.slug || "");
+          setItemHeading(hero0.heading || "");
+          setItemButtonName(hero0.buttonName || item?.heroButton || "ENROLL NOW");
+          setItemBadge(hero0.badge || "✓");
+          setItemSubheading(hero0.subheading || "");
+          setItemStartHeading(hero0.startheading || "");
+          setItemMidHeading(hero0.midheading || "");
+          setItemEndHeading(hero0.endheading || "");
+          setItemHeroButtonLink(hero0.buttonLink || "");
+          setItemHeroImage(hero0.heroImage || hero0.image || item?.heroImage || "");
+          setItemHeroImageFile(null);
+
           setItemContent(item?.content || "");
           setItemImageurl(item?.image?.imageurl || "");
           setItemImageFile(null);
@@ -191,6 +209,29 @@ export default function Locations() {
                slug: itemSlug,
                heroHeading: itemHeading,
                heroButton: itemButtonName,
+               badge: itemBadge,
+               subheading: itemSubheading,
+               startheading: itemStartHeading,
+               midheading: itemMidHeading,
+               endheading: itemEndHeading,
+               buttonLink: itemHeroButtonLink,
+               heroImage: typeof itemHeroImage === "string" ? itemHeroImage : "",
+               hero: [{
+                    title: itemTitle,
+                    seotitle: itemSeoTitle,
+                    seodescription: itemSeoDescription,
+                    slug: itemSlug,
+                    heading: itemHeading,
+                    buttonName: itemButtonName,
+                    badge: itemBadge,
+                    subheading: itemSubheading,
+                    startheading: itemStartHeading,
+                    midheading: itemMidHeading,
+                    endheading: itemEndHeading,
+                    buttonLink: itemHeroButtonLink,
+                    heroImage: typeof itemHeroImage === "string" ? itemHeroImage : "",
+                    image: typeof itemHeroImage === "string" ? itemHeroImage : ""
+               }],
                content: itemContent,
                image: {
                     imageurl: itemImageurl,
@@ -218,6 +259,9 @@ export default function Locations() {
           formData.append("data", JSON.stringify(payload));
           if (itemImageFile) {
                formData.append("image", itemImageFile);
+          }
+          if (itemHeroImageFile) {
+               formData.append("heroImage", itemHeroImageFile);
           }
 
           try {
@@ -346,6 +390,16 @@ export default function Locations() {
                                                        <button onClick={() => openItemModal(location, item)} className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 cursor-pointer">
                                                             Edit Page Config
                                                        </button>
+                                                       {(item.hero?.[0]?.slug || item.slug) && (
+                                                            <a
+                                                                 href={`http://localhost:3000/location/${item.hero?.[0]?.slug || item.slug}`}
+                                                                 target="_blank"
+                                                                 rel="noopener noreferrer"
+                                                                 className="px-3 py-1.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold hover:bg-slate-200 transition-colors inline-flex items-center gap-1 no-underline"
+                                                            >
+                                                                 View Live ↗
+                                                            </a>
+                                                       )}
                                                        <button onClick={() => deleteItem(location._id, item._id)} className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-lg text-xs font-semibold hover:bg-red-100 cursor-pointer">
                                                             Delete
                                                        </button>
@@ -392,9 +446,9 @@ export default function Locations() {
                                    {/* Tabs headers */}
                                    <div className="flex border-b border-slate-200 px-6 bg-slate-50">
                                         {[
-                                             { id: "hero", label: "Hero & SEO" },
+                                             { id: "hero", label: "Hero Section & SEO" },
                                              { id: "content", label: "Page Content" },
-                                             { id: "image", label: "Hero/Featured Image" },
+                                             { id: "image", label: "Body Featured Image" },
                                              { id: "blogs", label: "Related Blogs" },
                                              { id: "faq", label: "FAQ" },
                                              { id: "schemas", label: "Schemas" }
@@ -416,36 +470,102 @@ export default function Locations() {
                                    {/* Tab Body */}
                                    <div className="p-6 md:p-8 space-y-6 max-h-[60vh] overflow-y-auto">
                                         {activeTab === "hero" && (
-                                             <div className="space-y-4">
-                                                  <div>
-                                                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Group Parent</label>
-                                                       <select value={selectedLocation} onChange={(e) => setSelectedLocation(e.target.value)} className={`${inputClass} cursor-pointer`}>
-                                                            {locations.map(loc => <option className="cursor-pointer" key={loc._id} value={loc._id}>{loc.title}</option>)}
-                                                       </select>
+                                             <div className="space-y-6">
+                                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                       <div>
+                                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Group Parent</label>
+                                                            <select value={selectedLocation} onChange={(e) => setSelectedLocation(e.target.value)} className={`${inputClass} cursor-pointer`}>
+                                                                 {locations.map(loc => <option className="cursor-pointer" key={loc._id} value={loc._id}>{loc.title}</option>)}
+                                                            </select>
+                                                       </div>
+                                                       <div>
+                                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Page / Location Title</label>
+                                                            <input value={itemTitle} onChange={(e) => setItemTitle(e.target.value)} placeholder="e.g. UI UX Design Course in Delhi" className={inputClass} />
+                                                       </div>
+                                                       <div>
+                                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Dynamic URL path (Slug)</label>
+                                                            <input value={itemSlug} onChange={(e) => setItemSlug(e.target.value)} placeholder="e.g. ui-ux-design-course-in-delhi" className={inputClass} />
+                                                       </div>
                                                   </div>
-                                                  <div>
-                                                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Page / Location Title</label>
-                                                       <input value={itemTitle} onChange={(e) => setItemTitle(e.target.value)} placeholder="e.g. Delhi Studio" className={inputClass} />
+
+                                                  <div className="border-t border-slate-200 pt-4">
+                                                       <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">Hero Badge & Subheading</h4>
+                                                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                                            <div>
+                                                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Circle Badge</label>
+                                                                 <input value={itemBadge} onChange={(e) => setItemBadge(e.target.value)} placeholder="e.g. ✓ or AI" className={inputClass} />
+                                                                 <span className="text-[10px] text-gray-400 mt-0.5 block">Icon or short letters inside yellow circle</span>
+                                                            </div>
+                                                            <div className="md:col-span-3">
+                                                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Subheading / Category</label>
+                                                                 <input value={itemSubheading} onChange={(e) => setItemSubheading(e.target.value)} placeholder="e.g. COURSE IN DELHI" className={inputClass} />
+                                                                 <span className="text-[10px] text-gray-400 mt-0.5 block">Uppercase subtitle next to circle badge</span>
+                                                            </div>
+                                                       </div>
                                                   </div>
-                                                  <div>
-                                                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Dynamic URL path (Slug)</label>
-                                                       <input value={itemSlug} onChange={(e) => setItemSlug(e.target.value)} placeholder="e.g. delhi-studio" className={inputClass} />
+
+                                                  <div className="border-t border-slate-200 pt-4">
+                                                       <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">Hero Heading (Oswald 76px Bold)</h4>
+                                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div>
+                                                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Start Heading (Line 1 - White)</label>
+                                                                 <input value={itemStartHeading} onChange={(e) => setItemStartHeading(e.target.value)} placeholder="e.g. LEARN AI or UI UX DESIGN" className={inputClass} />
+                                                            </div>
+                                                            <div>
+                                                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Highlighted Mid Heading (Line 2 - Yellow)</label>
+                                                                 <input value={itemMidHeading} onChange={(e) => setItemMidHeading(e.target.value)} placeholder="e.g. COURSE IN DELHI or FROM BEGINNER TO ADVANCED" className={inputClass} />
+                                                            </div>
+                                                       </div>
+                                                       <div className="mt-3">
+                                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Fallback Full Heading</label>
+                                                            <input value={itemHeading} onChange={(e) => setItemHeading(e.target.value)} placeholder="e.g. UI UX Design Course in Delhi" className={inputClass} />
+                                                            <span className="text-[10px] text-gray-400 mt-0.5 block">Used automatically if Start/Mid headings are left empty</span>
+                                                       </div>
                                                   </div>
-                                                  <div>
-                                                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">SEO Title</label>
-                                                       <input value={itemSeoTitle} onChange={(e) => setItemSeoTitle(e.target.value)} placeholder="SEO Meta Title" className={inputClass} />
+
+                                                  <div className="border-t border-slate-200 pt-4">
+                                                       <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">Hero Overview / Description</h4>
+                                                       <div>
+                                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Paragraph Description (Barlow 20px Regular)</label>
+                                                            <textarea value={itemSeoDescription} onChange={(e) => setItemSeoDescription(e.target.value)} placeholder="Go from zero to job-ready with live, mentor-led UI/UX training. Real projects, real tools, and 100% placement assistance." rows={3} className={textareaClass} />
+                                                       </div>
                                                   </div>
-                                                  <div>
-                                                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">SEO Description</label>
-                                                       <textarea value={itemSeoDescription} onChange={(e) => setItemSeoDescription(e.target.value)} placeholder="SEO Meta Description" rows={2} className={textareaClass} />
+
+                                                  <div className="border-t border-slate-200 pt-4">
+                                                       <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">CTA Button</h4>
+                                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div>
+                                                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Hero Button Name</label>
+                                                                 <input value={itemButtonName} onChange={(e) => setItemButtonName(e.target.value)} placeholder="e.g. EXPLORE PROGRAMS" className={inputClass} />
+                                                            </div>
+                                                            <div>
+                                                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Hero Button Link (Optional)</label>
+                                                                 <input value={itemHeroButtonLink} onChange={(e) => setItemHeroButtonLink(e.target.value)} placeholder="Leave empty to open Lead/Enroll Modal" className={inputClass} />
+                                                            </div>
+                                                       </div>
                                                   </div>
-                                                  <div>
-                                                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Hero Heading</label>
-                                                       <input value={itemHeading} onChange={(e) => setItemHeading(e.target.value)} placeholder="e.g. Where Design Meets Excellence" className={inputClass} />
+
+                                                  <div className="border-t border-slate-200 pt-4">
+                                                       <div className="flex items-center justify-between mb-2">
+                                                            <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Hero Right Graphic Illustration</h4>
+                                                            <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Recommended: 700 x 500 px (Transparent PNG/WebP)</span>
+                                                       </div>
+                                                       <ImageUploader
+                                                            initialImage={typeof itemHeroImage === "string" ? itemHeroImage : null}
+                                                            setImage={(file) => {
+                                                                 setItemHeroImageFile(file);
+                                                                 if (!file) setItemHeroImage("");
+                                                            }}
+                                                       />
+                                                       <p className="text-[11px] text-gray-400 mt-1">Right-side illustration containing cards, graphics, or device mockups (e.g. Beginner/Advanced roadmap or Figma canvas).</p>
                                                   </div>
-                                                  <div>
-                                                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Hero Button Name</label>
-                                                       <input value={itemButtonName} onChange={(e) => setItemButtonName(e.target.value)} placeholder="e.g. Contact Us" className={inputClass} />
+
+                                                  <div className="border-t border-slate-200 pt-4">
+                                                       <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">SEO Meta Information</h4>
+                                                       <div>
+                                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">SEO Title</label>
+                                                            <input value={itemSeoTitle} onChange={(e) => setItemSeoTitle(e.target.value)} placeholder="SEO Meta Title" className={inputClass} />
+                                                       </div>
                                                   </div>
                                              </div>
                                         )}

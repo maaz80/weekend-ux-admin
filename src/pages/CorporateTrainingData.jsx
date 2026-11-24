@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HiOutlinePlus, HiOutlineSave, HiOutlineTrash } from "react-icons/hi";
+import { HiOutlinePlus, HiOutlineSave, HiOutlineTrash, HiOutlinePhotograph } from "react-icons/hi";
 import Breadcrumb from "../components/BreadCrumb";
 import ImageUploader from "../components/ImageUploader";
 import { useToast } from "../context/ToastContext";
@@ -9,11 +9,18 @@ const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
 
 const defaultContent = {
      hero: {
-          eyebrow: "Corporate Training",
-          heading: "Upskill Your Workforce,\nAccelerate AI & Digital Readiness",
-          buttonText: "Start Your Journey",
+          badge: "✓",
+          subheading: "CORPORATE TRAINING",
+          eyebrow: "CORPORATE TRAINING",
+          startheading: "UPSKILL YOUR",
+          midheading: "WORKFORCE FOR AI",
+          endheading: "",
+          heading: "UPSKILL YOUR WORKFORCE FOR AI",
+          description: "Hands-on AI and digital design training for teams, delivered on-site or online and shaped around your tools.",
+          buttonText: "START YOUR JOURNEY",
           buttonLink: "/contact-us",
-          backgroundImage: "/images/weekend-ux-corporate-training-hero-bg.webp"
+          image: "/images/corporate-training-hero-graphic.png",
+          backgroundImage: "/images/corporate-training-hero-graphic.png"
      },
      trustedBy: {
           startheading: "Trusted",
@@ -111,6 +118,7 @@ function TextField({ label, value, onChange, placeholder, multiline = false }) {
 export default function CorporateTrainingData() {
      const { showToast } = useToast();
      const [content, setContent] = useState(defaultContent);
+     const [heroImageFile, setHeroImageFile] = useState(null);
      const [partnerFiles, setPartnerFiles] = useState({});
      const [whyUsFiles, setWhyUsFiles] = useState({});
      const [trainingOptionFiles, setTrainingOptionFiles] = useState({});
@@ -125,8 +133,24 @@ export default function CorporateTrainingData() {
                     const response = await fetch(`${API_URL}/corporate-training`);
                     const data = await response.json();
                     if (!response.ok) throw new Error(data?.error || "Could not load Corporate Training content.");
+                    const rawHero = data.hero || {};
+                    const startH = rawHero.startheading || (rawHero.heading ? (rawHero.heading.includes("\n") ? rawHero.heading.split("\n")[0] : rawHero.heading.split(" ").slice(0, 2).join(" ")) : defaultContent.hero.startheading);
+                    const midH = rawHero.midheading || (rawHero.heading ? (rawHero.heading.includes("\n") ? rawHero.heading.split("\n").slice(1).join(" ") : rawHero.heading.split(" ").slice(2).join(" ")) : defaultContent.hero.midheading);
+
                     setContent({
-                         hero: { ...defaultContent.hero, ...data.hero },
+                         hero: {
+                              ...defaultContent.hero,
+                              ...rawHero,
+                              badge: rawHero.badge || defaultContent.hero.badge,
+                              subheading: rawHero.subheading || rawHero.eyebrow || defaultContent.hero.subheading,
+                              startheading: startH,
+                              midheading: midH,
+                              description: rawHero.description || defaultContent.hero.description,
+                              buttonText: rawHero.buttonText || defaultContent.hero.buttonText,
+                              buttonLink: rawHero.buttonLink || defaultContent.hero.buttonLink,
+                              image: rawHero.image || rawHero.backgroundImage || defaultContent.hero.image,
+                              backgroundImage: rawHero.backgroundImage || rawHero.image || defaultContent.hero.backgroundImage,
+                         },
                          trustedBy: { ...defaultContent.trustedBy, ...data.trustedBy },
                          whyUs: { ...defaultContent.whyUs, ...data.whyUs },
                          trainingOptions: {
@@ -297,6 +321,9 @@ export default function CorporateTrainingData() {
                const token = getAdminToken();
                const formData = new FormData();
                formData.append("data", JSON.stringify(content));
+               if (heroImageFile) {
+                    formData.append("heroImage", heroImageFile);
+               }
                Object.entries(partnerFiles).forEach(([index, file]) => {
                     formData.append(`partnerImage_${index}`, file);
                });
@@ -342,6 +369,7 @@ export default function CorporateTrainingData() {
                setWhyUsFiles({});
                setTrainingOptionFiles({});
                setTrainingOptionsFiles({});
+               setHeroImageFile(null);
                showToast("Corporate Training content saved successfully!", "success");
           } catch (error) {
                console.error("Error saving Corporate Training content:", error);
@@ -404,16 +432,104 @@ export default function CorporateTrainingData() {
                               <section className="space-y-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-7">
                                    <div>
                                         <h2 className="text-lg font-bold text-gray-900">Hero Section</h2>
-                                        <p className="mt-1 text-sm text-gray-500">Manage the hero copy, call-to-action and background image URL.</p>
+                                        <p className="mt-1 text-sm text-gray-500">Manage the hero copy, badge, typography, call-to-action and graphic illustration.</p>
+                                   </div>
+                                   <div className="grid gap-4 md:grid-cols-3">
+                                        <div>
+                                             <TextField
+                                                  label="Circle Badge"
+                                                  value={content.hero.badge ?? "✓"}
+                                                  onChange={(value) => updateSection("hero", "badge", value)}
+                                                  placeholder="e.g. ✓"
+                                             />
+                                        </div>
+                                        <div className="md:col-span-2">
+                                             <TextField
+                                                  label="Subheading (White 17px)"
+                                                  value={content.hero.subheading ?? content.hero.eyebrow ?? "CORPORATE TRAINING"}
+                                                  onChange={(value) => {
+                                                       updateSection("hero", "subheading", value);
+                                                       updateSection("hero", "eyebrow", value);
+                                                  }}
+                                                  placeholder="e.g. CORPORATE TRAINING"
+                                             />
+                                        </div>
+                                   </div>
+                                   <div>
+                                        <TextField
+                                             label="Start Title (Oswald 76px Bold)"
+                                             value={content.hero.startheading ?? ""}
+                                             onChange={(value) => updateSection("hero", "startheading", value)}
+                                             placeholder="e.g. UPSKILL YOUR"
+                                        />
+                                   </div>
+                                   <div>
+                                        <TextField
+                                             label="Mid Title (Highlighted Yellow)"
+                                             value={content.hero.midheading ?? ""}
+                                             onChange={(value) => updateSection("hero", "midheading", value)}
+                                             placeholder="e.g. WORKFORCE FOR AI"
+                                        />
+                                   </div>
+                                   <div>
+                                        <TextField
+                                             label="End Title (optional)"
+                                             value={content.hero.endheading ?? ""}
+                                             onChange={(value) => updateSection("hero", "endheading", value)}
+                                             placeholder="e.g. (optional)"
+                                        />
+                                   </div>
+                                   <div>
+                                        <TextField
+                                             label="Paragraph Description (Barlow 20px Regular)"
+                                             value={content.hero.description ?? ""}
+                                             onChange={(value) => updateSection("hero", "description", value)}
+                                             placeholder="e.g. Hands-on AI and digital design training for teams, delivered on-site or online and shaped around your tools."
+                                             multiline
+                                        />
                                    </div>
                                    <div className="grid gap-4 md:grid-cols-2">
-                                        <TextField label="Eyebrow" value={content.hero.eyebrow} onChange={(value) => updateSection("hero", "eyebrow", value)} />
-                                        <TextField label="Button text" value={content.hero.buttonText} onChange={(value) => updateSection("hero", "buttonText", value)} />
-                                        <div className="md:col-span-2">
-                                             <TextField label="Heading" value={content.hero.heading} onChange={(value) => updateSection("hero", "heading", value)} multiline />
+                                        <TextField
+                                             label="Button Text"
+                                             value={content.hero.buttonText ?? ""}
+                                             onChange={(value) => updateSection("hero", "buttonText", value)}
+                                             placeholder="e.g. START YOUR JOURNEY"
+                                        />
+                                        <TextField
+                                             label="Button Link"
+                                             value={content.hero.buttonLink ?? "/contact-us"}
+                                             onChange={(value) => updateSection("hero", "buttonLink", value)}
+                                             placeholder="e.g. /contact-us"
+                                        />
+                                   </div>
+                                   <div className="space-y-2 pt-2 border-t border-gray-100">
+                                        <div className="flex items-center justify-between">
+                                             <span className="block text-xs font-bold uppercase tracking-wider text-gray-500">Slide Graphic / Image (Right Side)</span>
+                                             <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Illustration / Graphic</span>
                                         </div>
-                                        <TextField label="Button link" value={content.hero.buttonLink} onChange={(value) => updateSection("hero", "buttonLink", value)} placeholder="/contact-us" />
-                                        <TextField label="Background image URL" value={content.hero.backgroundImage} onChange={(value) => updateSection("hero", "backgroundImage", value)} />
+                                        <div className="flex items-center gap-4 mt-2">
+                                             <div className="h-20 w-32 rounded-lg bg-gray-900 border border-gray-200 flex items-center justify-center p-2 overflow-hidden shrink-0">
+                                                  {heroImageFile ? (
+                                                       <img src={URL.createObjectURL(heroImageFile)} alt="Hero Preview" className="h-full w-full object-contain" />
+                                                  ) : (content.hero.image || content.hero.backgroundImage) ? (
+                                                       <img src={content.hero.image || content.hero.backgroundImage} alt="Hero Current" className="h-full w-full object-contain" />
+                                                  ) : (
+                                                       <HiOutlinePhotograph className="w-6 h-6 text-gray-400" />
+                                                  )}
+                                             </div>
+                                             <div className="flex-1">
+                                                  <input
+                                                       type="file"
+                                                       accept="image/*"
+                                                       onChange={(e) => {
+                                                            const file = e.target.files[0];
+                                                            if (file) setHeroImageFile(file);
+                                                       }}
+                                                       className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 cursor-pointer"
+                                                  />
+                                                  <p className="text-[11px] text-gray-400 mt-1">Upload the right-side graphic / illustration (e.g. Workshop plan card + AI-Ready badge).</p>
+                                             </div>
+                                        </div>
                                    </div>
                               </section>
                               )}

@@ -16,12 +16,14 @@ export default function HomeData() {
       // Hero States
       const [heroes, setHeroes] = useState([]);
       const [editingHeroIndex, setEditingHeroIndex] = useState(null);
-      const [heroTitle, setHeroTitle] = useState("");
+      const [heroBadge, setHeroBadge] = useState("AI");
+      const [heroSubheading, setHeroSubheading] = useState("");
       const [heroStart, setHeroStart] = useState("");
       const [heroMid, setHeroMid] = useState("");
       const [heroEnd, setHeroEnd] = useState("");
-      const [heroPoints, setHeroPoints] = useState(["", "", "", ""]);
+      const [heroDesc, setHeroDesc] = useState("");
       const [heroBtn, setHeroBtn] = useState("");
+      const [heroBtnLink, setHeroBtnLink] = useState("");
       const [heroImage, setHeroImage] = useState("");
       const [heroImageFile, setHeroImageFile] = useState(null);
 
@@ -135,13 +137,17 @@ export default function HomeData() {
                 setSaving(true);
                 const payload = {
                      hero: heroes.map(h => ({
-                          title: h.title,
-                          startheading: h.startheading,
-                          midheading: h.midheading,
-                          endheading: h.endheading,
-                          points: h.points || [],
-                          buttonName: h.buttonName,
-                          bgImage: h.bgImage
+                          badge: h.badge || "AI",
+                          subheading: h.subheading || h.title || "",
+                          title: h.subheading || h.title || "",
+                          startheading: h.startheading || "",
+                          midheading: h.midheading || "",
+                          endheading: h.endheading || "",
+                          description: h.description || "",
+                          buttonName: h.buttonName || "EXPLORE PROGRAMS",
+                          buttonLink: h.buttonLink || "/courses",
+                          image: h.image || h.bgImage || "",
+                          bgImage: h.image || h.bgImage || ""
                      })),
                      features: {
                           description: featDesc,
@@ -216,15 +222,19 @@ export default function HomeData() {
       // Hero Carousel helper functions
       const handleAddOrEditHero = (e) => {
            e.preventDefault();
-           if (!heroStart && !heroTitle) return;
+           if (!heroStart && !heroSubheading) return;
 
            const slideData = {
-                title: heroTitle,
-                startheading: heroStart,
-                midheading: heroMid,
-                endheading: heroEnd,
-                points: heroPoints.map(p => p.trim()),
-                buttonName: heroBtn,
+                badge: heroBadge.trim() || "AI",
+                subheading: heroSubheading.trim(),
+                title: heroSubheading.trim(),
+                startheading: heroStart.trim(),
+                midheading: heroMid.trim(),
+                endheading: heroEnd.trim(),
+                description: heroDesc.trim(),
+                buttonName: heroBtn.trim() || "EXPLORE PROGRAMS",
+                buttonLink: heroBtnLink.trim() || "/courses",
+                image: heroImage,
                 bgImage: heroImage,
                 file: heroImageFile
            };
@@ -239,27 +249,29 @@ export default function HomeData() {
            }
 
            // Reset slide form fields
-           setHeroTitle("");
+           setHeroBadge("AI");
+           setHeroSubheading("");
            setHeroStart("");
            setHeroMid("");
            setHeroEnd("");
-           setHeroPoints(["", "", "", ""]);
+           setHeroDesc("");
            setHeroBtn("");
+           setHeroBtnLink("");
            setHeroImage("");
            setHeroImageFile(null);
       };
 
       const handleEditHero = (index) => {
            const item = heroes[index];
-           setHeroTitle(item.title || "");
+           setHeroBadge(item.badge || "AI");
+           setHeroSubheading(item.subheading || item.title || "");
            setHeroStart(item.startheading || "");
            setHeroMid(item.midheading || "");
            setHeroEnd(item.endheading || "");
-           const rawPoints = Array.isArray(item.points) ? item.points : [];
-           const filledPoints = [...rawPoints, "", "", "", ""].slice(0, 4);
-           setHeroPoints(filledPoints);
+           setHeroDesc(item.description || "");
            setHeroBtn(item.buttonName || "");
-           setHeroImage(item.bgImage || "");
+           setHeroBtnLink(item.buttonLink || "");
+           setHeroImage(item.image || item.bgImage || "");
            setHeroImageFile(item.file || null);
            setEditingHeroIndex(index);
       };
@@ -268,12 +280,14 @@ export default function HomeData() {
            setHeroes(heroes.filter((_, i) => i !== index));
            if (editingHeroIndex === index) {
                 setEditingHeroIndex(null);
-                setHeroTitle("");
+                setHeroBadge("AI");
+                setHeroSubheading("");
                 setHeroStart("");
                 setHeroMid("");
                 setHeroEnd("");
-                setHeroPoints(["", "", "", ""]);
+                setHeroDesc("");
                 setHeroBtn("");
+                setHeroBtnLink("");
                 setHeroImage("");
                 setHeroImageFile(null);
            }
@@ -398,50 +412,49 @@ export default function HomeData() {
                                         {editingHeroIndex !== null ? "Edit Hero Slide" : "Add Hero Slide"}
                                    </h2>
                                    <form onSubmit={handleAddOrEditHero} className="space-y-4">
-                                        <div>
-                                             <label className={labelClass}>Hero Subtitle</label>
-                                             <input type="text" value={heroTitle} onChange={(e) => setHeroTitle(e.target.value)} className={inputClass} placeholder="e.g. UI/UX Design Agency" />
+                                        <div className="grid grid-cols-3 gap-3">
+                                             <div>
+                                                  <label className={labelClass}>Circle Badge</label>
+                                                  <input type="text" value={heroBadge} onChange={(e) => setHeroBadge(e.target.value)} className={inputClass} placeholder="e.g. AI" maxLength={5} />
+                                             </div>
+                                             <div className="col-span-2">
+                                                  <label className={labelClass}>Subheading (White 17px)</label>
+                                                  <input type="text" value={heroSubheading} onChange={(e) => setHeroSubheading(e.target.value)} className={inputClass} placeholder="e.g. COURSE IN DELHI" />
+                                             </div>
                                         </div>
                                         <div>
-                                             <label className={labelClass}>Start Title</label>
-                                             <input type="text" value={heroStart} onChange={(e) => setHeroStart(e.target.value)} className={inputClass} placeholder="e.g. Crafting" required />
+                                             <label className={labelClass}>Start Title (Oswald 76px Bold)</label>
+                                             <input type="text" value={heroStart} onChange={(e) => setHeroStart(e.target.value)} className={inputClass} placeholder="e.g. LEARN AI" required />
                                         </div>
                                         <div>
-                                             <label className={labelClass}>Mid Title (Highlighted)</label>
-                                             <input type="text" value={heroMid} onChange={(e) => setHeroMid(e.target.value)} className={inputClass} placeholder="e.g. Intelligent" />
+                                             <label className={labelClass}>Mid Title (Highlighted Yellow)</label>
+                                             <input type="text" value={heroMid} onChange={(e) => setHeroMid(e.target.value)} className={inputClass} placeholder="e.g. FROM BEGINNER" />
                                         </div>
                                         <div>
                                              <label className={labelClass}>End Title</label>
-                                             <input type="text" value={heroEnd} onChange={(e) => setHeroEnd(e.target.value)} className={inputClass} placeholder="e.g. Experiences" />
+                                             <input type="text" value={heroEnd} onChange={(e) => setHeroEnd(e.target.value)} className={inputClass} placeholder="e.g. TO ADVANCED" />
                                         </div>
                                         <div>
-                                             <label className={labelClass}>Button Name</label>
-                                             <input type="text" value={heroBtn} onChange={(e) => setHeroBtn(e.target.value)} className={inputClass} placeholder="e.g. Book a Call" />
+                                             <label className={labelClass}>Paragraph Description (Barlow 20px Regular)</label>
+                                             <textarea value={heroDesc} onChange={(e) => setHeroDesc(e.target.value)} rows={3} className={`${inputClass} resize-none`} placeholder="e.g. Go from zero to job-ready with live, mentor-led AI training. Real projects, real tools, and 100% placement assistance." />
                                         </div>
-                                        <div className="space-y-2">
-                                             <label className={labelClass}>Hero Points (3-4 points)</label>
-                                             {heroPoints.map((point, pIdx) => (
-                                                  <input
-                                                       key={pIdx}
-                                                       type="text"
-                                                       value={point}
-                                                       onChange={(e) => {
-                                                            const newPoints = [...heroPoints];
-                                                            newPoints[pIdx] = e.target.value;
-                                                            setHeroPoints(newPoints);
-                                                       }}
-                                                       className={inputClass}
-                                                       placeholder={`Point ${pIdx + 1}`}
-                                                  />
-                                             ))}
+                                        <div className="grid grid-cols-2 gap-3">
+                                             <div>
+                                                  <label className={labelClass}>Button Text</label>
+                                                  <input type="text" value={heroBtn} onChange={(e) => setHeroBtn(e.target.value)} className={inputClass} placeholder="e.g. EXPLORE PROGRAMS" />
+                                             </div>
+                                             <div>
+                                                  <label className={labelClass}>Button Link</label>
+                                                  <input type="text" value={heroBtnLink} onChange={(e) => setHeroBtnLink(e.target.value)} className={inputClass} placeholder="e.g. /courses" />
+                                             </div>
                                         </div>
                                         <div className="space-y-1.5">
                                              <div className="flex items-center justify-between">
-                                                  <label className={labelClass}>Slide Background Image</label>
-                                                  <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Recommended: 1600 x 900 px (16:9)</span>
+                                                  <label className={labelClass}>Slide Image (Right Side)</label>
+                                                  <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Illustration / Graphic</span>
                                              </div>
                                              <ImageUploader setImage={setHeroImageFile} initialImage={heroImage} />
-                                             <p className="text-[11px] text-gray-400 mt-1">Suggested size: 1600 x 900 px (keep the main subject/focus in the center so it renders correctly on both mobile and PC).</p>
+                                             <p className="text-[11px] text-gray-400 mt-1">Upload the right-side graphic or illustration for this carousel slide (e.g. PNG / WebP).</p>
                                         </div>
                                         <button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer text-sm">
                                              <HiOutlinePlus />
@@ -450,12 +463,14 @@ export default function HomeData() {
                                         {editingHeroIndex !== null && (
                                              <button type="button" onClick={() => {
                                                   setEditingHeroIndex(null);
-                                                  setHeroTitle("");
+                                                  setHeroBadge("AI");
+                                                  setHeroSubheading("");
                                                   setHeroStart("");
                                                   setHeroMid("");
                                                   setHeroEnd("");
                                                   setHeroDesc("");
                                                   setHeroBtn("");
+                                                  setHeroBtnLink("");
                                                   setHeroImage("");
                                                   setHeroImageFile(null);
                                              }} className="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold py-2 rounded-lg transition-colors text-sm">Cancel</button>
@@ -474,27 +489,30 @@ export default function HomeData() {
                                                   {heroes.map((slide, idx) => (
                                                        <div key={idx} className="flex gap-4 items-center bg-gray-50 p-4 rounded-xl border border-gray-200 justify-between">
                                                             <div className="flex gap-3 items-center min-w-0">
-                                                                 <div className="h-16 w-24 rounded bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
+                                                                 <div className="h-16 w-24 rounded bg-gray-900 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
                                                                       {slide.file ? (
-                                                                           <img src={URL.createObjectURL(slide.file)} alt="Local slide preview" className="h-full w-full object-cover" />
-                                                                      ) : slide.bgImage ? (
-                                                                           <img src={slide.bgImage} alt="Slide cover" className="h-full w-full object-cover" />
+                                                                           <img src={URL.createObjectURL(slide.file)} alt="Local slide preview" className="h-full w-full object-contain p-1" />
+                                                                      ) : (slide.image || slide.bgImage) ? (
+                                                                           <img src={slide.image || slide.bgImage} alt="Slide graphic" className="h-full w-full object-contain p-1" />
                                                                       ) : (
                                                                            <HiOutlinePhotograph className="w-6 h-6 text-gray-400" />
                                                                       )}
                                                                  </div>
                                                                  <div className="min-w-0">
-                                                                      <p className="text-sm font-bold text-gray-800 truncate">{slide.startheading} {slide.midheading} {slide.endheading}</p>
-                                                                      {slide.title && <p className="text-[10px] text-orange-500 font-medium">{slide.title}</p>}
-                                                                      {Array.isArray(slide.points) && slide.points.length > 0 ? (
-                                                                           <ul className="text-[11px] text-gray-400 space-y-0.5 mt-1 list-disc list-inside">
-                                                                                {slide.points.filter(p => p.trim() !== "").map((p, pIdx) => (
-                                                                                     <span key={pIdx} className="block truncate max-w-xs">• {p}</span>
-                                                                                ))}
-                                                                           </ul>
-                                                                      ) : (
-                                                                           <p className="text-[11px] text-gray-400 italic">No points added</p>
+                                                                      <div className="flex items-center gap-2 mb-1">
+                                                                           <span className="inline-block px-1.5 py-0.5 bg-yellow-400 text-black text-[10px] font-bold rounded-full">{slide.badge || "AI"}</span>
+                                                                           {(slide.subheading || slide.title) && <span className="text-[11px] text-gray-700 font-semibold uppercase">{slide.subheading || slide.title}</span>}
+                                                                      </div>
+                                                                      <p className="text-sm font-bold text-gray-800 truncate">
+                                                                           {slide.startheading} <span className="text-yellow-600 font-extrabold">{slide.midheading}</span> {slide.endheading}
+                                                                      </p>
+                                                                      {slide.description && (
+                                                                           <p className="text-[11px] text-gray-500 line-clamp-1 mt-0.5">{slide.description}</p>
                                                                       )}
+                                                                      <div className="flex items-center gap-3 mt-1.5">
+                                                                           <span className="text-[10px] font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded border border-orange-200">Btn: {slide.buttonName || "EXPLORE PROGRAMS"}</span>
+                                                                           {slide.buttonLink && <span className="text-[10px] text-gray-400 font-mono">{slide.buttonLink}</span>}
+                                                                      </div>
                                                                  </div>
                                                             </div>
                                                             <div className="flex gap-2 shrink-0">

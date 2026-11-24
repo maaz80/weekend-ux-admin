@@ -53,6 +53,13 @@ export default function Blogs() {
      const [faqDescription, setFaqDescription] = useState("");
      const [faqItems, setFaqItems] = useState([]);
      const [schemas, setSchemas] = useState([]);
+     const [blogHeroImage, setBlogHeroImage] = useState(null);
+     const [category, setCategory] = useState("UI UX DESIGN");
+     const [badge, setBadge] = useState("✓");
+     const [heroStartHeading, setHeroStartHeading] = useState("");
+     const [heroMidHeading, setHeroMidHeading] = useState("");
+     const [overview, setOverview] = useState("");
+     const [buttonText, setButtonText] = useState("READ ARTICLE");
 
      const [authorName, setAuthorName] = useState('');
      const [authorDesignation, setAuthorDesignation] = useState('');
@@ -83,6 +90,8 @@ export default function Blogs() {
      const [heroEndtitle, setHeroEndtitle] = useState("");
      const [featuredStarttitle, setFeaturedStarttitle] = useState("");
      const [featuredEndtitle, setFeaturedEndtitle] = useState("");
+     const [heroImage, setHeroImage] = useState(null);
+     const [heroAlt, setHeroAlt] = useState("");
      const [savingTitles, setSavingTitles] = useState(false);
 
      const fetchBlogs = async () => {
@@ -94,6 +103,8 @@ export default function Blogs() {
                     if (data.hero) {
                          setHeroStarttitle(data.hero.starttitle || "");
                          setHeroEndtitle(data.hero.endtitle || "");
+                         setHeroImage(data.hero.image || data.hero.heroImage || null);
+                         setHeroAlt(data.hero.alt || "");
                     }
                     if (data.featuredblogs) {
                          setFeaturedStarttitle(data.featuredblogs.starttitle || "");
@@ -254,25 +265,40 @@ export default function Blogs() {
      const saveBlogPageTitles = async () => {
           try {
                setSavingTitles(true);
+               const formData = new FormData();
+               const heroPayload = {
+                    starttitle: heroStarttitle,
+                    endtitle: heroEndtitle,
+                    image: (heroImage && heroImage instanceof File)
+                         ? ""
+                         : (typeof heroImage === "string" ? heroImage : ""),
+                    heroImage: (heroImage && heroImage instanceof File)
+                         ? ""
+                         : (typeof heroImage === "string" ? heroImage : ""),
+                    alt: heroAlt || ""
+               };
+
+               formData.append("data", JSON.stringify({
+                    hero: heroPayload,
+                    featuredblogs: {
+                         starttitle: featuredStarttitle,
+                         endtitle: featuredEndtitle
+                    }
+               }));
+
+               if (heroImage && heroImage instanceof File) {
+                    formData.append("pageHeroImage", heroImage);
+               }
+
                const res = await fetch(`${API_URL}/blogs`, {
                     method: "PUT",
                     headers: {
-                         "Content-Type": "application/json",
                          "Authorization": `Bearer ${getAdminToken()}`
                     },
-                    body: JSON.stringify({
-                         hero: {
-                              starttitle: heroStarttitle,
-                              endtitle: heroEndtitle
-                         },
-                         featuredblogs: {
-                              starttitle: featuredStarttitle,
-                              endtitle: featuredEndtitle
-                         }
-                    })
+                    body: formData
                });
                if (res.ok) {
-                    showToast("Blog Page Configuration saved successfully!", "success");
+                    showToast("Blog page configuration saved successfully!", "success");
                     fetchBlogs();
                } else {
                     showToast("Failed to save blog page configuration.", "error");
@@ -311,6 +337,13 @@ export default function Blogs() {
           setAuthorLinkedin('');
           setAuthorUpdatedDate('');
           setSchemas([]);
+          setBlogHeroImage(null);
+          setCategory("UI UX DESIGN");
+          setBadge("✓");
+          setHeroStartHeading("");
+          setHeroMidHeading("");
+          setOverview("");
+          setButtonText("READ ARTICLE");
           setSelectedTemplateId("");
           setShowModal(true);
      };
@@ -358,6 +391,13 @@ export default function Blogs() {
           setAuthorTwitter(blogAuthor.twitter || '');
           setAuthorLinkedin(blogAuthor.linkedin || '');
           setAuthorUpdatedDate(blogAuthor.updatedDate || '');
+          setBlogHeroImage(blog.heroImage || null);
+          setCategory(blog.category || "UI UX DESIGN");
+          setBadge(blog.badge || "✓");
+          setHeroStartHeading(blog.heroStartHeading || "");
+          setHeroMidHeading(blog.heroMidHeading || "");
+          setOverview(blog.overview || "");
+          setButtonText(blog.buttonText || "READ ARTICLE");
           setSelectedTemplateId("");
           setShowModal(true);
      };
@@ -401,6 +441,17 @@ export default function Blogs() {
           formData.append('schemas', JSON.stringify(schemas));
 
           if (image) formData.append("image", image);
+          if (blogHeroImage instanceof File) {
+               formData.append("heroImage", blogHeroImage);
+          } else if (typeof blogHeroImage === "string") {
+               formData.append("heroImageUrl", blogHeroImage);
+          }
+          formData.append("category", category);
+          formData.append("badge", badge);
+          formData.append("heroStartHeading", heroStartHeading);
+          formData.append("heroMidHeading", heroMidHeading);
+          formData.append("overview", overview);
+          formData.append("buttonText", buttonText);
           if (isImageFile(authorAvatar)) {
                formData.append("authorAvatar", authorAvatar, authorAvatar.name || "author-avatar");
           }
@@ -502,9 +553,9 @@ export default function Blogs() {
                          </div>
                     </div>
 
-                    {/* Blog Page Titles Settings Card */}
+                    {/* Blog Page Configuration Card */}
                     <div className="bg-white rounded-2xl p-6 shadow-md shadow-gray-200/50 mb-8">
-                         <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4 font-sans">Blog Page Configuration</h2>
+                         <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4 font-sans">Blog Page Configuration & Hero Graphic</h2>
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                               <div className="space-y-1.5">
                                    <label className={labelClass}>Hero Start Title</label>
@@ -524,6 +575,46 @@ export default function Blogs() {
                                         className={inputClass}
                                    />
                               </div>
+
+                              {/* Hero Right Graphic Uploader */}
+                              <div className="space-y-1.5 md:col-span-2">
+                                   <div className="flex items-center justify-between">
+                                        <label className={labelClass}>Hero Right Graphic (Illustration / Banner Graphic)</label>
+                                        {heroImage && (
+                                             <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                                                  Custom Graphic Selected
+                                             </span>
+                                        )}
+                                   </div>
+                                   <ImageUploader
+                                        setImage={setHeroImage}
+                                        initialImage={typeof heroImage === "string" ? heroImage : null}
+                                   />
+                                   <p className="text-[11px] text-gray-400 mt-1">
+                                        Upload right-side graphic illustration for the Blogs page hero (PNG with transparent background recommended).
+                                   </p>
+                              </div>
+
+                              <div className="space-y-1.5 md:col-span-2">
+                                   <label className={labelClass}>Hero Graphic Image URL / Path (Alternative to upload)</label>
+                                   <input
+                                        value={typeof heroImage === "string" ? heroImage : ""}
+                                        onChange={(e) => setHeroImage(e.target.value)}
+                                        placeholder="e.g. /images/blogs-hero-graphic.png or https://res.cloudinary.com/..."
+                                        className={inputClass}
+                                   />
+                              </div>
+
+                              <div className="space-y-1.5 md:col-span-2">
+                                   <label className={labelClass}>Hero Graphic Alt Text</label>
+                                   <input
+                                        value={heroAlt}
+                                        onChange={(e) => setHeroAlt(e.target.value)}
+                                        placeholder="e.g. Our Latest Blogs Graphic"
+                                        className={inputClass}
+                                   />
+                              </div>
+
                               <div className="space-y-1.5">
                                    <label className={labelClass}>Featured Start Title</label>
                                    <input
@@ -549,7 +640,7 @@ export default function Blogs() {
                                    disabled={savingTitles}
                                    className="bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md transition-all duration-200 cursor-pointer disabled:cursor-not-allowed"
                               >
-                                   {savingTitles ? "Saving..." : "Save Titles"}
+                                   {savingTitles ? "Saving..." : "Save Blog Configuration"}
                               </button>
                          </div>
                     </div>
@@ -677,6 +768,87 @@ export default function Blogs() {
                                                   className={inputClass}
                                                   required
                                              />
+                                        </div>
+                                   </div>
+
+                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>Blog Category / Tag</label>
+                                             <input
+                                                  value={category}
+                                                  onChange={(e) => setCategory(e.target.value)}
+                                                  placeholder="e.g. UI UX DESIGN or ARTICLE"
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                             <label className={labelClass}>Badge Icon / Symbol</label>
+                                             <input
+                                                  value={badge}
+                                                  onChange={(e) => setBadge(e.target.value)}
+                                                  placeholder="e.g. ✓ or ★"
+                                                  className={inputClass}
+                                             />
+                                        </div>
+                                   </div>
+
+                                   {/* Hero Right Graphic / Illustration */}
+                                   <div className="space-y-2 bg-gray-50/70 p-4 rounded-xl border border-gray-200">
+                                        <div className="flex items-center justify-between">
+                                             <label className={labelClass}>Hero Right Graphic / Illustration</label>
+                                             <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Blog Hero Right Graphic</span>
+                                        </div>
+                                        <ImageUploader
+                                             setImage={setBlogHeroImage}
+                                             initialImage={typeof blogHeroImage === "string" ? blogHeroImage : (typeof editItem?.heroImage === "string" ? editItem.heroImage : null)}
+                                        />
+                                        <p className="text-[11px] text-gray-400 mt-1">Upload the right-side graphic illustration for this blog hero (e.g. 3D icon, creative badge, or article graphic).</p>
+                                   </div>
+
+                                   {/* Hero Two-Tone Heading Customization */}
+                                   <div className="space-y-3 bg-gray-50/50 p-4 rounded-xl border border-gray-150">
+                                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-gray-200/60 pb-1.5">Hero Headings & CTA (Course Details Style)</p>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>Hero Start Heading (White)</label>
+                                                  <input
+                                                       value={heroStartHeading}
+                                                       onChange={(e) => setHeroStartHeading(e.target.value)}
+                                                       placeholder="Optional: Line 1 white heading"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>Hero Mid Heading (Yellow)</label>
+                                                  <input
+                                                       value={heroMidHeading}
+                                                       onChange={(e) => setHeroMidHeading(e.target.value)}
+                                                       placeholder="Optional: Line 2 yellow heading"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                        </div>
+                                        <p className="text-[11px] text-gray-400">Leave heading fields blank to automatically split the Blog Title into two lines (white + yellow) matching Course Details.</p>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+                                             <div className="sm:col-span-2 space-y-1.5">
+                                                  <label className={labelClass}>Hero Overview / Summary</label>
+                                                  <input
+                                                       value={overview}
+                                                       onChange={(e) => setOverview(e.target.value)}
+                                                       placeholder="Brief summary under hero title (defaults to SEO description)"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>Hero Button Text</label>
+                                                  <input
+                                                       value={buttonText}
+                                                       onChange={(e) => setButtonText(e.target.value)}
+                                                       placeholder="e.g. READ ARTICLE"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
                                         </div>
                                    </div>
 

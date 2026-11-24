@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { HiOutlineSave, HiOutlinePlus, HiOutlineTrash, HiOutlineUpload, HiOutlinePhotograph } from "react-icons/hi";
+import { useEffect, useState, useCallback } from "react";
+import { HiOutlineSave, HiOutlineUpload, HiOutlinePhotograph } from "react-icons/hi";
 import Breadcrumb from "../components/BreadCrumb";
+import ImageUploader from "../components/ImageUploader";
 import { getAdminToken } from "../utils/auth.js";
 import { useToast } from "../context/ToastContext";
 
@@ -14,6 +15,10 @@ export default function ContactData() {
 
      // General Settings
      const [pageTitle, setPageTitle] = useState("");
+
+     // Hero Right Graphic State
+     const [heroImage, setHeroImage] = useState(null);
+     const [heroAlt, setHeroAlt] = useState("");
 
      // Inquiries State
      const [inqTitle, setInqTitle] = useState("");
@@ -43,14 +48,17 @@ export default function ContactData() {
      const [blogsEnd, setBlogsEnd] = useState("");
      const [blogsDesc, setBlogsDesc] = useState("");
 
-     const fetchContactData = async () => {
+     const fetchContactData = useCallback(async () => {
           try {
-               setLoading(true);
                const res = await fetch(`${API_URL}/contact`);
                if (res.ok) {
                     const data = await res.json();
                     
                     setPageTitle(data.title || "");
+
+                    const hero = data.hero || {};
+                    setHeroImage(hero.image || hero.heroImage || null);
+                    setHeroAlt(hero.alt || "");
                     
                     const left = data.leftsection || {};
                     setLeftImage(left.image || "");
@@ -82,17 +90,29 @@ export default function ContactData() {
           } finally {
                setLoading(false);
           }
-     };
+     }, []);
 
      useEffect(() => {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           fetchContactData();
-     }, []);
+     }, [fetchContactData]);
 
      const handleSaveAll = async () => {
           try {
                setSaving(true);
+               const heroPayload = {
+                    image: (heroImage && heroImage instanceof File)
+                         ? ""
+                         : (typeof heroImage === "string" ? heroImage : ""),
+                    heroImage: (heroImage && heroImage instanceof File)
+                         ? ""
+                         : (typeof heroImage === "string" ? heroImage : ""),
+                    alt: heroAlt || ""
+               };
+
                const payload = {
                     title: pageTitle,
+                    hero: heroPayload,
                     leftsection: {
                          image: leftImage,
                          inquiries: {
@@ -122,6 +142,9 @@ export default function ContactData() {
                const formData = new FormData();
                formData.append("data", JSON.stringify(payload));
 
+               if (heroImage && heroImage instanceof File) {
+                    formData.append("pageHeroImage", heroImage);
+               }
                if (leftImageFile) {
                     formData.append("leftSectionImage", leftImageFile);
                }
@@ -186,7 +209,7 @@ export default function ContactData() {
                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 px-6 lg:px-10 max-w-7xl mx-auto">
                     <div>
                          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Contact Page Content</h1>
-                         <p className="text-sm text-gray-500 mt-1">Manage branding, office contact, and social links</p>
+                         <p className="text-sm text-gray-500 mt-1">Manage branding, hero visuals, office contact, and social links</p>
                     </div>
                     <button
                          onClick={handleSaveAll}
@@ -200,7 +223,7 @@ export default function ContactData() {
 
                {/* Tab Navigation */}
                <div className="flex flex-wrap gap-2 px-6 lg:px-10 max-w-7xl mx-auto mb-8">
-                    <button onClick={() => setActiveTab("general")} className={tabBtnClass("general")}>General Details</button>
+                    <button onClick={() => setActiveTab("general")} className={tabBtnClass("general")}>General & Hero</button>
                     <button onClick={() => setActiveTab("inquiries")} className={tabBtnClass("inquiries")}>Inquiries</button>
                     <button onClick={() => setActiveTab("socials")} className={tabBtnClass("socials")}>Social Links ({socials.length})</button>
                     <button onClick={() => setActiveTab("images")} className={tabBtnClass("images")}>Images</button>
@@ -209,7 +232,7 @@ export default function ContactData() {
 
                <div className="px-6 lg:px-10 max-w-7xl mx-auto">
                     {activeTab === "general" && (
-                         <div className="bg-white rounded-xl p-6 shadow-md shadow-gray-200/50 space-y-4 max-w-4xl">
+                         <div className="bg-white rounded-xl p-6 shadow-md shadow-gray-200/50 space-y-6 max-w-4xl">
                               <h2 className="text-lg font-bold text-gray-800 border-b border-gray-100 pb-3">General Information</h2>
                               <div>
                                    <label className={labelClass}>Page Header Title</label>
@@ -220,6 +243,52 @@ export default function ContactData() {
                                         className={inputClass}
                                         placeholder="e.g. Contact Us"
                                    />
+                              </div>
+
+                              {/* Hero Right Graphic Section */}
+                              <div className="pt-4 border-t border-gray-100">
+                                   <div className="flex items-center justify-between mb-2">
+                                        <div>
+                                             <label className={labelClass}>Hero Right Graphic (Illustration / Banner Graphic)</label>
+                                             <p className="text-xs text-gray-400">Right-side graphic illustration for the Contact Us hero banner.</p>
+                                        </div>
+                                        {heroImage && (
+                                             <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                                                  Graphic Set
+                                             </span>
+                                        )}
+                                   </div>
+
+                                   <ImageUploader
+                                        setImage={setHeroImage}
+                                        initialImage={typeof heroImage === "string" ? heroImage : null}
+                                   />
+                                   <p className="text-[11px] text-gray-400 mt-1">
+                                        Upload right-side graphic illustration for the Contact Us page hero (PNG/SVG with transparent background recommended).
+                                   </p>
+
+                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                                        <div>
+                                             <label className="block text-[11px] font-medium text-gray-500 mb-1">Graphic URL / Path</label>
+                                             <input
+                                                  type="text"
+                                                  value={typeof heroImage === "string" ? heroImage : ""}
+                                                  onChange={(e) => setHeroImage(e.target.value)}
+                                                  className={inputClass}
+                                                  placeholder="e.g. /images/contact-hero-graphic.svg or https://res.cloudinary.com/..."
+                                             />
+                                        </div>
+                                        <div>
+                                             <label className="block text-[11px] font-medium text-gray-500 mb-1">Alt Text</label>
+                                             <input
+                                                  type="text"
+                                                  value={heroAlt}
+                                                  onChange={(e) => setHeroAlt(e.target.value)}
+                                                  className={inputClass}
+                                                  placeholder="e.g. Contact Us Graphic"
+                                             />
+                                        </div>
+                                   </div>
                               </div>
                          </div>
                     )}
@@ -325,8 +394,50 @@ export default function ContactData() {
                          <div className="bg-white rounded-xl p-6 shadow-md shadow-gray-200/50 space-y-6 max-w-4xl">
                               <h2 className="text-lg font-bold text-gray-800 border-b border-gray-100 pb-3">Upload Page Visuals</h2>
                               
+                              {/* Hero Right Graphic */}
+                              <div className="space-y-1.5 pb-6 border-b border-gray-100">
+                                   <div className="flex items-center justify-between mb-2">
+                                        <div>
+                                             <label className={labelClass}>Hero Right Graphic (Illustration / Banner Graphic)</label>
+                                             <p className="text-xs text-gray-400">Right-side graphic illustration for the Contact Us hero banner.</p>
+                                        </div>
+                                        {heroImage && (
+                                             <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                                                  Graphic Set
+                                             </span>
+                                        )}
+                                   </div>
+
+                                   <ImageUploader
+                                        setImage={setHeroImage}
+                                        initialImage={typeof heroImage === "string" ? heroImage : null}
+                                   />
+                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                                        <div>
+                                             <label className="block text-[11px] font-medium text-gray-500 mb-1">Graphic URL / Path</label>
+                                             <input
+                                                  type="text"
+                                                  value={typeof heroImage === "string" ? heroImage : ""}
+                                                  onChange={(e) => setHeroImage(e.target.value)}
+                                                  className={inputClass}
+                                                  placeholder="e.g. /images/contact-hero-graphic.svg or https://res.cloudinary.com/..."
+                                             />
+                                        </div>
+                                        <div>
+                                             <label className="block text-[11px] font-medium text-gray-500 mb-1">Alt Text</label>
+                                             <input
+                                                  type="text"
+                                                  value={heroAlt}
+                                                  onChange={(e) => setHeroAlt(e.target.value)}
+                                                  className={inputClass}
+                                                  placeholder="e.g. Contact Us Graphic"
+                                             />
+                                        </div>
+                                   </div>
+                              </div>
+
                               {/* Left Section Image */}
-                              <div className="space-y-1.5 pb-4 border-b border-gray-100">
+                              <div className="space-y-1.5 pb-6 border-b border-gray-100">
                                    <label className={labelClass}>Left Section Banner Image</label>
                                    <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-center">
                                         <div className="h-20 w-32 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center p-2 overflow-hidden shrink-0">

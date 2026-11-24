@@ -16,6 +16,8 @@ export default function Courses() {
 
      // Global configs states
      const [hero, setHero] = useState([{ startheading: "", endheading: "" }]);
+     const [pageHeroImage, setPageHeroImage] = useState(null);
+     const [pageHeroAlt, setPageHeroAlt] = useState("");
      const [card, setCard] = useState({ title: "", description: "", buttonname: "" });
      const [relatedBlogs, setRelatedBlogs] = useState({
           title: "",
@@ -46,6 +48,7 @@ export default function Courses() {
       const [seoTitle, setSeoTitle] = useState("");
       const [seoDescription, setSeoDescription] = useState("");
       const [image, setImage] = useState(null);
+     const [heroImage, setHeroImage] = useState(null);
       const [certificationImage, setCertificationImage] = useState(null);
       const [schemas, setSchemas] = useState([]);
 
@@ -402,7 +405,11 @@ export default function Courses() {
                 if (res.ok) {
                      const data = await res.json();
                      setCourses(data.course || []);
-                     if (data.hero) setHero(data.hero);
+                     if (data.hero) {
+                          setHero(data.hero);
+                          setPageHeroImage(data.hero[0]?.image || data.hero[0]?.heroImage || null);
+                          setPageHeroAlt(data.hero[0]?.alt || "");
+                     }
                      if (data.card) setCard(data.card);
                      if (data.relatedBlogs) setRelatedBlogs(data.relatedBlogs);
 
@@ -455,14 +462,31 @@ export default function Courses() {
                      }))
                 };
 
-                formData.append("data", JSON.stringify({
-                     hero,
-                     card,
-                     relatedBlogs,
-                     caseStudies: globalCaseStudies,
-                     careerDomains: globalCareerDomains,
-                     course: courses
-                }));
+                const updatedHero = [
+                      {
+                           ...(hero[0] || {}),
+                           image: (pageHeroImage && pageHeroImage instanceof File)
+                                ? (hero[0]?.image || "")
+                                : (typeof pageHeroImage === "string" ? pageHeroImage : (hero[0]?.image || "")),
+                           heroImage: (pageHeroImage && pageHeroImage instanceof File)
+                                ? (hero[0]?.heroImage || "")
+                                : (typeof pageHeroImage === "string" ? pageHeroImage : (hero[0]?.heroImage || "")),
+                           alt: pageHeroAlt || hero[0]?.alt || ""
+                      }
+                 ];
+
+                 formData.append("data", JSON.stringify({
+                      hero: updatedHero,
+                      card,
+                      relatedBlogs,
+                      caseStudies: globalCaseStudies,
+                      careerDomains: globalCareerDomains,
+                      course: courses
+                 }));
+
+                 if (pageHeroImage && pageHeroImage instanceof File) {
+                      formData.append("pageHeroImage", pageHeroImage);
+                 }
 
                 caseStudiesItems.forEach((item, itemIdx) => {
                      if (item.image && item.image instanceof File) {
@@ -506,6 +530,7 @@ export default function Courses() {
            setSeoTitle("");
            setSeoDescription("");
            setImage(null);
+           setHeroImage(null);
            setCertificationImage(null);
            setPromoTitle("");
            setPromoDescription("");
@@ -594,6 +619,7 @@ export default function Courses() {
            setSeoTitle(course.seotitle || "");
            setSeoDescription(course.seodescription || "");
            setCertificationImage(course.certificationImage || null);
+           setHeroImage(course.heroImage || null);
            setPromoTitle(course.promoTitle || "");
            setPromoDescription(course.promoDescription || "");
            setPromoBenefits(course.promoBenefits || "");
@@ -880,6 +906,7 @@ export default function Courses() {
                       seotitle: seoTitle || title,
                       seodescription: seoDescription || overview,
                       image: editItem ? editItem.image : "",
+                       heroImage: typeof heroImage === "string" ? heroImage : (editItem?.heroImage || ""), 
                       certificationImage: typeof certificationImage === "string" ? certificationImage : "",
                       promoTitle,
                       promoDescription,
@@ -1050,7 +1077,10 @@ export default function Courses() {
                      course: nextCourses
                 }));
  
-                if (image) {
+                if (heroImage instanceof File) {
+                    formData.append(`courseHeroImage_${editIndex !== null ? editIndex : courses.length}`, heroImage);
+               }
+               if (image) {
                      formData.append(`courseImage_${editIndex !== null ? editIndex : courses.length}`, image);
                 }
                 if (certificationImage instanceof File) {
@@ -1290,7 +1320,7 @@ export default function Courses() {
                          <div className="space-y-8">
                               {/* Hero Heading Config */}
                               <div className="bg-white rounded-2xl p-6 shadow-md shadow-gray-200/50">
-                                   <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3 mb-5 font-sans">1. Course Hero Title</h2>
+                                   <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3 mb-5 font-sans">1. Course Hero Title & Right Graphic</h2>
                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div className="space-y-1.5">
                                              <label className={labelClass}>Start Heading</label>
@@ -1317,6 +1347,60 @@ export default function Courses() {
                                                        setHero(nextHero);
                                                   }}
                                                   placeholder="e.g. Courses"
+                                                  className={inputClass}
+                                             />
+                                        </div>
+
+                                        {/* Right-Side Hero Banner Graphic Image Upload */}
+                                        <div className="space-y-1.5 md:col-span-2">
+                                             <div className="flex items-center justify-between">
+                                                  <label className={labelClass}>Hero Right Graphic (Illustration / Cards Banner)</label>
+                                                  {pageHeroImage && (
+                                                       <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                                                            Custom Graphic Selected
+                                                       </span>
+                                                  )}
+                                             </div>
+                                             <ImageUploader
+                                                  setImage={setPageHeroImage}
+                                                  initialImage={typeof pageHeroImage === "string" ? pageHeroImage : (typeof hero[0]?.image === "string" ? hero[0].image : null)}
+                                             />
+                                             <p className="text-[11px] text-gray-400 mt-1">
+                                                  Upload right-side graphic illustration (PNG with transparent background recommended, e.g. 3-card stack).
+                                             </p>
+                                        </div>
+
+                                        <div className="space-y-1.5 md:col-span-2">
+                                             <label className={labelClass}>Hero Graphic Image URL / Path (Alternative to upload)</label>
+                                             <input
+                                                  value={typeof pageHeroImage === "string" ? pageHeroImage : (hero[0]?.image || "")}
+                                                  onChange={(e) => {
+                                                       const val = e.target.value;
+                                                       setPageHeroImage(val);
+                                                       const nextHero = [...hero];
+                                                       if (!nextHero[0]) nextHero[0] = { startheading: "", endheading: "" };
+                                                       nextHero[0].image = val;
+                                                       nextHero[0].heroImage = val;
+                                                       setHero(nextHero);
+                                                  }}
+                                                  placeholder="e.g. /images/courses-hero-graphic.png or https://res.cloudinary.com/..."
+                                                  className={inputClass}
+                                             />
+                                        </div>
+
+                                        <div className="space-y-1.5 md:col-span-2">
+                                             <label className={labelClass}>Hero Graphic Alt Text</label>
+                                             <input
+                                                  value={pageHeroAlt || hero[0]?.alt || ""}
+                                                  onChange={(e) => {
+                                                       const val = e.target.value;
+                                                       setPageHeroAlt(val);
+                                                       const nextHero = [...hero];
+                                                       if (!nextHero[0]) nextHero[0] = { startheading: "", endheading: "" };
+                                                       nextHero[0].alt = val;
+                                                       setHero(nextHero);
+                                                  }}
+                                                  placeholder="e.g. Explore Our Courses Graphic"
                                                   className={inputClass}
                                              />
                                         </div>
@@ -1685,6 +1769,18 @@ export default function Courses() {
                                                   required
                                              />
                                         </div>
+                                   </div>
+
+                                   <div className="space-y-2 bg-gray-50/70 p-4 rounded-xl border border-gray-200">
+                                        <div className="flex items-center justify-between">
+                                             <label className={labelClass}>Hero Right Graphic / Illustration</label>
+                                             <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Course Hero Right Graphic</span>
+                                        </div>
+                                        <ImageUploader
+                                             setImage={setHeroImage}
+                                             initialImage={typeof heroImage === "string" ? heroImage : (typeof editItem?.heroImage === "string" ? editItem.heroImage : null)}
+                                        />
+                                        <p className="text-[11px] text-gray-400 mt-1">Upload the right-side graphic illustration for this course hero (e.g. Figma canvas interface simulation).</p>
                                    </div>
 
                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
