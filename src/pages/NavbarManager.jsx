@@ -28,6 +28,38 @@ const LEGACY_SOCIAL_ICON_NAMES = {
      telegram: "FaTelegram",
      threads: "FaThreads"
 };
+
+const getSocialIconPreviewUrl = (iconStr) => {
+     if (!iconStr || !iconStr.trim()) return null;
+     const raw = iconStr.trim();
+     if (/^(https?:|\/)/i.test(raw)) return raw;
+     const clean = raw.toLowerCase().replace(/[^a-z0-9:-]/g, "");
+     const PRESET_MAP = {
+          sifacebook: "simple-icons:facebook",
+          fafacebook: "fa6-brands:facebook",
+          facebook: "simple-icons:facebook",
+          fainstagram: "fa6-brands:instagram",
+          instagram: "fa6-brands:instagram",
+          falinkedin: "fa6-brands:linkedin",
+          falinkedinin: "fa6-brands:linkedin-in",
+          linkedin: "fa6-brands:linkedin-in",
+          siyoutube: "simple-icons:youtube",
+          fayoutube: "fa6-brands:youtube",
+          youtube: "simple-icons:youtube",
+          faxtwitter: "fa6-brands:x-twitter",
+          fatwitter: "fa6-brands:x-twitter",
+          ritwitterxline: "ri:twitter-x-line",
+          x: "fa6-brands:x-twitter",
+          twitter: "fa6-brands:x-twitter",
+          fawhatsapp: "fa6-brands:whatsapp",
+          whatsapp: "fa6-brands:whatsapp",
+          fathreads: "simple-icons:threads",
+          threads: "simple-icons:threads"
+     };
+     const target = PRESET_MAP[clean] || (raw.includes(":") ? raw : (raw.includes("/") ? raw.replace("/", ":") : `fa6-brands:${raw.toLowerCase()}`));
+     return `https://api.iconify.design/${encodeURIComponent(target)}.svg?color=%23f97316`;
+};
+
 const DEFAULT_MAIN_LINKS = [
      { label: "Home", href: "/" },
      { label: "About Us", href: "/about-us" },
@@ -351,11 +383,11 @@ export default function NavbarManager() {
                                         </div>
                                    </div>
 
-                                   <div className="space-y-3">
-                                        <div className="flex items-center justify-between gap-3">
+                                   <div className="space-y-4">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                              <div>
-                                                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Social Links</h3>
-                                                  <p className="text-[11px] text-gray-400 mt-1">Paste an icon component name from react-icons.github.io/react-icons.</p>
+                                                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Social Links</h3>
+                                                  <p className="text-xs text-gray-400 mt-0.5">Top bar me display hone wale social icons aur links.</p>
                                              </div>
                                              <button
                                                   type="button"
@@ -365,19 +397,62 @@ export default function NavbarManager() {
                                                   + Add Social Link
                                              </button>
                                         </div>
+
+                                        {/* Helpful Admin Icon Guide */}
+                                        <div className="bg-orange-50/70 border border-orange-200/80 rounded-xl p-3.5 text-xs text-gray-700 space-y-2">
+                                             <div className="font-bold flex items-center gap-1.5 text-orange-950">
+                                                  <span>💡 Icon Kaha Se Le Aur Kaise Dale (Icon Guide for Admin):</span>
+                                             </div>
+                                             <div className="space-y-1.5 text-gray-600 leading-relaxed">
+                                                  <p>
+                                                       <span className="font-semibold text-gray-900">1. Koi bhi icon name (200,000+ icons):</span>{" "}
+                                                       Aap{" "}
+                                                       <a
+                                                            href="https://icon-sets.iconify.design"
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-orange-600 underline font-semibold hover:text-orange-700"
+                                                       >
+                                                            https://icon-sets.iconify.design
+                                                       </a>{" "}
+                                                       par jaayein, koi bhi icon search karein (jaise WhatsApp, Instagram, Threads, Telegram, etc.) aur uska name copy karke paste karein (e.g. <code className="bg-orange-100/80 text-orange-800 px-1 py-0.5 rounded font-mono text-[11px]">mdi:whatsapp</code>, <code className="bg-orange-100/80 text-orange-800 px-1 py-0.5 rounded font-mono text-[11px]">fa6-brands:instagram</code>, <code className="bg-orange-100/80 text-orange-800 px-1 py-0.5 rounded font-mono text-[11px]">simple-icons:threads</code>).
+                                                  </p>
+                                                  <p>
+                                                       <span className="font-semibold text-gray-900">2. Custom Image / SVG URL:</span>{" "}
+                                                       Agar aapke paas koi custom SVG ya Cloudinary image URL hai, to direct link (<code className="bg-orange-100/80 text-orange-800 px-1 py-0.5 rounded font-mono text-[11px]">https://...</code>) bhi daal sakte hain.
+                                                  </p>
+                                                  <p className="text-[11px] text-gray-500">
+                                                       Common names bhi supported hain: <code className="bg-gray-100 px-1 py-0.5 rounded font-mono">instagram</code>, <code className="bg-gray-100 px-1 py-0.5 rounded font-mono">facebook</code>, <code className="bg-gray-100 px-1 py-0.5 rounded font-mono">whatsapp</code>, <code className="bg-gray-100 px-1 py-0.5 rounded font-mono">youtube</code>, <code className="bg-gray-100 px-1 py-0.5 rounded font-mono">linkedin</code>, <code className="bg-gray-100 px-1 py-0.5 rounded font-mono">x</code>, <code className="bg-gray-100 px-1 py-0.5 rounded font-mono">threads</code>.
+                                                  </p>
+                                             </div>
+                                        </div>
+
                                         {topBar.socials.length === 0 ? (
                                              <p className="text-sm text-gray-400 text-center py-4 border border-dashed border-gray-200 rounded-xl">No top bar social links configured.</p>
                                         ) : (
                                              <div className="space-y-2">
                                                   {topBar.socials.map((social, index) => (
                                                        <div key={index} className="flex flex-col sm:flex-row gap-2 sm:items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                                            {/* Live Icon Preview */}
+                                                            <div className="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center shrink-0 p-1.5 overflow-hidden shadow-xs" title="Live Icon Preview">
+                                                                 {getSocialIconPreviewUrl(social.icon) ? (
+                                                                      <img
+                                                                           src={getSocialIconPreviewUrl(social.icon)}
+                                                                           alt="Icon preview"
+                                                                           className="w-5 h-5 object-contain"
+                                                                           onError={(e) => { e.currentTarget.style.display = "none"; }}
+                                                                      />
+                                                                 ) : (
+                                                                      <span className="text-[10px] text-gray-400 font-medium">Icon</span>
+                                                                 )}
+                                                            </div>
                                                             <input
                                                                  type="text"
                                                                  value={social.icon}
                                                                  onChange={(e) => handleUpdateTopBarSocial(index, "icon", e.target.value)}
-                                                                 className={`${inputClass} min-w-0 sm:max-w-56 sm:flex-none`}
-                                                                 placeholder="Icon name (e.g. FaInstagram)"
-                                                                 aria-label={`React Icons component name ${index + 1}`}
+                                                                 className={`${inputClass} min-w-0 sm:max-w-64 sm:flex-none`}
+                                                                 placeholder="Icon name (e.g. mdi:whatsapp)"
+                                                                 aria-label={`Social icon name ${index + 1}`}
                                                             />
                                                             <input
                                                                  type="url"
@@ -391,7 +466,7 @@ export default function NavbarManager() {
                                                                  type="button"
                                                                  onClick={() => handleRemoveTopBarSocial(index)}
                                                                  aria-label={`Remove social link ${index + 1}`}
-                                                                 className="w-10 h-10 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-500 transition-colors cursor-pointer shrink-0"
+                                                                 className="w-10 h-10 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-500 transition-colors cursor-pointer shrink-0 font-bold text-lg"
                                                             >
                                                                  ×
                                                             </button>
