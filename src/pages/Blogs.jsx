@@ -15,18 +15,33 @@ const DEFAULT_AUTHOR_TEMPLATES = [
           label: "Vipul Rajput - Senior UX Designer",
           name: "Vipul Rajput",
           designation: "Senior Product Designer & Educator",
-          bio: "Experienced UI/UX Designer leading digital product experiences and mentoring aspiring designers.",
-          twitter: "https://x.com/vipulrajput",
-          linkedin: "https://linkedin.com/in/vipulrajput"
+          bio: "Experienced UI/UX Designer leading digital product experiences and mentoring aspiring designers."
      },
      {
           id: "tpl-2",
           label: "Weekend UX Team (Editorial Board)",
           name: "Weekend UX Team",
           designation: "Editorial & Research Team",
-          bio: "Curated insights, tutorials, and career guidance by the Weekend UX design mentors.",
-          twitter: "https://x.com/weekendux",
-          linkedin: "https://linkedin.com/company/weekendux"
+          bio: "Curated insights, tutorials, and career guidance by the Weekend UX design mentors."
+     }
+];
+
+const DEFAULT_REVIEWER_TEMPLATES = [
+     {
+          id: "rev-tpl-1",
+          label: "CA Sandesh C H - Faculty of ArivuPro",
+          name: "CA Sandesh C H",
+          designation: "Faculty of ArivuPro",
+          bio: "CA Sandesh C H is a professional course trainer in CA, CS, ACCA, and CIMA, associated with Christ University, GLA University, ICAI, and ArivuPro Academy, specializing in accounting and finance education.",
+          avatar: ""
+     },
+     {
+          id: "rev-tpl-2",
+          label: "Hrishabh Kumar - Design Mentor & Lead Reviewer",
+          name: "Hrishabh Kumar",
+          designation: "Design Mentor & Lead Reviewer",
+          bio: "Senior design consultant and product specialist reviewing curriculum, articles, and research at Weekend UX.",
+          avatar: ""
      }
 ];
 
@@ -69,6 +84,12 @@ export default function Blogs() {
      const [authorLinkedin, setAuthorLinkedin] = useState('');
      const [authorUpdatedDate, setAuthorUpdatedDate] = useState('');
 
+     // Reviewer States
+     const [reviewerName, setReviewerName] = useState('');
+     const [reviewerDesignation, setReviewerDesignation] = useState('');
+     const [reviewerBio, setReviewerBio] = useState('');
+     const [reviewerAvatar, setReviewerAvatar] = useState(null);
+
      // Author Templates States
      const [authorTemplates, setAuthorTemplates] = useState(DEFAULT_AUTHOR_TEMPLATES);
      const [showTemplatesModal, setShowTemplatesModal] = useState(false);
@@ -84,6 +105,20 @@ export default function Blogs() {
      const [tplTwitter, setTplTwitter] = useState("");
      const [tplLinkedin, setTplLinkedin] = useState("");
      const [tplAvatar, setTplAvatar] = useState(null);
+
+     // Reviewer Templates States
+     const [reviewerTemplates, setReviewerTemplates] = useState(DEFAULT_REVIEWER_TEMPLATES);
+     const [showReviewerTemplatesModal, setShowReviewerTemplatesModal] = useState(false);
+     const [selectedReviewerTemplateId, setSelectedReviewerTemplateId] = useState("");
+     const [savingReviewerTemplates, setSavingReviewerTemplates] = useState(false);
+
+     const [editingReviewerTemplateId, setEditingReviewerTemplateId] = useState(null);
+     const [showReviewerTplForm, setShowReviewerTplForm] = useState(false);
+     const [reviewerTplLabel, setReviewerTplLabel] = useState("");
+     const [reviewerTplName, setReviewerTplName] = useState("");
+     const [reviewerTplDesignation, setReviewerTplDesignation] = useState("");
+     const [reviewerTplBio, setReviewerTplBio] = useState("");
+     const [reviewerTplAvatar, setReviewerTplAvatar] = useState(null);
 
      // Blog Page Configuration States
      const [heroStarttitle, setHeroStarttitle] = useState("");
@@ -123,6 +158,22 @@ export default function Blogs() {
                                    }
                               } catch (e) {
                                    console.error("Error parsing saved templates:", e);
+                              }
+                         }
+                    }
+                    if (Array.isArray(data.reviewerTemplates) && data.reviewerTemplates.length > 0) {
+                         setReviewerTemplates(data.reviewerTemplates);
+                         localStorage.setItem("admin_reviewer_templates", JSON.stringify(data.reviewerTemplates));
+                    } else {
+                         const localSavedRev = localStorage.getItem("admin_reviewer_templates");
+                         if (localSavedRev) {
+                              try {
+                                   const parsed = JSON.parse(localSavedRev);
+                                   if (Array.isArray(parsed) && parsed.length > 0) {
+                                        setReviewerTemplates(parsed);
+                                   }
+                              } catch (e) {
+                                   console.error("Error parsing saved reviewer templates:", e);
                               }
                          }
                     }
@@ -262,6 +313,124 @@ export default function Blogs() {
           }
      };
 
+     const persistReviewerTemplates = async (templatesToSave) => {
+          const previousTemplates = reviewerTemplates;
+          setSavingReviewerTemplates(true);
+          setReviewerTemplates(templatesToSave);
+          try {
+               const formData = new FormData();
+               const templatesPayload = templatesToSave.map((template, index) => {
+                    const { avatar, ...templateData } = template;
+                    if (isImageFile(avatar)) {
+                         formData.append(`templateReviewerAvatar_${index}`, avatar, avatar.name || "reviewer-avatar");
+                         return { ...templateData, avatar: "" };
+                    }
+                    return { ...templateData, avatar: avatar || "" };
+               });
+               formData.append("data", JSON.stringify({ reviewerTemplates: templatesPayload }));
+               const res = await fetch(`${API_URL}/blogs`, {
+                    method: "PUT",
+                    headers: {
+                         "Authorization": `Bearer ${getAdminToken()}`
+                    },
+                    body: formData
+               });
+               if (res.ok) {
+                    const result = await res.json();
+                    const savedTemplates = result.reviewerTemplates || templatesPayload;
+                    const uploadedTemplate = templatesToSave.find(({ avatar }) => isImageFile(avatar));
+                    const savedUploadedTemplate = uploadedTemplate &&
+                         savedTemplates.find(({ id }) => id === uploadedTemplate.id);
+                    if (uploadedTemplate && !savedUploadedTemplate?.avatar) {
+                         throw new Error("The server did not save the reviewer image. Please try uploading it again.");
+                    }
+                    setReviewerTemplates(savedTemplates);
+                    localStorage.setItem("admin_reviewer_templates", JSON.stringify(savedTemplates));
+                    showToast("Reviewer templates saved successfully!", "success");
+                    return true;
+               }
+               const error = await res.json();
+               setReviewerTemplates(previousTemplates);
+               showToast(error.error || "Failed to save reviewer templates.", "error");
+               return false;
+          } catch (err) {
+               console.error("Error saving reviewer templates:", err);
+               setReviewerTemplates(previousTemplates);
+               showToast(err.message || "Failed to save reviewer templates.", "error");
+               return false;
+          } finally {
+               setSavingReviewerTemplates(false);
+          }
+     };
+
+     const handleOpenCreateReviewerTpl = () => {
+          setEditingReviewerTemplateId(null);
+          setReviewerTplLabel("");
+          setReviewerTplName("");
+          setReviewerTplDesignation("");
+          setReviewerTplBio("");
+          setReviewerTplAvatar(null);
+          setShowReviewerTplForm(true);
+     };
+
+     const handleOpenEditReviewerTpl = (tpl) => {
+          setEditingReviewerTemplateId(tpl.id);
+          setReviewerTplLabel(tpl.label || tpl.name || "");
+          setReviewerTplName(tpl.name || "");
+          setReviewerTplDesignation(tpl.designation || "");
+          setReviewerTplBio(tpl.bio || "");
+          setReviewerTplAvatar(tpl.avatar || null);
+          setShowReviewerTplForm(true);
+     };
+
+     const handleSaveReviewerTplForm = async (e) => {
+          e.preventDefault();
+          if (!reviewerTplName.trim()) {
+               showToast("Reviewer Name is required for template.", "error");
+               return;
+          }
+          const newTplObj = {
+               id: editingReviewerTemplateId || `rev-tpl-${Date.now()}`,
+               label: reviewerTplLabel.trim() || reviewerTplName.trim(),
+               name: reviewerTplName.trim(),
+               designation: reviewerTplDesignation.trim(),
+               bio: reviewerTplBio.trim(),
+               avatar: reviewerTplAvatar
+          };
+
+          let updatedList;
+          if (editingReviewerTemplateId) {
+               updatedList = reviewerTemplates.map(t => t.id === editingReviewerTemplateId ? newTplObj : t);
+          } else {
+               updatedList = [...reviewerTemplates, newTplObj];
+          }
+          if (await persistReviewerTemplates(updatedList)) setShowReviewerTplForm(false);
+     };
+
+     const handleDeleteReviewerTpl = async (tplId) => {
+          if (!window.confirm("Are you sure you want to delete this reviewer template?")) return;
+          const updatedList = reviewerTemplates.filter(t => t.id !== tplId);
+          await persistReviewerTemplates(updatedList);
+     };
+
+     const handleResetDefaultReviewerTpls = async () => {
+          if (!window.confirm("Reset reviewer templates back to defaults?")) return;
+          await persistReviewerTemplates(DEFAULT_REVIEWER_TEMPLATES);
+     };
+
+     const handleApplyReviewerTemplate = (tplId) => {
+          setSelectedReviewerTemplateId(tplId);
+          if (!tplId) return;
+          const found = reviewerTemplates.find(t => t.id === tplId);
+          if (found) {
+               setReviewerName(found.name || '');
+               setReviewerDesignation(found.designation || '');
+               setReviewerBio(found.bio || '');
+               setReviewerAvatar(found.avatar || null);
+               showToast(`Reviewer details pre-filled from "${found.label || found.name}"`, "success");
+          }
+     };
+
      const saveBlogPageTitles = async () => {
           try {
                setSavingTitles(true);
@@ -336,6 +505,11 @@ export default function Blogs() {
           setAuthorTwitter('');
           setAuthorLinkedin('');
           setAuthorUpdatedDate('');
+          setReviewerName('');
+          setReviewerDesignation('');
+          setReviewerBio('');
+          setReviewerAvatar(null);
+          setSelectedReviewerTemplateId('');
           setSchemas([]);
           setBlogHeroImage(null);
           setCategory("UI UX DESIGN");
@@ -391,6 +565,13 @@ export default function Blogs() {
           setAuthorTwitter(blogAuthor.twitter || '');
           setAuthorLinkedin(blogAuthor.linkedin || '');
           setAuthorUpdatedDate(blogAuthor.updatedDate || '');
+
+          const blogReviewer = blog.reviewer || blog.reviewedBy || {};
+          setReviewerName(blogReviewer.name || '');
+          setReviewerDesignation(blogReviewer.designation || '');
+          setReviewerBio(blogReviewer.bio || '');
+          setReviewerAvatar(blogReviewer.avatar || null);
+          setSelectedReviewerTemplateId('');
           setBlogHeroImage(blog.heroImage || null);
           setCategory(blog.category || "UI UX DESIGN");
           setBadge(blog.badge || "✓");
@@ -438,6 +619,14 @@ export default function Blogs() {
                updatedDate: authorUpdatedDate
           };
           formData.append('author', JSON.stringify(authorPayload));
+
+          const reviewerPayload = {
+               name: reviewerName,
+               designation: reviewerDesignation,
+               bio: reviewerBio,
+               avatar: typeof reviewerAvatar === "string" ? reviewerAvatar : ""
+          };
+          formData.append('reviewer', JSON.stringify(reviewerPayload));
           formData.append('schemas', JSON.stringify(schemas));
 
           if (image) formData.append("image", image);
@@ -454,6 +643,9 @@ export default function Blogs() {
           formData.append("buttonText", buttonText);
           if (isImageFile(authorAvatar)) {
                formData.append("authorAvatar", authorAvatar, authorAvatar.name || "author-avatar");
+          }
+          if (isImageFile(reviewerAvatar)) {
+               formData.append("reviewerAvatar", reviewerAvatar, reviewerAvatar.name || "reviewer-avatar");
           }
 
           try {
@@ -540,6 +732,17 @@ export default function Blogs() {
                                    <span>Author Templates</span>
                                    <span className="bg-orange-500 text-white text-[11px] px-2 py-0.5 rounded-full font-bold">
                                         {authorTemplates.length}
+                                   </span>
+                              </button>
+
+                              <button
+                                   onClick={() => setShowReviewerTemplatesModal(true)}
+                                   className="inline-flex items-center gap-2 bg-white hover:bg-orange-50/60 border border-orange-200/80 text-orange-600 hover:text-orange-700 text-sm font-semibold px-4 py-2.5 rounded-xl shadow-xs transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                              >
+                                   <HiOutlineUserGroup className="w-4.5 h-4.5 text-orange-500" />
+                                   <span>Reviewer Templates</span>
+                                   <span className="bg-orange-500 text-white text-[11px] px-2 py-0.5 rounded-full font-bold">
+                                        {reviewerTemplates.length}
                                    </span>
                               </button>
 
@@ -1033,24 +1236,6 @@ export default function Blogs() {
                                                        className={inputClass}
                                                   />
                                              </div>
-                                             <div className="space-y-1.5">
-                                                  <label className={labelClass}>Twitter / X URL</label>
-                                                  <input
-                                                       value={authorTwitter}
-                                                       onChange={(e) => setAuthorTwitter(e.target.value)}
-                                                       placeholder="e.g. https://x.com/username"
-                                                       className={inputClass}
-                                                  />
-                                             </div>
-                                             <div className="space-y-1.5">
-                                                  <label className={labelClass}>LinkedIn URL</label>
-                                                  <input
-                                                       value={authorLinkedin}
-                                                       onChange={(e) => setAuthorLinkedin(e.target.value)}
-                                                       placeholder="e.g. https://linkedin.com/in/username"
-                                                       className={inputClass}
-                                                  />
-                                             </div>
                                              <div className="space-y-1.5 sm:col-span-2">
                                                   <label className={labelClass}>Author Bio</label>
                                                   <textarea
@@ -1064,6 +1249,85 @@ export default function Blogs() {
                                              <div className="space-y-1.5 sm:col-span-2">
                                                   <label className={labelClass}>Author Image</label>
                                                   <ImageUploader setImage={setAuthorAvatar} initialImage={authorAvatar} />
+                                             </div>
+                                        </div>
+                                   </div>
+
+                                   {/* Reviewed By Information Section */}
+                                   <div className="space-y-4 pt-2 border-t border-gray-100">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-2">
+                                             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Reviewed By Information</p>
+                                             {reviewerTemplates.length > 0 && (
+                                                  <span className="text-[11px] text-orange-600 font-medium bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-100">
+                                                       {reviewerTemplates.length} Template(s) Available
+                                                  </span>
+                                             )}
+                                        </div>
+
+                                        {/* Reviewer Template Dropdown Auto-Fill */}
+                                        <div className="bg-linear-to-r from-orange-50/80 to-amber-50/50 p-4 rounded-xl border border-orange-200/80 shadow-xs space-y-2">
+                                             <div className="flex items-center justify-between">
+                                                  <label className="text-xs font-bold text-orange-900 uppercase tracking-wider flex items-center gap-1.5">
+                                                       <HiOutlineSparkles className="w-4 h-4 text-orange-500" />
+                                                       Select Reviewer Template to Auto-Fill
+                                                  </label>
+                                                  <button
+                                                       type="button"
+                                                       onClick={() => {
+                                                            setShowModal(false);
+                                                            setShowReviewerTemplatesModal(true);
+                                                       }}
+                                                       className="text-[11px] font-bold text-orange-600 hover:text-orange-700 underline cursor-pointer"
+                                                  >
+                                                       + Manage Templates
+                                                  </button>
+                                             </div>
+                                             <select
+                                                  value={selectedReviewerTemplateId}
+                                                  onChange={(e) => handleApplyReviewerTemplate(e.target.value)}
+                                                  className="w-full px-3.5 py-2.5 rounded-xl border border-orange-200 bg-white text-xs font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all cursor-pointer shadow-xs"
+                                             >
+                                                  <option value="">-- Choose Reviewer Template to Auto-Fill Reviewer Details --</option>
+                                                  {reviewerTemplates.map((tpl) => (
+                                                       <option key={tpl.id} value={tpl.id}>
+                                                            {tpl.label || tpl.name} ({tpl.designation || 'Reviewer'})
+                                                       </option>
+                                                  ))}
+                                             </select>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>Reviewer Name</label>
+                                                  <input
+                                                       value={reviewerName}
+                                                       onChange={(e) => setReviewerName(e.target.value)}
+                                                       placeholder="e.g. CA Sandesh C H"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5">
+                                                  <label className={labelClass}>Reviewer Designation</label>
+                                                  <input
+                                                       value={reviewerDesignation}
+                                                       onChange={(e) => setReviewerDesignation(e.target.value)}
+                                                       placeholder="e.g. Faculty of ArivuPro"
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5 sm:col-span-2">
+                                                  <label className={labelClass}>Reviewer Bio</label>
+                                                  <textarea
+                                                       value={reviewerBio}
+                                                       onChange={(e) => setReviewerBio(e.target.value)}
+                                                       placeholder="Short bio about the reviewer..."
+                                                       rows={3}
+                                                       className={inputClass}
+                                                  />
+                                             </div>
+                                             <div className="space-y-1.5 sm:col-span-2">
+                                                  <label className={labelClass}>Reviewer Image</label>
+                                                  <ImageUploader setImage={setReviewerAvatar} initialImage={reviewerAvatar} />
                                              </div>
                                         </div>
                                    </div>
@@ -1329,24 +1593,6 @@ export default function Blogs() {
                                                             className={inputClass}
                                                        />
                                                   </div>
-                                                  <div className="space-y-1.5">
-                                                       <label className={labelClass}>Twitter / X URL</label>
-                                                       <input
-                                                            value={tplTwitter}
-                                                            onChange={(e) => setTplTwitter(e.target.value)}
-                                                            placeholder="e.g. https://x.com/username"
-                                                            className={inputClass}
-                                                       />
-                                                  </div>
-                                                  <div className="space-y-1.5">
-                                                       <label className={labelClass}>LinkedIn URL</label>
-                                                       <input
-                                                            value={tplLinkedin}
-                                                            onChange={(e) => setTplLinkedin(e.target.value)}
-                                                            placeholder="e.g. https://linkedin.com/in/username"
-                                                            className={inputClass}
-                                                       />
-                                                  </div>
                                                   <div className="space-y-1.5 sm:col-span-2">
                                                        <label className={labelClass}>Author Bio</label>
                                                        <textarea
@@ -1446,11 +1692,7 @@ export default function Blogs() {
                                                        <div className="truncate max-w-45">
                                                             <span className="font-medium text-gray-600">{tpl.name}</span>
                                                        </div>
-                                                       {(tpl.twitter || tpl.linkedin) && (
-                                                            <span className="text-[10px] text-gray-400">
-                                                                 Socials linked
-                                                            </span>
-                                                       )}
+                                                       <span className="text-[10px] text-orange-600 font-medium">Author</span>
                                                   </div>
                                              </div>
                                         ))}
@@ -1463,6 +1705,246 @@ export default function Blogs() {
                                         onClick={() => {
                                              setShowTemplatesModal(false);
                                              setShowTplForm(false);
+                                        }}
+                                        className="px-6 py-2.5 text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer"
+                                   >
+                                        Close
+                                   </button>
+                              </div>
+                         </div>
+                    </div>
+               )}
+
+               {/* ================= REVIEWER TEMPLATES MANAGEMENT MODAL ================= */}
+               {showReviewerTemplatesModal && (
+                    <div
+                         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs overflow-y-auto"
+                         onClick={() => {
+                              setShowReviewerTemplatesModal(false);
+                              setShowReviewerTplForm(false);
+                         }}
+                    >
+                         <div
+                              className="relative w-full max-w-3xl my-8 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh]"
+                              onClick={(e) => e.stopPropagation()}
+                         >
+                              {/* Modal Header */}
+                              <div className="flex items-center justify-between px-7 py-5 border-b border-gray-100 bg-white sticky top-0 z-10">
+                                   <div>
+                                        <div className="flex items-center gap-2">
+                                             <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                                                  <HiOutlineUserGroup className="w-4 h-4" />
+                                             </div>
+                                             <h2 className="text-lg font-bold text-gray-900">
+                                                  Blog Reviewer Templates
+                                             </h2>
+                                        </div>
+                                        <p className="text-xs text-gray-400 mt-1">
+                                             Manage saved reviewer profiles, including profile images, to pre-fill blog reviewer details.
+                                        </p>
+                                   </div>
+                                   <button
+                                        onClick={() => {
+                                             setShowReviewerTemplatesModal(false);
+                                             setShowReviewerTplForm(false);
+                                        }}
+                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors cursor-pointer"
+                                   >
+                                        ✕
+                                   </button>
+                              </div>
+
+                              {/* Modal Body */}
+                              <div className="px-7 py-6 space-y-6 overflow-y-auto flex-1">
+                                   {/* Action Header */}
+                                   <div className="flex items-center justify-between flex-wrap gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200/70">
+                                        <div>
+                                             <p className="text-xs font-bold text-gray-800 uppercase tracking-wider">
+                                                  Saved Reviewers ({reviewerTemplates.length})
+                                             </p>
+                                             <p className="text-[11px] text-gray-500 mt-0.5">
+                                                  Create template profiles for reviewers and subject matter experts.
+                                             </p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                             <button
+                                                  type="button"
+                                                  onClick={handleResetDefaultReviewerTpls}
+                                                  disabled={savingReviewerTemplates}
+                                                  className="text-xs font-semibold text-gray-600 hover:text-gray-900 bg-white border border-gray-200 px-3 py-2 rounded-xl transition-all cursor-pointer shadow-xs hover:bg-gray-50"
+                                             >
+                                                  Reset Defaults
+                                             </button>
+                                             <button
+                                                  type="button"
+                                                  onClick={handleOpenCreateReviewerTpl}
+                                                  className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all cursor-pointer shadow-xs"
+                                             >
+                                                  <HiOutlinePlus className="w-4 h-4" />
+                                                  Add New Reviewer
+                                             </button>
+                                        </div>
+                                   </div>
+
+                                   {/* Inline Create/Edit Form */}
+                                   {showReviewerTplForm && (
+                                        <form onSubmit={handleSaveReviewerTplForm} className="bg-emerald-50/40 p-5 rounded-2xl border border-emerald-200 space-y-4 shadow-sm">
+                                             <div className="flex items-center justify-between border-b border-emerald-100 pb-2">
+                                                  <h3 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+                                                       <HiOutlinePencil className="w-4 h-4 text-emerald-600" />
+                                                       {editingReviewerTemplateId ? "Edit Reviewer Template" : "Create New Reviewer Template"}
+                                                  </h3>
+                                                  <button
+                                                       type="button"
+                                                       onClick={() => setShowReviewerTplForm(false)}
+                                                       className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer"
+                                                  >
+                                                       Cancel
+                                                  </button>
+                                             </div>
+
+                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                  <div className="space-y-1.5 sm:col-span-2">
+                                                       <label className={labelClass}>Template Label / Display Name</label>
+                                                       <input
+                                                            value={reviewerTplLabel}
+                                                            onChange={(e) => setReviewerTplLabel(e.target.value)}
+                                                            placeholder="e.g. CA Sandesh C H - Faculty"
+                                                            className={inputClass}
+                                                            required
+                                                       />
+                                                  </div>
+                                                  <div className="space-y-1.5 sm:col-span-2">
+                                                       <label className={labelClass}>Reviewer Name</label>
+                                                       <input
+                                                            value={reviewerTplName}
+                                                            onChange={(e) => setReviewerTplName(e.target.value)}
+                                                            placeholder="e.g. CA Sandesh C H"
+                                                            className={inputClass}
+                                                            required
+                                                       />
+                                                  </div>
+                                                  <div className="space-y-1.5 sm:col-span-2">
+                                                       <label className={labelClass}>Reviewer Designation</label>
+                                                       <input
+                                                            value={reviewerTplDesignation}
+                                                            onChange={(e) => setReviewerTplDesignation(e.target.value)}
+                                                            placeholder="e.g. Faculty of ArivuPro"
+                                                            className={inputClass}
+                                                       />
+                                                  </div>
+                                                  <div className="space-y-1.5 sm:col-span-2">
+                                                       <label className={labelClass}>Reviewer Bio</label>
+                                                       <textarea
+                                                            value={reviewerTplBio}
+                                                            onChange={(e) => setReviewerTplBio(e.target.value)}
+                                                            placeholder="Brief bio about the reviewer..."
+                                                            rows={3}
+                                                            className={inputClass}
+                                                       />
+                                                  </div>
+                                                  <div className="space-y-1.5 sm:col-span-2">
+                                                       <label className={labelClass}>Reviewer Image</label>
+                                                       <ImageUploader setImage={setReviewerTplAvatar} initialImage={reviewerTplAvatar} />
+                                                  </div>
+                                             </div>
+
+                                             <div className="flex justify-end gap-2 pt-2">
+                                                  <button
+                                                       type="button"
+                                                       onClick={() => setShowReviewerTplForm(false)}
+                                                       disabled={savingReviewerTemplates}
+                                                       className="px-4 py-2 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer"
+                                                  >
+                                                       Cancel
+                                                  </button>
+                                                  <button
+                                                       type="submit"
+                                                       disabled={savingReviewerTemplates}
+                                                       className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5"
+                                                  >
+                                                       {savingReviewerTemplates ? (
+                                                            <>
+                                                                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" aria-hidden="true" />
+                                                                 <span>{isImageFile(reviewerTplAvatar) ? "Uploading image..." : "Saving..."}</span>
+                                                            </>
+                                                       ) : (
+                                                            <>
+                                                                 <HiOutlineCheck className="w-4 h-4" />
+                                                                 <span>{editingReviewerTemplateId ? "Update Template" : "Save Template"}</span>
+                                                            </>
+                                                       )}
+                                                  </button>
+                                             </div>
+                                        </form>
+                                   )}
+
+                                   {/* Template Cards List */}
+                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {reviewerTemplates.map((tpl) => (
+                                             <div
+                                                  key={tpl.id}
+                                                  className="bg-white rounded-xl p-4 border border-gray-200/80 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between space-y-3 group"
+                                             >
+                                                  <div>
+                                                       <div className="flex items-start justify-between gap-2">
+                                                            <div className="flex items-start gap-3">
+                                                                 {tpl.avatar && typeof tpl.avatar === "string" && (
+                                                                      <img src={tpl.avatar} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover ring-1 ring-emerald-200" />
+                                                                 )}
+                                                                 <div>
+                                                                      <h4 className="font-bold text-gray-900 text-sm">
+                                                                           {tpl.label || tpl.name}
+                                                                      </h4>
+                                                                      {tpl.designation && (
+                                                                           <span className="inline-block mt-0.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                                                                                {tpl.designation}
+                                                                           </span>
+                                                                      )}
+                                                                 </div>
+                                                            </div>
+                                                            <div className="flex items-center gap-1 opacity-90">
+                                                                 <button
+                                                                      type="button"
+                                                                      onClick={() => handleOpenEditReviewerTpl(tpl)}
+                                                                      className="p-1.5 rounded-lg bg-gray-100 hover:bg-emerald-100 hover:text-emerald-700 text-gray-500 transition-colors cursor-pointer"
+                                                                      title="Edit Template"
+                                                                 >
+                                                                      <HiOutlinePencil className="w-3.5 h-3.5" />
+                                                                 </button>
+                                                                 <button
+                                                                      type="button"
+                                                                      onClick={() => handleDeleteReviewerTpl(tpl.id)}
+                                                                      className="p-1.5 rounded-lg bg-gray-100 hover:bg-red-100 hover:text-red-600 text-gray-500 transition-colors cursor-pointer"
+                                                                      title="Delete Template"
+                                                                 >
+                                                                      <HiOutlineTrash className="w-3.5 h-3.5" />
+                                                                 </button>
+                                                            </div>
+                                                       </div>
+
+                                                       <p className="text-xs text-gray-500 line-clamp-3 mt-2.5 leading-relaxed">
+                                                            {tpl.bio || "No bio provided."}
+                                                       </p>
+                                                  </div>
+
+                                                  <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
+                                                       <div className="truncate max-w-45">
+                                                            <span className="font-medium text-gray-600">{tpl.name}</span>
+                                                       </div>
+                                                       <span className="text-[10px] text-emerald-600 font-medium">Reviewer</span>
+                                                  </div>
+                                             </div>
+                                        ))}
+                                   </div>
+                              </div>
+
+                              {/* Modal Footer */}
+                              <div className="flex items-center justify-end px-7 py-4 border-t border-gray-100 bg-white sticky bottom-0 rounded-b-2xl">
+                                   <button
+                                        onClick={() => {
+                                             setShowReviewerTemplatesModal(false);
+                                             setShowReviewerTplForm(false);
                                         }}
                                         className="px-6 py-2.5 text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer"
                                    >
